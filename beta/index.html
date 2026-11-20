@@ -2189,13 +2189,25 @@ function sideClear(tag){sideObj='';
 function updateSide(dt){if(!P||state!=='play'||!sideOn()){if(!sideOn()&&sideMates.length)sideMates=[];return;}
   if(!sideLive){sideLive=true;enterSide(life.side.step);return;}
   if(sideWait&&!dlg&&mobsLeft(sideWait)===0){const t=sideWait;sideWait=null;sideClear(t);}
-  sideMates.forEach((m,i)=>{const gx=P.x-(26+i*22)*(P.fx>=0?1:-1),gy=P.y+10+i*6,dx=gx-m.x,dy=gy-m.y,d=Math.hypot(dx,dy)||1;
+  sideMates.forEach((m,i)=>{let gx=P.x-(26+i*22)*(P.fx>=0?1:-1),gy=P.y+10+i*6;
+    // 提娜：附近有敵人就主動衝過去打（鈴蘭留在後面補血）
+    if(m.id!=='lan'){let tg=null,td=380;for(const e of enemies){if(e.dead||e.animal||e.disguise)continue;const q=Math.hypot(e.x-P.x,e.y-P.y);if(q<td){td=q;tg=e;}}
+      m.tg=tg;if(tg){const sd=tg.x>=m.x?-1:1;gx=tg.x+sd*42;gy=tg.y+4;}}
+    if(m.atkT>0)m.atkT-=dt;
+    const dx=gx-m.x,dy=gy-m.y,d=Math.hypot(dx,dy)||1;
     if(d>700){m.x=gx;m.y=gy;}else if(d>10){const sp=Math.min(330,d*4);m.x+=dx/d*sp*dt;m.y+=dy/d*sp*dt;m.walk+=dt*14;m.mv=true;m.fx=dx;}else m.mv=false;
     m.cd-=dt;if(m.cd>0||dlg)return;
     if(m.id==='lan'){m.cd=7;if(P.hp<P.maxHp){P.hp=Math.min(P.maxHp,P.hp+1);floatText(P.x,P.y-60,'🌿 +1','#8fe0a0');burst(P.x,P.y-20,'#8fe0a0',10,90);}}
-    else{let b=null,bd=230;for(const e of enemies){if(e.dead||e.animal)continue;const q=Math.hypot(e.x-m.x,e.y-m.y);if(q<bd){bd=q;b=e;}}
-      if(b){m.cd=1.3;m.fx=b.x-m.x;const a=Math.atan2(b.y-m.y,b.x-m.x);for(let k=0;k<8;k++)parts.push({x:m.x+(b.x-m.x)*k/8,y:m.y-20+(b.y-m.y)*k/8,vx:0,vy:-20,t:0,life:.25,c:'#c9b0ff'});hitEnemy(b,Math.max(1,Math.round(atkPower()*.6)),a,.6,true);if(!b.dead&&!b.boss)b.stun=Math.max(b.stun||0,.5);sfx('swing');}else m.cd=.3;}});}
-function drawSideMate(m){drawStick(m.x,m.y,Object.assign({faceX:m.fx,moving:m.mv,walk:m.walk},m.look));drawNameTag(m.x,m.y-58,SIDE_NAME[m.id],m.id==='lan'?'#bff0c8':'#d8c0ff');}
+    else{let b=null,bd=230;for(const e of enemies){if(e.dead||e.animal||e.disguise)continue;const q=Math.hypot(e.x-m.x,e.y-m.y);if(q<bd){bd=q;b=e;}}
+      if(b&&bd<80){// 近身：鐮刀橫掃
+        m.cd=.9;m.fx=b.x-m.x;m.atkT=.25;const a=Math.atan2(b.y-m.y,b.x-m.x);
+        for(const e of enemies){if(e.dead||e.animal)continue;const q=Math.hypot(e.x-m.x,e.y-m.y);if(q<84)hitEnemy(e,Math.max(1,Math.round(atkPower()*.7)),Math.atan2(e.y-m.y,e.x-m.x),.7,true);}
+        fxRings.push({x:m.x+Math.cos(a)*20,y:m.y-14,r:8,max:46,c:'#c9b0ff',t:0});sfx('swing');}
+      else if(b){// 遠一點：丟鎖鏈勾過來
+        m.cd=1.6;m.fx=b.x-m.x;m.atkT=.2;const a=Math.atan2(b.y-m.y,b.x-m.x);for(let k=0;k<10;k++)parts.push({x:m.x+(b.x-m.x)*k/10,y:m.y-20+(b.y-m.y)*k/10,vx:0,vy:-10,t:0,life:.3,c:'#c9b0ff'});
+        hitEnemy(b,Math.max(1,Math.round(atkPower()*.5)),a+Math.PI,.4,true);if(!b.dead&&!b.boss){b.stun=Math.max(b.stun||0,.6);b.x-=Math.cos(a)*30;b.y-=Math.sin(a)*30;}sfx('swing');}
+      else m.cd=.3;}});}
+function drawSideMate(m){drawStick(m.x,m.y,Object.assign({faceX:m.fx,moving:m.mv,walk:m.walk},m.look,m.atkT>0?{attacking:true,atkK:1-m.atkT/.25}:{}));drawNameTag(m.x,m.y-58,SIDE_NAME[m.id],m.id==='lan'?'#bff0c8':'#d8c0ff');}
 function drawSideHud(){if(!sideOn()||!sideObj||dlg||state!=='play')return;ctx.save();ctx.font='bold 14px sans-serif';ctx.textAlign='center';const t='❄️ '+sideObj+(sideWait?'　剩 '+mobsLeft(sideWait):''),w=ctx.measureText(t).width+24,y=isTouch?92:64;
   ctx.fillStyle='rgba(20,40,70,.82)';ctx.beginPath();ctx.roundRect(VW/2-w/2,y,w,26,13);ctx.fill();ctx.fillStyle='#dff4ff';ctx.fillText(t,VW/2,y+18);ctx.restore();}
 function axeAI(e,dt,d){
@@ -6969,7 +6981,7 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
     const S=(px,py)=>{const tx=Math.floor(px/T),ty=Math.floor(py/T),t=getT(tx,ty);if(t===WATER)return Math.min(tx,ty,MW-1-tx,MH-1-ty)<5;return solidT(t);};
     return S(x-r,y-h)||S(x+r,y-h)||S(x-r,y+h)||S(x+r,y+h);};
   const _sok350=stepOK;
-  stepOK=function(x0,y0,x1,y1){if(__swim){const a=Math.floor(y0/T)*MW+Math.floor(x0/T),b=Math.floor(y1/T)*MW+Math.floor(x1/T);if(a>=0&&b>=0&&a<MW*MH&&b<MW*MH&&(map[a]===WATER||map[b]===WATER))return Math.abs(elev[a]-elev[b])<=1||isRampI(a)||isRampI(b);}return _sok350(x0,y0,x1,y1);};
+  stepOK=function(x0,y0,x1,y1){if(__swim){const a=Math.floor(y0/T)*MW+Math.floor(x0/T),b=Math.floor(y1/T)*MW+Math.floor(x1/T);if(a>=0&&b>=0&&a<MW*MH&&b<MW*MH&&(map[a]===WATER||map[b]===WATER))return Math.abs(elev[a]-elev[b])<=3||isRampI(a)||isRampI(b);}return _sok350(x0,y0,x1,y1);};
   const _mv350=moveE;
   moveE=function(e,dx,dy){if(e===P&&P.mount==='bear'&&!P.boat&&!P.flying){__swim=true;try{return _mv350(e,dx,dy);}finally{__swim=false;}}return _mv350(e,dx,dy);};
   // 2) 速度：水裡慢一點；回到雪地、冰原的家鄉就跑得比馬還快（冰面不打滑另外在主程式改）
@@ -8644,13 +8656,13 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
     for(const e of enemies){if(!e.dead||e._lootDone||!(e.boss&&e.storyTag)||e.storyTag==='arenaB')continue;e._lootDone=1;
       slowT=Math.max(slowT,1.1);window.__lootHold=time+1.1*.35+.5;window.__lootPend={x:e.x,y:e.y};floatText(e.x,e.y-80,'🏆 打倒了！','#ffd25a',true);}
     // 打倒後慢動作一下，馬上開始 3 秒撿東西倒數；倒數完才進劇情
-    const LP=window.__lootPend;if(LP&&time>=window.__lootHold){window.__lootPend=null;window.__lootHold=time+3.2;
+    const LP=window.__lootPend;if(LP&&time>=window.__lootHold){window.__lootPend=null;window.__lootHold=time+1.0;
       for(const k of pickups){if(Math.hypot(k.x-LP.x,k.y-LP.y)<600&&Math.hypot(k.x-P.x,k.y-P.y)>520){const a=Math.random()*6.283,r=60+Math.random()*80;k.x=P.x+Math.cos(a)*r;k.y=P.y+Math.sin(a)*r;}}}
-    if(!window.__lootPend&&time<window.__lootHold&&time>window.__lootHold-3.2){for(const k of pickups){const d=Math.hypot(k.x-P.x,k.y-P.y);if(d<520&&d>8){k.x+=(P.x-k.x)*Math.min(1,dt*3.5);k.y+=(P.y-k.y)*Math.min(1,dt*3.5);}}}};
+    if(!window.__lootPend&&time<window.__lootHold&&time>window.__lootHold-1.0){for(const k of pickups){const d=Math.hypot(k.x-P.x,k.y-P.y);if(d<520&&d>8){k.x+=(P.x-k.x)*Math.min(1,dt*7);k.y+=(P.y-k.y)*Math.min(1,dt*7);}}}};
   for(const nm of ['act1Update','act2Update','act3Update']){}
   const w=f=>function(dt){if(time<window.__lootHold)return;return f.apply(this,arguments);};
   act1Update=w(act1Update);act2Update=w(act2Update);act3Update=w(act3Update);
-  const _r=render;render=function(){_r();const left=window.__lootHold-time;if(window.__lootPend||!(left>0)||left>3.2||state!=='play'||dlg||scene)return;
+  const _r=render;render=function(){_r();const left=window.__lootHold-time;if(true||window.__lootPend||!(left>0)||left>3.2||state!=='play'||dlg||scene)return;
     ctx.save();ctx.setTransform(1,0,0,1,0,0);const W=ctx.canvas.width,H=ctx.canvas.height,s=Math.min(W,H)/720,n=Math.ceil(left),f=left%1;
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font=`900 ${Math.round(22*s)}px sans-serif`;ctx.lineWidth=5*s;ctx.strokeStyle='#000';ctx.fillStyle='#ffe58a';
     const Y=H*.5;ctx.strokeText('💰 快撿東西！',W/2,Y);ctx.fillText('💰 快撿東西！',W/2,Y);
@@ -10949,6 +10961,26 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
   try{if(TUT.cls_umbrella)TUT.cls_umbrella[1]=TUT.cls_umbrella[1].replace('按住 L 開傘旋轉，能擋箭還會刮傷旁邊的人。','按住 L 開傘旋轉，能擋箭還會刮傷旁邊的人（轉傘時不能攻擊）。');}catch(e){}
 })();
 
+// ================= v3.6.6：影子騎士是單挑，打的時候不能換人 =================
+(()=>{
+  const duel=()=>enemies.some(e=>e.shadowK&&!e.dead&&e.awake!==false);
+  window.__shadowDuel=duel;
+  const _sw=switchHero;switchHero=function(id,force){if(P&&duel()){if(!(P._duelMsg>time)){P._duelMsg=time+1.2;floatText(P.x,P.y-90,'影子騎士單挑中，不能換人！','#c9b6ff',true);}return false;}return _sw.apply(this,arguments);};
+})();
+
+// ================= v3.6.6：村民會提示軍軍在哪裡（打倒她之前） =================
+(()=>{
+  const JX=100,JY=300;
+  const dirTo=(x,y)=>{const a=Math.atan2(JY-y,JX-x),k=Math.round(a/(Math.PI/4));return ['東','東南','南','西南','西','西北','北','東北'][(k+8)%8];};
+  const _t=talk;talk=function(n){
+    try{if(n&&n.role==='talk'&&life&&!life.junDown&&!n._junSaid&&(n.id==='room_res'||TOWNS.some(t=>{const tx=n.x/T,ty=n.y/T;return tx>=t.x-2&&tx<=t.x+t.w+2&&ty>=t.y-2&&ty<=t.y+t.h+2;}))&&Math.random()<.5){
+      n._junSaid=true;const tx=Math.floor(P.x/T),ty=Math.floor(P.y/T),reg=regAt(tx,ty),far=Math.hypot(tx-JX,ty-JY);
+      const L=reg==='mountain'||far<120?['出城往'+dirTo(tx,ty)+'走，蒼岩高山的岩石堆裡，躲著一個神出鬼沒的狙擊手。','她總是藏在石頭後面，看到紅色準星就趕快躲！','聽說她叫「軍軍」……打倒她的話，說不定她會跟你走。']
+        :['你聽說過「軍軍」嗎？一個很會躲的狙擊手。','她在蒼岩高山，空の都附近的岩石堆裡。從這裡大概往'+dirTo(tx,ty)+'走。','打倒她的人，好像都會跟她變成朋友。'];
+      say(n.name||'村民',L);return;}}catch(e){}
+    return _t.apply(this,arguments);};
+})();
+
 CHANGELOG.unshift(['v3.6.2','2026.11.18',[
   '🎯 新角色「軍軍」（狙擊手・失憶）：按住攻擊瞄準、放開開槍（5 發、超遠、會穿透）；敵人貼近時改用短刀；L 閃光彈；O 迷彩狙擊；絕招「狙殺標記」。在蒼岩高山打倒她就能在自由模式選她',
   '🔒 自由模式：七位主角也要在故事模式裡加入隊伍後才能選（迪洛一開始就能選）',
@@ -10988,6 +11020,11 @@ CHANGELOG.unshift(['v3.6.4','2026.11.18',[
   '🎯 軍軍＝遠距離狙擊手：按住 K 趴下「匍匐前進」，移動變一半，遠處敵人發現不了你，趴著開槍傷害 ×1.5',
   '⏱️ 迷彩狙擊（軍軍）、死神之眼（時雨）這兩招爆頭武技冷卻 3.5 秒 → 8 秒；迷彩隱身時間 3 秒 → 6 秒（開槍就會現身）',
   '🪖 軍用小刀的戰技改成「CQC」：往前衝一步抓住敵人摔到地上（暈 1.5 秒），再補一刀；魔王摔不動，改成刺一刀讓他僵一下',
+  '⛓️ 外傳的提娜會主動幫忙打了：附近有敵人就衝過去用鐮刀橫掃，遠一點就丟鎖鏈勾過來',
+  '🎯 還沒遇到軍軍的話，各城鎮的村民會告訴你：她躲在蒼岩高山（空の都附近）的岩石堆裡',
+  '🌑 影子騎士是一對一單挑：打的時候不能換人',
+  '💰 打倒魔王後的「3、2、1」倒數取消：掉落物 1 秒內自動飛到你身上，馬上接劇情',
+  '🐻‍❄️ 騎北極熊游泳時，比較高的岸邊也爬得上去，不會卡在水裡',
   '☂️ 天地按住 L 轉傘時不能同時攻擊（轉傘本身刮傷旁邊的敵人照舊）',
   '🚪 城鎮屋子的門：走近門口就會打開，走開就關上；從屋裡走出來時門維持關著',
   '💬 打倒魔王時跳出來的大字不再疊在一起：會自動往上排開，同時最多 4 行',
