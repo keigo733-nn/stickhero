@@ -1460,9 +1460,9 @@ function nightK(){const t=worldT%DAY_LEN;if(t<210)return 0;if(t<240)return (t-21
 function isNight(){return nightK()>.5;}
 function drawNight(){const nk=nightK();if(nk<=.01)return;const tx=Math.floor(P.x/T),ty=Math.floor(P.y/T),m=mazeAt(tx,ty);if(m&&(m.sealed||m.caveOf))return;
   if(!nightCv){nightCv=document.createElement('canvas');nightCx=nightCv.getContext('2d');}if(nightCv.width!==Math.ceil(VW)||nightCv.height!==Math.ceil(VH)){nightCv.width=Math.ceil(VW);nightCv.height=Math.ceil(VH);}
-  const c=nightCx,A=.62*nk;c.globalCompositeOperation='source-over';c.clearRect(0,0,VW,VH);c.fillStyle=`rgba(8,12,42,${A})`;c.fillRect(0,0,VW,VH);c.globalCompositeOperation='destination-out';
+  const c=nightCx,A=.46*nk;c.globalCompositeOperation='source-over';c.clearRect(0,0,VW,VH);c.fillStyle=`rgba(8,12,42,${A})`;c.fillRect(0,0,VW,VH);c.globalCompositeOperation='destination-out';
   const light=(wx,wy,r,a)=>{const sx=(wx-cam.x)*RZ,sy=(wy-cam.y)*RZ,R=r*RZ;if(sx<-R||sy<-R||sx>VW+R||sy>VH+R)return;const g=c.createRadialGradient(sx,sy,R*.2,sx,sy,R);g.addColorStop(0,`rgba(0,0,0,${a})`);g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.beginPath();c.arc(sx,sy,R,0,Math.PI*2);c.fill();};
-  light(P.x,P.y-20,P.cls==='kagerou'?280:200,1);
+  light(P.x,P.y-20,P.cls==='kagerou'?320:250,1);
   for(const d of townDeco)if(d.kind==='lamp')light(d.x,d.y-46,150,.9);
   for(const p of projs)if(p.friendly&&(p.elem||p.wave))light(p.x,p.y,90,.8);
   for(const f of fires)light(f.x,f.y-14,110,.85);
@@ -2903,7 +2903,7 @@ function useSta(cost){if(!cost)return true;if(P.sta<cost){staFail();return false
 function drainSta(amt){P.sta-=amt;P.staDelay=.5;P.staShow=2;if(P.sta<=0){P.sta=0;exhaust();return false;}return true;}
 function exhaust(){P.sta=0;if(P.exhT<=0){P.exhT=2.2;floatText(P.x,P.y-70,'呼…呼…力竭了！','#ffd23a');}}
 const atkPower=()=>(P.pdAmp?2:1)*Math.max(1,Math.round((1+Math.floor((P.lv-1)/2)+P.sword+W().dmg+gsum('atk')+(story&&story.yang?2:0))*(typeof rainK==='function'?rainK():1)));
-const expNeed=()=>P.lv>=99?1e12:4+P.lv*4+Math.floor(P.lv*P.lv*.22);
+const expNeed=()=>P.lv>=99?1e12:5+P.lv*5+Math.floor(P.lv*P.lv*.28);
 
 // ================= INPUT =================
 const keys={};let pressed={};let miniRect=null;let tShield=false,mouseShield=false;
@@ -4465,8 +4465,8 @@ function render(){
   const RR=REG[P.reg]||{};
   darkK+=((RR.dark||inCaveNow()||(window.__inTower&&window.__inTower())?1:0)-darkK)*Math.min(1,1/60*3);
   ctx.setTransform(DPR,0,0,DPR,0,0);
-  if(darkK>.01){const sx2=(P.x-cam.x)*RZ,sy2=(P.y-20-cam.y)*RZ,g=ctx.createRadialGradient(sx2,sy2,70*RZ,sx2,sy2,240*RZ);
-    g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,(window.__caveDark?window.__caveDark(darkK):`rgba(4,2,10,${.97*darkK})`));ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH);
+  if(darkK>.01){const sx2=(P.x-cam.x)*RZ,sy2=(P.y-20-cam.y)*RZ,_tw=window.__inTower&&window.__inTower(),g=ctx.createRadialGradient(sx2,sy2,(_tw?110:85)*RZ,sx2,sy2,(_tw?360:290)*RZ);
+    g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,_tw?`rgba(10,6,24,${.78*darkK})`:(window.__caveDark?window.__caveDark(darkK):`rgba(4,2,10,${.93*darkK})`));ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH);
     ctx.setTransform(DPR*RZ,0,0,DPR*RZ,-cam.x*DPR*RZ,-cam.y*DPR*RZ);
     for(const e of enemies){if(e.dead||!inView(e.x,e.y,50))continue;const dd=Math.hypot(e.x-P.x,e.y-P.y);if(dd<200)continue;const s=e.scale||1,f=e.fx<0?-1:1;
       ctx.fillStyle=`rgba(255,40,40,${darkK*(.6+.4*Math.sin(time*3+e.phase))})`;ctx.beginPath();ctx.arc(e.x+2*f*s,e.y-41*s,2.4*s,0,Math.PI*2);ctx.arc(e.x+6*f*s,e.y-41*s,2.4*s,0,Math.PI*2);ctx.fill();}
@@ -7235,6 +7235,8 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
   const rollWord=()=>isTouch?'往旁邊「滑一下」翻滾！':'按 K 翻滾！';
   const _update=update;
   update=function(dt){
+    // 教學提示不能一直掛著：離開這一步、巨漢不見了、或超過 6 秒就收掉
+    if(lesson&&(!story||!story.on||story.step!==2||!giant()||lesson.t>6)){lesson=null;}
     if(state==='play'&&story&&story.on&&!lessonDone&&(story.step===2)){
       const g=giant();
       if(g&&g.swT>0&&!lesson){lesson={t:0};tutQ=tutQ.filter(id=>id!=='tele');if(tutCur&&tutCur.id==='tele')tutCur=null;}
@@ -8651,8 +8653,8 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
   const _r=render;render=function(){_r();const left=window.__lootHold-time;if(window.__lootPend||!(left>0)||left>3.2||state!=='play'||dlg||scene)return;
     ctx.save();ctx.setTransform(1,0,0,1,0,0);const W=ctx.canvas.width,H=ctx.canvas.height,s=Math.min(W,H)/720,n=Math.ceil(left),f=left%1;
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font=`900 ${Math.round(22*s)}px sans-serif`;ctx.lineWidth=5*s;ctx.strokeStyle='#000';ctx.fillStyle='#ffe58a';
-    ctx.strokeText('💰 快撿東西！',W/2,H*.2);ctx.fillText('💰 快撿東西！',W/2,H*.2);
-    ctx.globalAlpha=.5+.5*f;ctx.font=`900 ${Math.round((70+30*f)*s)}px sans-serif`;ctx.lineWidth=9*s;ctx.strokeText(n,W/2,H*.2+70*s);ctx.fillStyle='#fff';ctx.fillText(n,W/2,H*.2+70*s);ctx.restore();};
+    const Y=H*.5;ctx.strokeText('💰 快撿東西！',W/2,Y);ctx.fillText('💰 快撿東西！',W/2,Y);
+    ctx.globalAlpha=.5+.5*f;ctx.font=`900 ${Math.round((56+24*f)*s)}px sans-serif`;ctx.lineWidth=9*s;ctx.strokeText(n,W/2,Y+60*s);ctx.fillStyle='#fff';ctx.fillText(n,W/2,Y+60*s);ctx.restore();};
   })();
   // ===== ⚔️ 喬爾入隊前：要求一對一單挑 =====
   (()=>{
@@ -10914,6 +10916,29 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
   window.__gunL=()=>knifeMode()?'煙霧彈':'手榴彈';
 })();
 
+// ================= v3.6.6：升級訊息整理（一次升好幾級只顯示一行），魔王經驗值下修 =================
+(()=>{
+  const _g=gainExp;gainExp=function(n){if(!P)return _g.apply(this,arguments);
+    const lv0=P.lv,mh0=P.maxHp;const ft=floatText;let muted=0;
+    floatText=function(x,y,t){if(typeof t==='string'&&/LEVEL UP|最大血量|全隊 HP 回滿|全隊HP/.test(t)){muted++;return;}return ft.apply(this,arguments);};
+    let r;try{r=_g.apply(this,arguments);}finally{floatText=ft;}
+    if(P.lv>lv0){const d=P.lv-lv0,hp=P.maxHp-mh0;window.__lvMuteUntil=performance.now()+900;
+      setTimeout(()=>{ft(P.x,P.y-70,(d>1?`LEVEL UP ×${d}！Lv.${P.lv}`:`LEVEL UP！Lv.${P.lv}`)+(hp>0?`　❤️+${hp}`:''),'#ffcf3a',true);},0);}
+    return r;};
+  // 魔王、劇情大怪一次給的經驗值太多，會一口氣跳好幾級：上限是「升一級所需的 80%」
+  const _ge=gainExp;gainExp=function(n){if(P&&n>0){const cap=Math.round(expNeed()*.8);if(n>cap)n=cap+Math.round((n-cap)*.25);}return _ge.call(this,n);};
+})();
+
+// ================= v3.6.6：大字提示不要疊在一起（往上排開，同時最多 4 行） =================
+(()=>{
+  const _ft=floatText;floatText=function(x,y,str,c,big){
+    if(typeof str==='string'&&window.__lvMuteUntil>performance.now()&&/最大血量|全隊 HP|^❤️ ?\+\d+$/.test(str))return;
+    if(big){let yy=y;for(let k=0;k<5;k++){const hit=texts.some(t=>t.big&&t.t<.7&&Math.abs(t.x-x)<180&&Math.abs((t.y-(t.t/1.8)*30)-yy)<24);if(!hit)break;yy-=26;}
+      const bigs=texts.filter(t=>t.big&&t.t<1.2);if(bigs.length>=4){const o=bigs.sort((a,b)=>b.t-a.t)[0];o.t=Math.max(o.t,1.6);}
+      return _ft.call(this,x,yy,str,c,big);}
+    return _ft.apply(this,arguments);};
+})();
+
 CHANGELOG.unshift(['v3.6.2','2026.11.18',[
   '🎯 新角色「軍軍」（狙擊手・失憶）：按住攻擊瞄準、放開開槍（5 發、超遠、會穿透）；敵人貼近時改用短刀；L 閃光彈；O 迷彩狙擊；絕招「狙殺標記」。在蒼岩高山打倒她就能在自由模式選她',
   '🔒 自由模式：七位主角也要在故事模式裡加入隊伍後才能選（迪洛一開始就能選）',
@@ -10953,6 +10978,10 @@ CHANGELOG.unshift(['v3.6.4','2026.11.18',[
   '🎯 軍軍＝遠距離狙擊手：按住 K 趴下「匍匐前進」，移動變一半，遠處敵人發現不了你，趴著開槍傷害 ×1.5',
   '⏱️ 迷彩狙擊（軍軍）、死神之眼（時雨）這兩招爆頭武技冷卻 3.5 秒 → 8 秒；迷彩隱身時間 3 秒 → 6 秒（開槍就會現身）',
   '🪖 軍用小刀的戰技改成「CQC」：往前衝一步抓住敵人摔到地上（暈 1.5 秒），再補一刀；魔王摔不動，改成刺一刀讓他僵一下',
+  '💬 打倒魔王時跳出來的大字不再疊在一起：會自動往上排開，同時最多 4 行',
+  '📈 升級節奏放慢：每級需要的經驗值多約 25%；打倒魔王一次給的經驗值有上限，不會一口氣跳好幾級；一次升好幾級時只顯示一行「LEVEL UP ×2！Lv.7 ❤️+2」，不再好幾行字疊在一起',
+  '🌙 夜晚和幻之塔變亮一點：夜晚的暗度降低、主角身邊的光變大；幻之塔裡看得清楚角色（洞窟維持原本的黑暗）',
+  '🐞 自己玩過一輪後修正：開場「看到紅色＝他要打了！按 K 翻滾！」的大字教學有時會一直掛在畫面上不消失，現在離開那一段或 6 秒後一定會收掉；「快撿東西」倒數移到畫面中間，不會再跟「喘口氣」等章節卡片疊在一起',
   '🔫 軍軍的狙擊槍、精準步槍改成雙手持長槍（槍托靠肩、有瞄準鏡）；左輪手槍改成手臂伸直握手槍的樣子',
   '🧪 道具店可以按 ＋／－ 選數量，一次買好幾個',
   '🌋 火山爆發變得更痛：火山彈約扣最大血量的 15%、岩漿池約 5%、踩到岩漿約 4%（等級越高扣越多）',
