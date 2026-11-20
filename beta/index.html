@@ -6978,7 +6978,7 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
   let __swim=false;
   const _col350=collides;
   collides=function(x,y,r){if(!__swim)return _col350(x,y,r);const h=r*.55;
-    const S=(px,py)=>{const tx=Math.floor(px/T),ty=Math.floor(py/T),t=getT(tx,ty);if(t===WATER)return Math.min(tx,ty,MW-1-tx,MH-1-ty)<5;return solidT(t);};
+    const S=(px,py)=>{const tx=Math.floor(px/T),ty=Math.floor(py/T),t=getT(tx,ty);if(ty<24&&!(window.__roomOf&&window.__roomOf()))return true;/* 地圖最上方是屋內房間的存放區，游泳不能過去 */if(t===WATER)return Math.min(tx,ty,MW-1-tx,MH-1-ty)<5;return solidT(t);};
     return S(x-r,y-h)||S(x+r,y-h)||S(x-r,y+h)||S(x+r,y+h);};
   const _sok350=stepOK;
   stepOK=function(x0,y0,x1,y1){if(__swim){const a=Math.floor(y0/T)*MW+Math.floor(x0/T),b=Math.floor(y1/T)*MW+Math.floor(x1/T);if(a>=0&&b>=0&&a<MW*MH&&b<MW*MH&&(map[a]===WATER||map[b]===WATER))return Math.abs(elev[a]-elev[b])<=3||isRampI(a)||isRampI(b);}return _sok350(x0,y0,x1,y1);};
@@ -10179,13 +10179,13 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
         houses.push({x,y,w:4,h:3,c:tw.roofs[have%tw.roofs.length],sign:'',icon:'',town:tw.id,extra:1});fill(x,y,4,3,HOUSE);have++;}}}
   function build(){const T0=getT(RX0-1,RY0-1);if(built&&T0===WALL&&getT(R.weapon.ox+6,R.weapon.oy+5)===FLOOR)return;built=true;SOL=[];addHouses();
     for(let y=RY0-2;y<RY0+RH+2;y++)for(let x=RX0-2;x<RX0+SHOPS.length*(RW+GAP)+2;x++){setT(x,y,WALL);townM[y*MW+x]=1;try{if(elev)elev[y*MW+x]=0;}catch(e){}}
-    for(const f of SHOPS){const r=R[f];for(let y=0;y<RH;y++)for(let x=0;x<RW;x++){const edge=x===0||x===RW-1||y===0||y===RH-1;setT(r.ox+x,r.oy+y,edge&&!(y===RH-1&&x>=5&&x<=7)?WALL:FLOOR);}
+    for(const f of SHOPS){const r=R[f];for(let y=0;y<RH;y++)for(let x=0;x<RW;x++){const edge=x===0||x===RW-1||y===0||y===RH-1;setT(r.ox+x,r.oy+y,edge&&!(y===RH-1&&x===6)?WALL:FLOOR);}
       for(let i=townDeco.length-1;i>=0;i--)if(townDeco[i].room===f)townDeco.splice(i,1);
       const D=(kind,lx,ly,o)=>townDeco.push(Object.assign({kind,room:f,x:(r.ox+lx)*T,y:(r.oy+ly)*T},o||{}));
       const S=(lx0,ly0,lx1,ly1)=>SOL.push([(r.ox+lx0)*T,(r.oy+ly0)*T,(r.ox+lx1)*T,(r.oy+ly1)*T]);
       // 櫃台（擋住，但老闆說得到話）
       if(!f.startsWith('house')){const c0=f==='inn'?4:f==='smith'?2:f==='tavern'?2:3,c1=f==='inn'?9:f==='smith'?7:f==='tavern'?11:10;D('rm_counter',(c0+c1)/2,4.85,{w:(c1-c0)*T,f});S(c0,4.5,c1,4.9);}
-      D('rm_mat',6.5,9.6,{});D('rm_lamp',3,1.4,{});D('rm_lamp',10,1.4,{});
+      D('rm_mat',6.5,9.15,{});D('rm_lamp',3,1.4,{});D('rm_lamp',10,1.4,{});
       if(f==='gear'){D('rm_armor',2.5,2.4,{});D('rm_armor',4.5,2.4,{});D('rm_shieldwall',8.5,1.9,{});D('rm_armor',10.5,2.4,{});D('rm_armor',1.8,7.4,{});S(1.3,6.9,2.3,7.5);D('rm_crates',11,7.6,{});S(10.4,7,11.6,7.7);D('rm_rug',6.5,6.8,{c:'#2b4a7a'});}
       if(f==='weapon'){D('rm_rack',2.5,1.9,{});D('rm_shieldwall',6.5,1.9,{});D('rm_rack',10.5,1.9,{alt:1});D('rm_spearbarrel',11,7.6,{});S(10.5,7,11.5,7.7);D('rm_armor',1.8,7.4,{});S(1.3,6.9,2.3,7.5);D('rm_rug',6.5,6.8,{c:'#8a2b2b'});}
       if(f==='item'){for(const lx of [2.5,5,8,10.5])D('rm_shelf',lx,1.9,{});D('rm_cauldron',10.6,7.4,{});S(10,6.9,11.2,7.5);D('rm_crates',1.8,7.6,{});S(1.2,7,2.6,7.7);D('rm_herbs',6.5,1.1,{});D('rm_rug',6.5,6.8,{c:'#2b6a4a'});}
@@ -11022,6 +11022,8 @@ CHANGELOG.unshift(['v3.6.4','2026.11.18',[
   '🪖 軍用小刀的戰技改成「CQC」：往前衝一步抓住敵人摔到地上（暈 1.5 秒），再補一刀；魔王摔不動，改成刺一刀讓他僵一下',
   '⛓️ 外傳的提娜會主動幫忙打了：附近有敵人就衝過去用鐮刀橫掃，遠一點就丟鎖鏈勾過來',
   '🎯 還沒遇到軍軍的話，各城鎮的村民會告訴你：她躲在蒼岩高山（空の都附近）的岩石堆裡',
+  '🚪 屋內的出口改成一格寬，門口的地墊放在地板上，不會再浮在黑色的地方',
+  '🐻‍❄️ 騎熊游到地圖最上方時，不會再游進「屋內房間」的存放區（那裡會看到一排排漂浮的房間）',
   '🌑 影子騎士是一對一單挑：打的時候不能換人',
   '💰 打倒魔王後的「3、2、1」倒數取消：掉落物 1 秒內自動飛到你身上，馬上接劇情',
   '🐻‍❄️ 騎北極熊游泳時，比較高的岸邊也爬得上去，不會卡在水裡',
