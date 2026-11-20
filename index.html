@@ -1460,9 +1460,9 @@ function nightK(){const t=worldT%DAY_LEN;if(t<210)return 0;if(t<240)return (t-21
 function isNight(){return nightK()>.5;}
 function drawNight(){const nk=nightK();if(nk<=.01)return;const tx=Math.floor(P.x/T),ty=Math.floor(P.y/T),m=mazeAt(tx,ty);if(m&&(m.sealed||m.caveOf))return;
   if(!nightCv){nightCv=document.createElement('canvas');nightCx=nightCv.getContext('2d');}if(nightCv.width!==Math.ceil(VW)||nightCv.height!==Math.ceil(VH)){nightCv.width=Math.ceil(VW);nightCv.height=Math.ceil(VH);}
-  const c=nightCx,A=.62*nk;c.globalCompositeOperation='source-over';c.clearRect(0,0,VW,VH);c.fillStyle=`rgba(8,12,42,${A})`;c.fillRect(0,0,VW,VH);c.globalCompositeOperation='destination-out';
+  const c=nightCx,A=.46*nk;c.globalCompositeOperation='source-over';c.clearRect(0,0,VW,VH);c.fillStyle=`rgba(8,12,42,${A})`;c.fillRect(0,0,VW,VH);c.globalCompositeOperation='destination-out';
   const light=(wx,wy,r,a)=>{const sx=(wx-cam.x)*RZ,sy=(wy-cam.y)*RZ,R=r*RZ;if(sx<-R||sy<-R||sx>VW+R||sy>VH+R)return;const g=c.createRadialGradient(sx,sy,R*.2,sx,sy,R);g.addColorStop(0,`rgba(0,0,0,${a})`);g.addColorStop(1,'rgba(0,0,0,0)');c.fillStyle=g;c.beginPath();c.arc(sx,sy,R,0,Math.PI*2);c.fill();};
-  light(P.x,P.y-20,P.cls==='kagerou'?280:200,1);
+  light(P.x,P.y-20,P.cls==='kagerou'?320:250,1);
   for(const d of townDeco)if(d.kind==='lamp')light(d.x,d.y-46,150,.9);
   for(const p of projs)if(p.friendly&&(p.elem||p.wave))light(p.x,p.y,90,.8);
   for(const f of fires)light(f.x,f.y-14,110,.85);
@@ -2189,13 +2189,25 @@ function sideClear(tag){sideObj='';
 function updateSide(dt){if(!P||state!=='play'||!sideOn()){if(!sideOn()&&sideMates.length)sideMates=[];return;}
   if(!sideLive){sideLive=true;enterSide(life.side.step);return;}
   if(sideWait&&!dlg&&mobsLeft(sideWait)===0){const t=sideWait;sideWait=null;sideClear(t);}
-  sideMates.forEach((m,i)=>{const gx=P.x-(26+i*22)*(P.fx>=0?1:-1),gy=P.y+10+i*6,dx=gx-m.x,dy=gy-m.y,d=Math.hypot(dx,dy)||1;
+  sideMates.forEach((m,i)=>{let gx=P.x-(26+i*22)*(P.fx>=0?1:-1),gy=P.y+10+i*6;
+    // 提娜：附近有敵人就主動衝過去打（鈴蘭留在後面補血）
+    if(m.id!=='lan'){let tg=null,td=380;for(const e of enemies){if(e.dead||e.animal||e.disguise)continue;const q=Math.hypot(e.x-P.x,e.y-P.y);if(q<td){td=q;tg=e;}}
+      m.tg=tg;if(tg){const sd=tg.x>=m.x?-1:1;gx=tg.x+sd*42;gy=tg.y+4;}}
+    if(m.atkT>0)m.atkT-=dt;
+    const dx=gx-m.x,dy=gy-m.y,d=Math.hypot(dx,dy)||1;
     if(d>700){m.x=gx;m.y=gy;}else if(d>10){const sp=Math.min(330,d*4);m.x+=dx/d*sp*dt;m.y+=dy/d*sp*dt;m.walk+=dt*14;m.mv=true;m.fx=dx;}else m.mv=false;
     m.cd-=dt;if(m.cd>0||dlg)return;
     if(m.id==='lan'){m.cd=7;if(P.hp<P.maxHp){P.hp=Math.min(P.maxHp,P.hp+1);floatText(P.x,P.y-60,'🌿 +1','#8fe0a0');burst(P.x,P.y-20,'#8fe0a0',10,90);}}
-    else{let b=null,bd=230;for(const e of enemies){if(e.dead||e.animal)continue;const q=Math.hypot(e.x-m.x,e.y-m.y);if(q<bd){bd=q;b=e;}}
-      if(b){m.cd=1.3;m.fx=b.x-m.x;const a=Math.atan2(b.y-m.y,b.x-m.x);for(let k=0;k<8;k++)parts.push({x:m.x+(b.x-m.x)*k/8,y:m.y-20+(b.y-m.y)*k/8,vx:0,vy:-20,t:0,life:.25,c:'#c9b0ff'});hitEnemy(b,Math.max(1,Math.round(atkPower()*.6)),a,.6,true);if(!b.dead&&!b.boss)b.stun=Math.max(b.stun||0,.5);sfx('swing');}else m.cd=.3;}});}
-function drawSideMate(m){drawStick(m.x,m.y,Object.assign({faceX:m.fx,moving:m.mv,walk:m.walk},m.look));drawNameTag(m.x,m.y-58,SIDE_NAME[m.id],m.id==='lan'?'#bff0c8':'#d8c0ff');}
+    else{let b=null,bd=230;for(const e of enemies){if(e.dead||e.animal||e.disguise)continue;const q=Math.hypot(e.x-m.x,e.y-m.y);if(q<bd){bd=q;b=e;}}
+      if(b&&bd<80){// 近身：鐮刀橫掃
+        m.cd=.9;m.fx=b.x-m.x;m.atkT=.25;const a=Math.atan2(b.y-m.y,b.x-m.x);
+        for(const e of enemies){if(e.dead||e.animal)continue;const q=Math.hypot(e.x-m.x,e.y-m.y);if(q<84)hitEnemy(e,Math.max(1,Math.round(atkPower()*.7)),Math.atan2(e.y-m.y,e.x-m.x),.7,true);}
+        fxRings.push({x:m.x+Math.cos(a)*20,y:m.y-14,r:8,max:46,c:'#c9b0ff',t:0});sfx('swing');}
+      else if(b){// 遠一點：丟鎖鏈勾過來
+        m.cd=1.6;m.fx=b.x-m.x;m.atkT=.2;const a=Math.atan2(b.y-m.y,b.x-m.x);for(let k=0;k<10;k++)parts.push({x:m.x+(b.x-m.x)*k/10,y:m.y-20+(b.y-m.y)*k/10,vx:0,vy:-10,t:0,life:.3,c:'#c9b0ff'});
+        hitEnemy(b,Math.max(1,Math.round(atkPower()*.5)),a+Math.PI,.4,true);if(!b.dead&&!b.boss){b.stun=Math.max(b.stun||0,.6);b.x-=Math.cos(a)*30;b.y-=Math.sin(a)*30;}sfx('swing');}
+      else m.cd=.3;}});}
+function drawSideMate(m){drawStick(m.x,m.y,Object.assign({faceX:m.fx,moving:m.mv,walk:m.walk},m.look,m.atkT>0?{attacking:true,atkK:1-m.atkT/.25}:{}));drawNameTag(m.x,m.y-58,SIDE_NAME[m.id],m.id==='lan'?'#bff0c8':'#d8c0ff');}
 function drawSideHud(){if(!sideOn()||!sideObj||dlg||state!=='play')return;ctx.save();ctx.font='bold 14px sans-serif';ctx.textAlign='center';const t='❄️ '+sideObj+(sideWait?'　剩 '+mobsLeft(sideWait):''),w=ctx.measureText(t).width+24,y=isTouch?92:64;
   ctx.fillStyle='rgba(20,40,70,.82)';ctx.beginPath();ctx.roundRect(VW/2-w/2,y,w,26,13);ctx.fill();ctx.fillStyle='#dff4ff';ctx.fillText(t,VW/2,y+18);ctx.restore();}
 function axeAI(e,dt,d){
@@ -2903,7 +2915,7 @@ function useSta(cost){if(!cost)return true;if(P.sta<cost){staFail();return false
 function drainSta(amt){P.sta-=amt;P.staDelay=.5;P.staShow=2;if(P.sta<=0){P.sta=0;exhaust();return false;}return true;}
 function exhaust(){P.sta=0;if(P.exhT<=0){P.exhT=2.2;floatText(P.x,P.y-70,'呼…呼…力竭了！','#ffd23a');}}
 const atkPower=()=>(P.pdAmp?2:1)*Math.max(1,Math.round((1+Math.floor((P.lv-1)/2)+P.sword+W().dmg+gsum('atk')+(story&&story.yang?2:0))*(typeof rainK==='function'?rainK():1)));
-const expNeed=()=>P.lv>=99?1e12:4+P.lv*4+Math.floor(P.lv*P.lv*.22);
+const expNeed=()=>P.lv>=99?1e12:5+P.lv*5+Math.floor(P.lv*P.lv*.28);
 
 // ================= INPUT =================
 const keys={};let pressed={};let miniRect=null;let tShield=false,mouseShield=false;
@@ -4465,8 +4477,8 @@ function render(){
   const RR=REG[P.reg]||{};
   darkK+=((RR.dark||inCaveNow()||(window.__inTower&&window.__inTower())?1:0)-darkK)*Math.min(1,1/60*3);
   ctx.setTransform(DPR,0,0,DPR,0,0);
-  if(darkK>.01){const sx2=(P.x-cam.x)*RZ,sy2=(P.y-20-cam.y)*RZ,g=ctx.createRadialGradient(sx2,sy2,70*RZ,sx2,sy2,240*RZ);
-    g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,(window.__caveDark?window.__caveDark(darkK):`rgba(4,2,10,${.97*darkK})`));ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH);
+  if(darkK>.01){const sx2=(P.x-cam.x)*RZ,sy2=(P.y-20-cam.y)*RZ,_tw=window.__inTower&&window.__inTower(),g=ctx.createRadialGradient(sx2,sy2,(_tw?110:85)*RZ,sx2,sy2,(_tw?360:290)*RZ);
+    g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(1,_tw?`rgba(10,6,24,${.78*darkK})`:(window.__caveDark?window.__caveDark(darkK):`rgba(4,2,10,${.93*darkK})`));ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH);
     ctx.setTransform(DPR*RZ,0,0,DPR*RZ,-cam.x*DPR*RZ,-cam.y*DPR*RZ);
     for(const e of enemies){if(e.dead||!inView(e.x,e.y,50))continue;const dd=Math.hypot(e.x-P.x,e.y-P.y);if(dd<200)continue;const s=e.scale||1,f=e.fx<0?-1:1;
       ctx.fillStyle=`rgba(255,40,40,${darkK*(.6+.4*Math.sin(time*3+e.phase))})`;ctx.beginPath();ctx.arc(e.x+2*f*s,e.y-41*s,2.4*s,0,Math.PI*2);ctx.arc(e.x+6*f*s,e.y-41*s,2.4*s,0,Math.PI*2);ctx.fill();}
@@ -6966,10 +6978,10 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
   let __swim=false;
   const _col350=collides;
   collides=function(x,y,r){if(!__swim)return _col350(x,y,r);const h=r*.55;
-    const S=(px,py)=>{const tx=Math.floor(px/T),ty=Math.floor(py/T),t=getT(tx,ty);if(t===WATER)return Math.min(tx,ty,MW-1-tx,MH-1-ty)<5;return solidT(t);};
+    const S=(px,py)=>{const tx=Math.floor(px/T),ty=Math.floor(py/T),t=getT(tx,ty);if(ty<24&&!(window.__roomOf&&window.__roomOf()))return true;/* 地圖最上方是屋內房間的存放區，游泳不能過去 */if(t===WATER)return Math.min(tx,ty,MW-1-tx,MH-1-ty)<5;return solidT(t);};
     return S(x-r,y-h)||S(x+r,y-h)||S(x-r,y+h)||S(x+r,y+h);};
   const _sok350=stepOK;
-  stepOK=function(x0,y0,x1,y1){if(__swim){const a=Math.floor(y0/T)*MW+Math.floor(x0/T),b=Math.floor(y1/T)*MW+Math.floor(x1/T);if(a>=0&&b>=0&&a<MW*MH&&b<MW*MH&&(map[a]===WATER||map[b]===WATER))return Math.abs(elev[a]-elev[b])<=1||isRampI(a)||isRampI(b);}return _sok350(x0,y0,x1,y1);};
+  stepOK=function(x0,y0,x1,y1){if(__swim){const a=Math.floor(y0/T)*MW+Math.floor(x0/T),b=Math.floor(y1/T)*MW+Math.floor(x1/T);if(a>=0&&b>=0&&a<MW*MH&&b<MW*MH&&(map[a]===WATER||map[b]===WATER))return Math.abs(elev[a]-elev[b])<=3||isRampI(a)||isRampI(b);}return _sok350(x0,y0,x1,y1);};
   const _mv350=moveE;
   moveE=function(e,dx,dy){if(e===P&&P.mount==='bear'&&!P.boat&&!P.flying){__swim=true;try{return _mv350(e,dx,dy);}finally{__swim=false;}}return _mv350(e,dx,dy);};
   // 2) 速度：水裡慢一點；回到雪地、冰原的家鄉就跑得比馬還快（冰面不打滑另外在主程式改）
@@ -7235,6 +7247,8 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
   const rollWord=()=>isTouch?'往旁邊「滑一下」翻滾！':'按 K 翻滾！';
   const _update=update;
   update=function(dt){
+    // 教學提示不能一直掛著：離開這一步、巨漢不見了、或超過 6 秒就收掉
+    if(lesson&&(!story||!story.on||story.step!==2||!giant()||lesson.t>6)){lesson=null;}
     if(state==='play'&&story&&story.on&&!lessonDone&&(story.step===2)){
       const g=giant();
       if(g&&g.swT>0&&!lesson){lesson={t:0};tutQ=tutQ.filter(id=>id!=='tele');if(tutCur&&tutCur.id==='tele')tutCur=null;}
@@ -8642,17 +8656,17 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
     for(const e of enemies){if(!e.dead||e._lootDone||!(e.boss&&e.storyTag)||e.storyTag==='arenaB')continue;e._lootDone=1;
       slowT=Math.max(slowT,1.1);window.__lootHold=time+1.1*.35+.5;window.__lootPend={x:e.x,y:e.y};floatText(e.x,e.y-80,'🏆 打倒了！','#ffd25a',true);}
     // 打倒後慢動作一下，馬上開始 3 秒撿東西倒數；倒數完才進劇情
-    const LP=window.__lootPend;if(LP&&time>=window.__lootHold){window.__lootPend=null;window.__lootHold=time+3.2;
+    const LP=window.__lootPend;if(LP&&time>=window.__lootHold){window.__lootPend=null;window.__lootHold=time+1.0;
       for(const k of pickups){if(Math.hypot(k.x-LP.x,k.y-LP.y)<600&&Math.hypot(k.x-P.x,k.y-P.y)>520){const a=Math.random()*6.283,r=60+Math.random()*80;k.x=P.x+Math.cos(a)*r;k.y=P.y+Math.sin(a)*r;}}}
-    if(!window.__lootPend&&time<window.__lootHold&&time>window.__lootHold-3.2){for(const k of pickups){const d=Math.hypot(k.x-P.x,k.y-P.y);if(d<520&&d>8){k.x+=(P.x-k.x)*Math.min(1,dt*3.5);k.y+=(P.y-k.y)*Math.min(1,dt*3.5);}}}};
+    if(!window.__lootPend&&time<window.__lootHold&&time>window.__lootHold-1.0){for(const k of pickups){const d=Math.hypot(k.x-P.x,k.y-P.y);if(d<520&&d>8){k.x+=(P.x-k.x)*Math.min(1,dt*7);k.y+=(P.y-k.y)*Math.min(1,dt*7);}}}};
   for(const nm of ['act1Update','act2Update','act3Update']){}
   const w=f=>function(dt){if(time<window.__lootHold)return;return f.apply(this,arguments);};
   act1Update=w(act1Update);act2Update=w(act2Update);act3Update=w(act3Update);
-  const _r=render;render=function(){_r();const left=window.__lootHold-time;if(window.__lootPend||!(left>0)||left>3.2||state!=='play'||dlg||scene)return;
+  const _r=render;render=function(){_r();const left=window.__lootHold-time;if(true||window.__lootPend||!(left>0)||left>3.2||state!=='play'||dlg||scene)return;
     ctx.save();ctx.setTransform(1,0,0,1,0,0);const W=ctx.canvas.width,H=ctx.canvas.height,s=Math.min(W,H)/720,n=Math.ceil(left),f=left%1;
     ctx.textAlign='center';ctx.textBaseline='middle';ctx.lineJoin='round';ctx.font=`900 ${Math.round(22*s)}px sans-serif`;ctx.lineWidth=5*s;ctx.strokeStyle='#000';ctx.fillStyle='#ffe58a';
-    ctx.strokeText('💰 快撿東西！',W/2,H*.2);ctx.fillText('💰 快撿東西！',W/2,H*.2);
-    ctx.globalAlpha=.5+.5*f;ctx.font=`900 ${Math.round((70+30*f)*s)}px sans-serif`;ctx.lineWidth=9*s;ctx.strokeText(n,W/2,H*.2+70*s);ctx.fillStyle='#fff';ctx.fillText(n,W/2,H*.2+70*s);ctx.restore();};
+    const Y=H*.5;ctx.strokeText('💰 快撿東西！',W/2,Y);ctx.fillText('💰 快撿東西！',W/2,Y);
+    ctx.globalAlpha=.5+.5*f;ctx.font=`900 ${Math.round((56+24*f)*s)}px sans-serif`;ctx.lineWidth=9*s;ctx.strokeText(n,W/2,Y+60*s);ctx.fillStyle='#fff';ctx.fillText(n,W/2,Y+60*s);ctx.restore();};
   })();
   // ===== ⚔️ 喬爾入隊前：要求一對一單挑 =====
   (()=>{
@@ -10165,13 +10179,13 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
         houses.push({x,y,w:4,h:3,c:tw.roofs[have%tw.roofs.length],sign:'',icon:'',town:tw.id,extra:1});fill(x,y,4,3,HOUSE);have++;}}}
   function build(){const T0=getT(RX0-1,RY0-1);if(built&&T0===WALL&&getT(R.weapon.ox+6,R.weapon.oy+5)===FLOOR)return;built=true;SOL=[];addHouses();
     for(let y=RY0-2;y<RY0+RH+2;y++)for(let x=RX0-2;x<RX0+SHOPS.length*(RW+GAP)+2;x++){setT(x,y,WALL);townM[y*MW+x]=1;try{if(elev)elev[y*MW+x]=0;}catch(e){}}
-    for(const f of SHOPS){const r=R[f];for(let y=0;y<RH;y++)for(let x=0;x<RW;x++){const edge=x===0||x===RW-1||y===0||y===RH-1;setT(r.ox+x,r.oy+y,edge&&!(y===RH-1&&x>=5&&x<=7)?WALL:FLOOR);}
+    for(const f of SHOPS){const r=R[f];for(let y=0;y<RH;y++)for(let x=0;x<RW;x++){const edge=x===0||x===RW-1||y===0||y===RH-1;setT(r.ox+x,r.oy+y,edge&&!(y===RH-1&&x===6)?WALL:FLOOR);}
       for(let i=townDeco.length-1;i>=0;i--)if(townDeco[i].room===f)townDeco.splice(i,1);
       const D=(kind,lx,ly,o)=>townDeco.push(Object.assign({kind,room:f,x:(r.ox+lx)*T,y:(r.oy+ly)*T},o||{}));
       const S=(lx0,ly0,lx1,ly1)=>SOL.push([(r.ox+lx0)*T,(r.oy+ly0)*T,(r.ox+lx1)*T,(r.oy+ly1)*T]);
       // 櫃台（擋住，但老闆說得到話）
       if(!f.startsWith('house')){const c0=f==='inn'?4:f==='smith'?2:f==='tavern'?2:3,c1=f==='inn'?9:f==='smith'?7:f==='tavern'?11:10;D('rm_counter',(c0+c1)/2,4.85,{w:(c1-c0)*T,f});S(c0,4.5,c1,4.9);}
-      D('rm_mat',6.5,9.6,{});D('rm_lamp',3,1.4,{});D('rm_lamp',10,1.4,{});
+      D('rm_mat',6.5,9.15,{});D('rm_lamp',3,1.4,{});D('rm_lamp',10,1.4,{});
       if(f==='gear'){D('rm_armor',2.5,2.4,{});D('rm_armor',4.5,2.4,{});D('rm_shieldwall',8.5,1.9,{});D('rm_armor',10.5,2.4,{});D('rm_armor',1.8,7.4,{});S(1.3,6.9,2.3,7.5);D('rm_crates',11,7.6,{});S(10.4,7,11.6,7.7);D('rm_rug',6.5,6.8,{c:'#2b4a7a'});}
       if(f==='weapon'){D('rm_rack',2.5,1.9,{});D('rm_shieldwall',6.5,1.9,{});D('rm_rack',10.5,1.9,{alt:1});D('rm_spearbarrel',11,7.6,{});S(10.5,7,11.5,7.7);D('rm_armor',1.8,7.4,{});S(1.3,6.9,2.3,7.5);D('rm_rug',6.5,6.8,{c:'#8a2b2b'});}
       if(f==='item'){for(const lx of [2.5,5,8,10.5])D('rm_shelf',lx,1.9,{});D('rm_cauldron',10.6,7.4,{});S(10,6.9,11.2,7.5);D('rm_crates',1.8,7.6,{});S(1.2,7,2.6,7.7);D('rm_herbs',6.5,1.1,{});D('rm_rug',6.5,6.8,{c:'#2b6a4a'});}
@@ -10218,12 +10232,14 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
     if(state!=='play'||dlg||scene)return;build();prompt=null;const tx=Math.floor(P.x/T),ty=Math.floor(P.y/T),r=roomAt(tx,ty);
     const up=(P.fy||0)<-.5&&P.moving,down=(P.fy||0)>.5&&P.moving;
     if(r){if(!CUR){const tw=TOWNS[0];const h=houses.find(h=>h.town===tw.id&&roomOfHouse(h)===r.fac);if(h)setupRoom(h,tw,r.fac);}
-      if(P.y>(r.oy+RH-1)*T+6){prompt={x:(r.ox+6.5)*T,y:(r.oy+RH)*T,t:'🚪 出去'};if(down||P.y>(r.oy+RH-1)*T+22){const d=CUR&&CUR.door;if(CUR&&CUR.h)CUR.h._dOpen=time+.15;go(()=>{leaveRoom();if(d){tp(Math.floor(d.x/T),Math.floor(d.y/T)+1);P.fy=1;}});}}
+      if(P.y>(r.oy+RH-1)*T+6){prompt={x:(r.ox+6.5)*T,y:(r.oy+RH)*T,t:'🚪 出去'};if(down||P.y>(r.oy+RH-1)*T+22){const d=CUR&&CUR.door;if(CUR&&CUR.h){CUR.h._dk=0;CUR.h._dLock=true;}go(()=>{leaveRoom();if(d){tp(Math.floor(d.x/T),Math.floor(d.y/T)+1);P.fy=1;}});}}
       return;}
     if(CUR)leaveRoom();
     if(P.boat||P.flying)return;const tw=TOWNS.find(t=>tx>=t.x-1&&tx<t.x+t.w+1&&ty>=t.y-1&&ty<t.y+t.h+1);if(!tw)return;
+    // 門：走近就打開、離開就關上；剛從屋裡走出來時維持關著，等走開再回來才會開
+    for(const h of houses){if(h.town!==tw.id||h.tent||!roomOfHouse(h))continue;const d=door(h);const near=Math.abs(P.x-d.x)<34&&P.y>d.y-8&&P.y<d.y+64;if(!near)h._dLock=false;const want=near&&!h._dLock?1:0;h._dk=(h._dk||0)+(want-(h._dk||0))*Math.min(1,dt*9);}
     for(const h of houses){if(h.town!==tw.id)continue;const rf=roomOfHouse(h);if(!rf)continue;const d=door(h);if(Math.abs(P.x-d.x)<26&&P.y>d.y-4&&P.y<d.y+36){prompt={x:d.x,y:d.y-50,t:'🚪 進入'+(rf.startsWith('house')?'民宅':NAME[rf])};
-      if(up&&P.y<d.y+20){const rr=R[RM(rf)];h._dOpen=time;go(()=>{setupRoom(h,tw,rf);tp(rr.ox+6,rr.oy+RH-2);P.x=(rr.ox+6.5)*T;P.fy=-1;});}break;}}};
+      if(up&&P.y<d.y+20){const rr=R[RM(rf)];h._dk=1;go(()=>{setupRoom(h,tw,rf);tp(rr.ox+6,rr.oy+RH-2);P.x=(rr.ox+6.5)*T;P.fy=-1;});}break;}}};
   const SUBS={post:'熱騰騰的料理，暖身再上路',herb:'花草的香味……寵物和坐騎的好朋友',gear:'盔甲、盾牌、披風，保命最要緊',house_a:'打擾了～',house_b:'打擾了～',weapon:'歡迎光臨！刀劍、長槍、弓，應有盡有',item:'藥水、料理材料，出門前記得補貨',inn:'住一晚，血量全部回滿',smith:'把武器拿來，幫你打得更強',tavern:'喝一杯，聽聽冒險者的消息'};
   const _it=inTownT;inTownT=function(tx,ty){const r=inRegion(tx,ty)?roomAt(tx,ty):null;if(r){const V=TOWN_BY[(CUR&&CUR.town)||VID];const fk=(CUR&&CUR.fac&&RM(CUR.fac)===r.fac)?CUR.fac:r.fac;return Object.assign({},V,{name:V.name+'・'+NAME[fk],sub:SUBS[fk]||''});}return _it.apply(this,arguments);};
   // 在店裡：店外一片黑
@@ -10446,8 +10462,7 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
   {const _g=gainExp;gainExp=function(n){const lv=P.lv;const r=_g.apply(this,arguments);if(P.lv>lv)fixSta();return r;};}
   {const _a=applySave;applySave=function(){const r=_a.apply(this,arguments);try{fixSta();}catch(e){}return r;};}
   // ---- 門：進出時打開，之後關上 ----
-  {const _d=drawHouse;drawHouse=function(h){_d.apply(this,arguments);if(!h||h.tent||h._dOpen==null)return;const age=time-h._dOpen;if(age<0||age>1.3)return;
-    const k=age<.18?age/.18:age<.95?1:Math.max(0,1-(age-.95)/.3);if(k<=0)return;const x=h.x*T,w=h.w*T,y=h.y*T,hh=h.h*T,dx=x+w/2,b=y+hh-14;
+  {const _d=drawHouse;drawHouse=function(h){_d.apply(this,arguments);if(!h||h.tent)return;const k=h._dk||0;if(k<=.02)return;const x=h.x*T,w=h.w*T,y=h.y*T,hh=h.h*T,dx=x+w/2,b=y+hh-14;
     ctx.save();ctx.fillStyle='#1a0f08';ctx.beginPath();ctx.moveTo(dx-12,b);ctx.lineTo(dx-12,b-22);ctx.arc(dx,b-22,12,Math.PI,0);ctx.lineTo(dx+12,b);ctx.closePath();ctx.fill();
     const g=ctx.createLinearGradient(dx,b-30,dx,b);g.addColorStop(0,'rgba(255,210,130,.0)');g.addColorStop(1,'rgba(255,210,130,.35)');ctx.fillStyle=g;ctx.fill();
     const pw=24*(1-k)+4*k;ctx.fillStyle='#7a4a24';ctx.strokeStyle='#2a1a10';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(dx-12,b);ctx.lineTo(dx-12,b-34);ctx.lineTo(dx-12+pw,b-34+k*4);ctx.lineTo(dx-12+pw,b+k*2);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();};}
@@ -10914,6 +10929,58 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
   window.__gunL=()=>knifeMode()?'煙霧彈':'手榴彈';
 })();
 
+// ================= v3.6.6：升級訊息整理（一次升好幾級只顯示一行），魔王經驗值下修 =================
+(()=>{
+  const _g=gainExp;gainExp=function(n){if(!P)return _g.apply(this,arguments);
+    const lv0=P.lv,mh0=P.maxHp;const ft=floatText;let muted=0;
+    floatText=function(x,y,t){if(typeof t==='string'&&/LEVEL UP|最大血量|全隊 HP 回滿|全隊HP/.test(t)){muted++;return;}return ft.apply(this,arguments);};
+    let r;try{r=_g.apply(this,arguments);}finally{floatText=ft;}
+    if(P.lv>lv0){const d=P.lv-lv0,hp=P.maxHp-mh0;window.__lvMuteUntil=performance.now()+900;
+      setTimeout(()=>{ft(P.x,P.y-70,(d>1?`LEVEL UP ×${d}！Lv.${P.lv}`:`LEVEL UP！Lv.${P.lv}`)+(hp>0?`　❤️+${hp}`:''),'#ffcf3a',true);},0);}
+    return r;};
+  // 魔王、劇情大怪一次給的經驗值太多，會一口氣跳好幾級：上限是「升一級所需的 80%」
+  const _ge=gainExp;gainExp=function(n){if(P&&n>0){const cap=Math.round(expNeed()*.8);if(n>cap)n=cap+Math.round((n-cap)*.25);}return _ge.call(this,n);};
+})();
+
+// ================= v3.6.6：大字提示不要疊在一起（往上排開，同時最多 4 行） =================
+(()=>{
+  const _ft=floatText;floatText=function(x,y,str,c,big){
+    if(typeof str==='string'&&window.__lvMuteUntil>performance.now()&&/最大血量|全隊 HP|^❤️ ?\+\d+$/.test(str))return;
+    if(big){let yy=y;for(let k=0;k<5;k++){const hit=texts.some(t=>t.big&&t.t<.7&&Math.abs(t.x-x)<180&&Math.abs((t.y-(t.t/1.8)*30)-yy)<24);if(!hit)break;yy-=26;}
+      const bigs=texts.filter(t=>t.big&&t.t<1.2);if(bigs.length>=4){const o=bigs.sort((a,b)=>b.t-a.t)[0];o.t=Math.max(o.t,1.6);}
+      return _ft.call(this,x,yy,str,c,big);}
+    return _ft.apply(this,arguments);};
+})();
+
+// ================= v3.6.6：天地轉傘（按住 L）時不能同時攻擊 =================
+(()=>{
+  const spinning=()=>P&&P.cls==='umbrella'&&P.blocking;
+  const _he=hitEnemy;hitEnemy=function(e,dmg,ang,kb,pure){if(spinning()&&!pure&&!_hitSrc)return;return _he.apply(this,arguments);};
+  const _ws=weaponSkill;weaponSkill=function(){if(spinning())return;return _ws.apply(this,arguments);};
+  const _u=update;update=function(dt){if(spinning()){if(P.atkT>0)P.atkT=0;if(P.heavyT>0)P.heavyT=0;P.combo=0;}return _u.apply(this,arguments);};
+  try{if(TUT.cls_umbrella)TUT.cls_umbrella[1]=TUT.cls_umbrella[1].replace('按住 L 開傘旋轉，能擋箭還會刮傷旁邊的人。','按住 L 開傘旋轉，能擋箭還會刮傷旁邊的人（轉傘時不能攻擊）。');}catch(e){}
+})();
+
+// ================= v3.6.6：影子騎士是單挑，打的時候不能換人 =================
+(()=>{
+  const duel=()=>enemies.some(e=>e.shadowK&&!e.dead&&e.awake!==false);
+  window.__shadowDuel=duel;
+  const _sw=switchHero;switchHero=function(id,force){if(P&&duel()){if(!(P._duelMsg>time)){P._duelMsg=time+1.2;floatText(P.x,P.y-90,'影子騎士單挑中，不能換人！','#c9b6ff',true);}return false;}return _sw.apply(this,arguments);};
+})();
+
+// ================= v3.6.6：村民會提示軍軍在哪裡（打倒她之前） =================
+(()=>{
+  const JX=100,JY=300;
+  const dirTo=(x,y)=>{const a=Math.atan2(JY-y,JX-x),k=Math.round(a/(Math.PI/4));return ['東','東南','南','西南','西','西北','北','東北'][(k+8)%8];};
+  const _t=talk;talk=function(n){
+    try{if(n&&n.role==='talk'&&life&&!life.junDown&&!n._junSaid&&(n.id==='room_res'||TOWNS.some(t=>{const tx=n.x/T,ty=n.y/T;return tx>=t.x-2&&tx<=t.x+t.w+2&&ty>=t.y-2&&ty<=t.y+t.h+2;}))&&Math.random()<.5){
+      n._junSaid=true;const tx=Math.floor(P.x/T),ty=Math.floor(P.y/T),reg=regAt(tx,ty),far=Math.hypot(tx-JX,ty-JY);
+      const L=reg==='mountain'||far<120?['出城往'+dirTo(tx,ty)+'走，蒼岩高山的岩石堆裡，躲著一個神出鬼沒的狙擊手。','她總是藏在石頭後面，看到紅色準星就趕快躲！','聽說她叫「軍軍」……打倒她的話，說不定她會跟你走。']
+        :['你聽說過「軍軍」嗎？一個很會躲的狙擊手。','她在蒼岩高山，空の都附近的岩石堆裡。從這裡大概往'+dirTo(tx,ty)+'走。','打倒她的人，好像都會跟她變成朋友。'];
+      say(n.name||'村民',L);return;}}catch(e){}
+    return _t.apply(this,arguments);};
+})();
+
 CHANGELOG.unshift(['v3.6.2','2026.11.18',[
   '🎯 新角色「軍軍」（狙擊手・失憶）：按住攻擊瞄準、放開開槍（5 發、超遠、會穿透）；敵人貼近時改用短刀；L 閃光彈；O 迷彩狙擊；絕招「狙殺標記」。在蒼岩高山打倒她就能在自由模式選她',
   '🔒 自由模式：七位主角也要在故事模式裡加入隊伍後才能選（迪洛一開始就能選）',
@@ -10953,6 +11020,19 @@ CHANGELOG.unshift(['v3.6.4','2026.11.18',[
   '🎯 軍軍＝遠距離狙擊手：按住 K 趴下「匍匐前進」，移動變一半，遠處敵人發現不了你，趴著開槍傷害 ×1.5',
   '⏱️ 迷彩狙擊（軍軍）、死神之眼（時雨）這兩招爆頭武技冷卻 3.5 秒 → 8 秒；迷彩隱身時間 3 秒 → 6 秒（開槍就會現身）',
   '🪖 軍用小刀的戰技改成「CQC」：往前衝一步抓住敵人摔到地上（暈 1.5 秒），再補一刀；魔王摔不動，改成刺一刀讓他僵一下',
+  '⛓️ 外傳的提娜會主動幫忙打了：附近有敵人就衝過去用鐮刀橫掃，遠一點就丟鎖鏈勾過來',
+  '🎯 還沒遇到軍軍的話，各城鎮的村民會告訴你：她躲在蒼岩高山（空の都附近）的岩石堆裡',
+  '🚪 屋內的出口改成一格寬，門口的地墊放在地板上，不會再浮在黑色的地方',
+  '🐻‍❄️ 騎熊游到地圖最上方時，不會再游進「屋內房間」的存放區（那裡會看到一排排漂浮的房間）',
+  '🌑 影子騎士是一對一單挑：打的時候不能換人',
+  '💰 打倒魔王後的「3、2、1」倒數取消：掉落物 1 秒內自動飛到你身上，馬上接劇情',
+  '🐻‍❄️ 騎北極熊游泳時，比較高的岸邊也爬得上去，不會卡在水裡',
+  '☂️ 天地按住 L 轉傘時不能同時攻擊（轉傘本身刮傷旁邊的敵人照舊）',
+  '🚪 城鎮屋子的門：走近門口就會打開，走開就關上；從屋裡走出來時門維持關著',
+  '💬 打倒魔王時跳出來的大字不再疊在一起：會自動往上排開，同時最多 4 行',
+  '📈 升級節奏放慢：每級需要的經驗值多約 25%；打倒魔王一次給的經驗值有上限，不會一口氣跳好幾級；一次升好幾級時只顯示一行「LEVEL UP ×2！Lv.7 ❤️+2」，不再好幾行字疊在一起',
+  '🌙 夜晚和幻之塔變亮一點：夜晚的暗度降低、主角身邊的光變大；幻之塔裡看得清楚角色（洞窟維持原本的黑暗）',
+  '🐞 自己玩過一輪後修正：開場「看到紅色＝他要打了！按 K 翻滾！」的大字教學有時會一直掛在畫面上不消失，現在離開那一段或 6 秒後一定會收掉；「快撿東西」倒數移到畫面中間，不會再跟「喘口氣」等章節卡片疊在一起',
   '🔫 軍軍的狙擊槍、精準步槍改成雙手持長槍（槍托靠肩、有瞄準鏡）；左輪手槍改成手臂伸直握手槍的樣子',
   '🧪 道具店可以按 ＋／－ 選數量，一次買好幾個',
   '🌋 火山爆發變得更痛：火山彈約扣最大血量的 15%、岩漿池約 5%、踩到岩漿約 4%（等級越高扣越多）',
