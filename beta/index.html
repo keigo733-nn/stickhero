@@ -10220,12 +10220,14 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
     if(state!=='play'||dlg||scene)return;build();prompt=null;const tx=Math.floor(P.x/T),ty=Math.floor(P.y/T),r=roomAt(tx,ty);
     const up=(P.fy||0)<-.5&&P.moving,down=(P.fy||0)>.5&&P.moving;
     if(r){if(!CUR){const tw=TOWNS[0];const h=houses.find(h=>h.town===tw.id&&roomOfHouse(h)===r.fac);if(h)setupRoom(h,tw,r.fac);}
-      if(P.y>(r.oy+RH-1)*T+6){prompt={x:(r.ox+6.5)*T,y:(r.oy+RH)*T,t:'🚪 出去'};if(down||P.y>(r.oy+RH-1)*T+22){const d=CUR&&CUR.door;if(CUR&&CUR.h)CUR.h._dOpen=time+.15;go(()=>{leaveRoom();if(d){tp(Math.floor(d.x/T),Math.floor(d.y/T)+1);P.fy=1;}});}}
+      if(P.y>(r.oy+RH-1)*T+6){prompt={x:(r.ox+6.5)*T,y:(r.oy+RH)*T,t:'🚪 出去'};if(down||P.y>(r.oy+RH-1)*T+22){const d=CUR&&CUR.door;if(CUR&&CUR.h){CUR.h._dk=0;CUR.h._dLock=true;}go(()=>{leaveRoom();if(d){tp(Math.floor(d.x/T),Math.floor(d.y/T)+1);P.fy=1;}});}}
       return;}
     if(CUR)leaveRoom();
     if(P.boat||P.flying)return;const tw=TOWNS.find(t=>tx>=t.x-1&&tx<t.x+t.w+1&&ty>=t.y-1&&ty<t.y+t.h+1);if(!tw)return;
+    // 門：走近就打開、離開就關上；剛從屋裡走出來時維持關著，等走開再回來才會開
+    for(const h of houses){if(h.town!==tw.id||h.tent||!roomOfHouse(h))continue;const d=door(h);const near=Math.abs(P.x-d.x)<34&&P.y>d.y-8&&P.y<d.y+64;if(!near)h._dLock=false;const want=near&&!h._dLock?1:0;h._dk=(h._dk||0)+(want-(h._dk||0))*Math.min(1,dt*9);}
     for(const h of houses){if(h.town!==tw.id)continue;const rf=roomOfHouse(h);if(!rf)continue;const d=door(h);if(Math.abs(P.x-d.x)<26&&P.y>d.y-4&&P.y<d.y+36){prompt={x:d.x,y:d.y-50,t:'🚪 進入'+(rf.startsWith('house')?'民宅':NAME[rf])};
-      if(up&&P.y<d.y+20){const rr=R[RM(rf)];h._dOpen=time;go(()=>{setupRoom(h,tw,rf);tp(rr.ox+6,rr.oy+RH-2);P.x=(rr.ox+6.5)*T;P.fy=-1;});}break;}}};
+      if(up&&P.y<d.y+20){const rr=R[RM(rf)];h._dk=1;go(()=>{setupRoom(h,tw,rf);tp(rr.ox+6,rr.oy+RH-2);P.x=(rr.ox+6.5)*T;P.fy=-1;});}break;}}};
   const SUBS={post:'熱騰騰的料理，暖身再上路',herb:'花草的香味……寵物和坐騎的好朋友',gear:'盔甲、盾牌、披風，保命最要緊',house_a:'打擾了～',house_b:'打擾了～',weapon:'歡迎光臨！刀劍、長槍、弓，應有盡有',item:'藥水、料理材料，出門前記得補貨',inn:'住一晚，血量全部回滿',smith:'把武器拿來，幫你打得更強',tavern:'喝一杯，聽聽冒險者的消息'};
   const _it=inTownT;inTownT=function(tx,ty){const r=inRegion(tx,ty)?roomAt(tx,ty):null;if(r){const V=TOWN_BY[(CUR&&CUR.town)||VID];const fk=(CUR&&CUR.fac&&RM(CUR.fac)===r.fac)?CUR.fac:r.fac;return Object.assign({},V,{name:V.name+'・'+NAME[fk],sub:SUBS[fk]||''});}return _it.apply(this,arguments);};
   // 在店裡：店外一片黑
@@ -10448,8 +10450,7 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
   {const _g=gainExp;gainExp=function(n){const lv=P.lv;const r=_g.apply(this,arguments);if(P.lv>lv)fixSta();return r;};}
   {const _a=applySave;applySave=function(){const r=_a.apply(this,arguments);try{fixSta();}catch(e){}return r;};}
   // ---- 門：進出時打開，之後關上 ----
-  {const _d=drawHouse;drawHouse=function(h){_d.apply(this,arguments);if(!h||h.tent||h._dOpen==null)return;const age=time-h._dOpen;if(age<0||age>1.3)return;
-    const k=age<.18?age/.18:age<.95?1:Math.max(0,1-(age-.95)/.3);if(k<=0)return;const x=h.x*T,w=h.w*T,y=h.y*T,hh=h.h*T,dx=x+w/2,b=y+hh-14;
+  {const _d=drawHouse;drawHouse=function(h){_d.apply(this,arguments);if(!h||h.tent)return;const k=h._dk||0;if(k<=.02)return;const x=h.x*T,w=h.w*T,y=h.y*T,hh=h.h*T,dx=x+w/2,b=y+hh-14;
     ctx.save();ctx.fillStyle='#1a0f08';ctx.beginPath();ctx.moveTo(dx-12,b);ctx.lineTo(dx-12,b-22);ctx.arc(dx,b-22,12,Math.PI,0);ctx.lineTo(dx+12,b);ctx.closePath();ctx.fill();
     const g=ctx.createLinearGradient(dx,b-30,dx,b);g.addColorStop(0,'rgba(255,210,130,.0)');g.addColorStop(1,'rgba(255,210,130,.35)');ctx.fillStyle=g;ctx.fill();
     const pw=24*(1-k)+4*k;ctx.fillStyle='#7a4a24';ctx.strokeStyle='#2a1a10';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(dx-12,b);ctx.lineTo(dx-12,b-34);ctx.lineTo(dx-12+pw,b-34+k*4);ctx.lineTo(dx-12+pw,b+k*2);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();};}
@@ -10939,6 +10940,15 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
     return _ft.apply(this,arguments);};
 })();
 
+// ================= v3.6.6：天地轉傘（按住 L）時不能同時攻擊 =================
+(()=>{
+  const spinning=()=>P&&P.cls==='umbrella'&&P.blocking;
+  const _he=hitEnemy;hitEnemy=function(e,dmg,ang,kb,pure){if(spinning()&&!pure&&!_hitSrc)return;return _he.apply(this,arguments);};
+  const _ws=weaponSkill;weaponSkill=function(){if(spinning())return;return _ws.apply(this,arguments);};
+  const _u=update;update=function(dt){if(spinning()){if(P.atkT>0)P.atkT=0;if(P.heavyT>0)P.heavyT=0;P.combo=0;}return _u.apply(this,arguments);};
+  try{if(TUT.cls_umbrella)TUT.cls_umbrella[1]=TUT.cls_umbrella[1].replace('按住 L 開傘旋轉，能擋箭還會刮傷旁邊的人。','按住 L 開傘旋轉，能擋箭還會刮傷旁邊的人（轉傘時不能攻擊）。');}catch(e){}
+})();
+
 CHANGELOG.unshift(['v3.6.2','2026.11.18',[
   '🎯 新角色「軍軍」（狙擊手・失憶）：按住攻擊瞄準、放開開槍（5 發、超遠、會穿透）；敵人貼近時改用短刀；L 閃光彈；O 迷彩狙擊；絕招「狙殺標記」。在蒼岩高山打倒她就能在自由模式選她',
   '🔒 自由模式：七位主角也要在故事模式裡加入隊伍後才能選（迪洛一開始就能選）',
@@ -10978,6 +10988,8 @@ CHANGELOG.unshift(['v3.6.4','2026.11.18',[
   '🎯 軍軍＝遠距離狙擊手：按住 K 趴下「匍匐前進」，移動變一半，遠處敵人發現不了你，趴著開槍傷害 ×1.5',
   '⏱️ 迷彩狙擊（軍軍）、死神之眼（時雨）這兩招爆頭武技冷卻 3.5 秒 → 8 秒；迷彩隱身時間 3 秒 → 6 秒（開槍就會現身）',
   '🪖 軍用小刀的戰技改成「CQC」：往前衝一步抓住敵人摔到地上（暈 1.5 秒），再補一刀；魔王摔不動，改成刺一刀讓他僵一下',
+  '☂️ 天地按住 L 轉傘時不能同時攻擊（轉傘本身刮傷旁邊的敵人照舊）',
+  '🚪 城鎮屋子的門：走近門口就會打開，走開就關上；從屋裡走出來時門維持關著',
   '💬 打倒魔王時跳出來的大字不再疊在一起：會自動往上排開，同時最多 4 行',
   '📈 升級節奏放慢：每級需要的經驗值多約 25%；打倒魔王一次給的經驗值有上限，不會一口氣跳好幾級；一次升好幾級時只顯示一行「LEVEL UP ×2！Lv.7 ❤️+2」，不再好幾行字疊在一起',
   '🌙 夜晚和幻之塔變亮一點：夜晚的暗度降低、主角身邊的光變大；幻之塔裡看得清楚角色（洞窟維持原本的黑暗）',
