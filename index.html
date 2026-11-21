@@ -2095,7 +2095,7 @@ function renderLife(){const fem=isFem(),TABS=fem?[['cos','👗 換裝'],['pet','
   else if(lifeTab==='pet'){const pp=petParty();h+='<div class="sdesc" style="margin:4px 0 8px">身上有 🍓 莓果時，小動物不會逃跑。走到牠旁邊按「餵食」就會變成夥伴。<br>🐾 最多帶 <b>2 隻</b>在身邊，會幫你把附近的金幣吸過來。<br>💥 夥伴也會被敵人的箭、魔法、炸彈打到，打倒後回小屋休息 25 秒。<br>💕 你快倒下時，身邊的夥伴會<b>替你擋下一次致命一擊</b>（擋完要休息）。<br>⛵ 坐船時夥伴會在岸邊等你。（打過牠就不理你了）</div>';
     if(!life.pets.length)h+='<div class="sdesc">還沒有夥伴。先去野外採 🍓 莓果吧！</div>';
     for(const k of life.pets){if(life.petInj&&life.petInj[k]){h+=row('🐾 '+PETS[k],'💔 重傷中，需要照顧（要在城鎮或傳送石旁，🍓×2）',btn('nurse:'+k,'照顧',!canCook()||(life.bag.berry||0)<2));continue;}const on=pp.includes(k),o=petObjs[k],rest=o&&o.downT>0;h+=row('🐾 '+PETS[k],on?(rest?'休息中… '+Math.ceil(o.downT)+' 秒':'正跟著你'):'在小屋休息',btn('pet:'+k,on?'回小屋':(pp.length>=PET_MAX?'帶出門（換掉一隻）':'帶出門')));}}
-  else if(lifeTab==='cook'){const ok=canCook();h+=`<div class="sdesc" style="margin:4px 0 8px">${ok?'🔥 這裡可以開伙！':'⚠️ 要在城鎮裡或傳送石旁邊才能料理（吃東西隨時都可以）。'}　材料在野外地上撿：🌸🍓🍄，🍖 打動物會掉。</div><div class="sec">🍳 食譜</div>`;
+  else if(lifeTab==='cook'){const ok=canCook();h+=`<div class="sdesc" style="margin:4px 0 8px">${ok?'🔥 這裡可以開伙！':'⚠️ 要在城鎮裡或傳送石旁邊才能料理（吃東西隨時都可以）。'}　材料在野外地上撿：🌸🍓🍄，🍖 打動物會掉，🐟 用釣的。</div><div class="sec">🍳 食譜</div>`;
     for(const id in FOODS){const F=FOODS[id],need=Object.entries(F[2]),can=ok&&need.every(([k,n])=>ingHave(k)>=n);h+=row(F[1]+' '+F[0],need.map(([k,n])=>ING[k]+'×'+n).join(' ')+'　→　'+foodFx(F[3])+(id==='cake'?'（送禮最棒）':id==='skewer'?'（🍖 直接吃回 3，做成烤肉串多回 1 滴血）':''),btn('cook:'+id,'料理',!can));}
     h+='<div class="sec">🍱 便當盒</div>';let any=false;for(const id in FOODS){const n=life.food[id]||0;if(!n)continue;any=true;h+=row(FOODS[id][1]+' '+FOODS[id][0]+' ×'+n,foodFx(FOODS[id][3]),btn('eat:'+id,'吃'));}if(!any)h+='<div class="sdesc">空空的。</div>';}
   else if(lifeTab==='pal'){h+='<div class="sdesc" style="margin:4px 0 8px">送花、莓果或料理給夥伴，好感 💗 會上升，解鎖他們的心裡話和回禮。每個人都有最喜歡的料理喔！</div>';
@@ -9610,28 +9610,28 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
 // ================= ✨ 技能系統：升級拿技能點，去王城學戰技、法術；兩個技能格（O、P）=================
 (()=>{
   const SK={
-    whirl:{n:'旋風斬',i:'🌀',type:'戰技',cost:1,cd:7,sta:18,d:'原地轉一圈，砍周圍所有敵人'},
-    dash:{n:'突進斬',i:'💨',type:'戰技',cost:1,cd:6,sta:16,d:'往前衝刺，砍過一整排敵人'},
-    quake:{n:'震地',i:'💥',type:'戰技',cost:2,cd:10,sta:24,d:'砸地震出一圈衝擊波，周圍敵人暈眩'},
-    warcry:{n:'戰吼',i:'📣',type:'戰技',cost:2,cd:18,sta:20,d:'8 秒內，你和隊友的攻擊 +30%'},
-    fireball:{n:'火球',i:'🔥',type:'法術',cost:1,cd:5,sta:14,d:'丟出會爆炸的火球，敵人會燒起來'},
-    icicle:{n:'冰柱',i:'🧊',type:'法術',cost:1,cd:6,sta:14,d:'扇形射出 3 根穿透的冰柱'},
-    thunder:{n:'雷擊',i:'⚡',type:'法術',cost:2,cd:9,sta:20,d:'落雷劈向附近最多 3 個敵人，會麻痺'},
-    heal:{n:'治療光環',i:'💚',type:'法術',cost:2,cd:20,sta:22,d:'馬上補 2 滴血，之後 6 秒每 2 秒再補 1 滴（隊友也補）'},
-    haste:{n:'加速',i:'👟',type:'法術',cost:1,cd:16,sta:12,d:'8 秒內移動速度 +40%'},
-    blades:{n:'飛刃',i:'🗡️',type:'戰技',cd:6,sta:14,d:'扇形丟出 5 把穿透的飛刃'},
-    poison:{n:'毒霧',i:'☠️',type:'法術',cd:9,sta:16,d:'在敵人腳下放一團毒霧，5 秒內持續傷害'},
-    spikes:{n:'地刺',i:'🪨',type:'法術',cd:8,sta:18,d:'地上往前竄出一排石刺，把敵人刺上天'},
-    frostnova:{n:'冰霜新星',i:'❄️',type:'法術',cd:11,sta:20,d:'身邊炸出一圈寒氣，把敵人凍住 1.5 秒'},
-    pull:{n:'引力',i:'🧲',type:'法術',cd:10,sta:16,d:'把周圍的敵人全部吸到你面前（接旋風斬超好用）'},
-    meteor:{n:'流星',i:'☄️',type:'法術',cd:14,sta:24,d:'召喚一顆流星砸下來，大範圍爆炸、燃燒'},
-    holy:{n:'聖光',i:'✨',type:'法術',cd:22,sta:20,d:'全隊補 3 滴血，還會清掉燒傷、中毒、冰凍、麻痺'},
-    berserk:{n:'狂暴',i:'😤',type:'戰技',cd:20,sta:10,d:'8 秒內攻擊 +50%，但受到的傷害也會變多'},
-    blink:{n:'瞬影斬',i:'👤',type:'戰技',cd:8,sta:16,d:'瞬間移動到最近的敵人背後，連砍兩刀'},
-    storm:{n:'風暴領域',i:'🌪️',type:'法術',cd:16,sta:22,d:'5 秒內身邊颳起風暴，一直傷害靠近的敵人'},
-    ironwall:{n:'鐵壁',i:'🛡️',type:'戰技',cd:18,sta:16,d:'6 秒內受到的傷害減半'},
-    vamp:{n:'吸血斬',i:'🩸',type:'戰技',cd:9,sta:16,d:'砍周圍的敵人，每砍到一個回 1 滴血（最多 3）'},
-    timefreeze:{n:'時間凍結',i:'⏳',type:'法術',cd:24,sta:26,d:'讓附近所有敵人停住 2.5 秒'}};
+    whirl:{n:'旋風斬',i:'🌀',type:'戰技',cost:1,cd:7,sta:18,d:'原地轉一圈，砍周圍所有敵人　📈 範圍變大；威力 +15%、冷卻 -6%　⭐Lv.3：轉兩圈（多砍一次）　🌟Lv.5：先把周圍的小怪吸過來再轉'},
+    dash:{n:'突進斬',i:'💨',type:'戰技',cost:1,cd:6,sta:16,d:'往前衝刺，砍過一整排敵人　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：衝刺距離 +40%　🌟Lv.5：衝過去後殘影再補一刀'},
+    quake:{n:'震地',i:'💥',type:'戰技',cost:2,cd:10,sta:24,d:'砸地震出一圈衝擊波，周圍敵人暈眩　📈 範圍變大；威力 +15%、冷卻 -6%　⭐Lv.3：暈眩更久　🌟Lv.5：0.5 秒後再震一次更大的餘震'},
+    warcry:{n:'戰吼',i:'📣',type:'戰技',cost:2,cd:18,sta:20,d:'8 秒內，你和隊友的攻擊 +30%　📈 每級 +1 秒；威力 +15%、冷卻 -6%　🌟Lv.5：喊完回 10% 血'},
+    fireball:{n:'火球',i:'🔥',type:'法術',cost:1,cd:5,sta:14,d:'丟出會爆炸的火球，敵人會燒起來　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：爆炸範圍變大　🌟Lv.5：一次丟出 3 顆火球'},
+    icicle:{n:'冰柱',i:'🧊',type:'法術',cost:1,cd:6,sta:14,d:'扇形射出 3 根穿透的冰柱　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：5 根冰柱　🌟Lv.5：7 根冰柱'},
+    thunder:{n:'雷擊',i:'⚡',type:'法術',cost:2,cd:9,sta:20,d:'落雷劈向附近最多 3 個敵人，會麻痺　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：劈 5 個敵人　🌟Lv.5：劈 7 個敵人'},
+    heal:{n:'治療光環',i:'💚',type:'法術',cost:2,cd:16,sta:22,d:'馬上補 12% 血並解除中毒、燒傷、緩速，之後 6 秒每秒再補 3%（總共約 30%，跟一瓶回復藥差不多）；隊友也補 25%　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：總共補約 40%　🌟Lv.5：另外 3 秒減傷'},
+    haste:{n:'加速',i:'👟',type:'法術',cost:1,cd:16,sta:12,d:'8 秒內移動速度 +40%　📈 每級 +1.5 秒；威力 +15%、冷卻 -6%　🌟Lv.5：施放時精力全滿'},
+    blades:{n:'飛刃',i:'🗡️',type:'戰技',cd:6,sta:14,d:'扇形丟出 5 把穿透的飛刃　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：7 把飛刃　🌟Lv.5：9 把飛刃'},
+    poison:{n:'毒霧',i:'☠️',type:'法術',cd:9,sta:16,d:'在敵人腳下放一團毒霧，5 秒內持續傷害　📈 每級範圍變大、+1 秒；威力 +15%、冷卻 -6%'},
+    spikes:{n:'地刺',i:'🪨',type:'法術',cd:8,sta:18,d:'地上往前竄出一排石刺，把敵人刺上天　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：石刺變長（10 根）　🌟Lv.5：石刺更長（13 根）'},
+    frostnova:{n:'冰霜新星',i:'❄️',type:'法術',cd:11,sta:20,d:'身邊炸出一圈寒氣，把敵人凍住 1.5 秒　📈 每級範圍變大、凍更久；威力 +15%、冷卻 -6%'},
+    pull:{n:'引力',i:'🧲',type:'法術',cd:10,sta:16,d:'把周圍的敵人全部吸到你面前（接旋風斬超好用）　📈 每級吸得更遠；威力 +15%、冷卻 -6%'},
+    meteor:{n:'流星',i:'☄️',type:'法術',cd:14,sta:24,d:'召喚一顆流星砸下來，大範圍爆炸、燃燒　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：爆炸範圍變大　🌟Lv.5：多砸 2 顆小流星'},
+    holy:{n:'聖光',i:'✨',type:'法術',cd:22,sta:20,d:'全隊補 15% 血（每級 +5%），還會清掉燒傷、中毒、冰凍、麻痺　📈 每級多補 5%；威力 +15%、冷卻 -6%'},
+    berserk:{n:'狂暴',i:'😤',type:'戰技',cd:20,sta:10,d:'8 秒內攻擊 +50%，但受到的傷害也會變多　📈 每級 +1 秒；威力 +15%、冷卻 -6%'},
+    blink:{n:'瞬影斬',i:'👤',type:'戰技',cd:8,sta:16,d:'瞬間移動到最近的敵人背後，連砍兩刀　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：連砍三刀　🌟Lv.5：砍完再瞬移到第二個敵人'},
+    storm:{n:'風暴領域',i:'🌪️',type:'法術',cd:16,sta:22,d:'5 秒內身邊颳起風暴，一直傷害靠近的敵人　📈 每級範圍變大、+1 秒；威力 +15%、冷卻 -6%'},
+    ironwall:{n:'鐵壁',i:'🛡️',type:'戰技',cd:18,sta:16,d:'6 秒內受到的傷害減半　📈 每級 +0.75 秒；威力 +15%、冷卻 -6%　🌟Lv.5：開的時候 1 秒無敵'},
+    vamp:{n:'吸血斬',i:'🩸',type:'戰技',cd:9,sta:16,d:'砍周圍的敵人，每砍到一個回 4% 血（最多 12%）　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：範圍變大　🌟Lv.5：回血更多'},
+    timefreeze:{n:'時間凍結',i:'⏳',type:'法術',cd:24,sta:26,d:'讓附近所有敵人停住 2.5 秒　📈 每級多凍 0.3 秒；威力 +15%、冷卻 -6%'}};
   window.__SK=SK;
   const BOOKS=[
     {id:'b1',n:'⚔️《騎士劍技之書》',sk:['whirl','dash'],hint:'王城的騎士團長，在找能打贏競技場「三波挑戰」的勇士'},
@@ -9644,7 +9644,7 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
       .map(([rk,sk,cn])=>({id:'c_'+rk,n:'📜 秘傳卷軸「'+SK[sk].n+'」',sk:[sk],hint:'「'+cn+'」最深處的守衛守著它',cave:'cave_'+rk})),
     ...[['banditKing','berserk'],['shadow','blink'],['sandKing','storm'],['stoneKing','ironwall'],['frost','timefreeze'],['abyss','vamp']]
       .map(([b,sk])=>({id:'l_'+b,n:'📜 秘傳卷軸「'+SK[sk].n+'」',sk:[sk],hint:'打倒魔王「'+BOSSES[b].name+'」就會掉',boss:b}))];
-  const LV=[0,8,25,50,90];
+  const LV=[0,6,18,36,60];
   const S=()=>{if(!life.sk)life.sk={spent:0,learned:{},uses:{},slots:{}};return life.sk;};
   const avail=()=>0;
   const SKLV=20;const sysOpen=()=>{const s=S();if(!s.open&&Object.keys(s.learned||{}).length){s.open=1;s.guided=1;}return !!s.open;};window.__skOpen=sysOpen;
@@ -9731,42 +9731,45 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
   function cast(id){const k=SK[id];if(!k||!P)return;if(P.flying||P.mount&&false){floatText(P.x,P.y-62,'現在不能放技能','#ccc');return;}
     const cdk=P.cls+':'+id;if(cdm[cdk]>time){floatText(P.x,P.y-62,k.n+' 還要 '+Math.ceil(cdm[cdk]-time)+' 秒','#ccc');return;}
     if(!useSta(k.sta)){floatText(P.x,P.y-60,'精力不夠','#ccc');return;}
-    const lv=skLv(id),pw=1+.15*(lv-1);cdm[cdk]=time+k.cd*(1-.06*(lv-1));
+    const lv=skLv(id),pw=1+.15*(lv-1),L3=lv>=3,L5=lv>=5,gl=lv-1;cdm[cdk]=time+k.cd*(1-.06*(lv-1));
     const atk=atkPower(),a=autoAim?autoAim(Math.atan2(P.fy||0,P.fx||1)):Math.atan2(P.fy||0,P.fx||1);P.fx=Math.cos(a);P.fy=Math.sin(a);
     const foes=R=>enemies.filter(e=>!e.dead&&!e.animal&&!(e.boss&&!e.awake)&&Math.hypot(e.x-P.x,e.y-P.y)<R);
     floatText(P.x,P.y-80,k.i+' '+k.n+'！','#fff3b0',true);
     switch(id){
-      case 'whirl':for(const e of foes(100))hitEnemy(e,Math.max(1,Math.round(atk*1.6*pw)),Math.atan2(e.y-P.y,e.x-P.x),1.6);fxRings.push({x:P.x,y:P.y,r:20,max:110,c:'#eaf6ff',t:0});sfx('swing');break;
-      case 'dash':{const x0=P.x,y0=P.y,c=Math.cos(a),s=Math.sin(a);for(let i=0;i<12;i++)moveE(P,c*14,s*14);P.inv=Math.max(P.inv||0,.35);const L=Math.hypot(P.x-x0,P.y-y0);
-        for(const e of enemies){if(e.dead||e.animal)continue;const dx=e.x-x0,dy=e.y-y0,al=dx*c+dy*s,sd=Math.abs(-dx*s+dy*c);if(al>-10&&al<L+30&&sd<34)hitEnemy(e,Math.max(1,Math.round(atk*1.8*pw)),a,1.2);}
+      case 'whirl':{const RR=100+gl*10;if(L5)for(const e of foes(RR+60)){if(e.boss||e.king)continue;moveE(e,(P.x-e.x)*.5,(P.y-e.y)*.5);}for(const e of foes(RR))hitEnemy(e,Math.max(1,Math.round(atk*1.6*pw)),Math.atan2(e.y-P.y,e.x-P.x),1.6);fxRings.push({x:P.x,y:P.y,r:20,max:RR+10,c:'#eaf6ff',t:0});if(L3)miss.push({k:'x',t:0,dur:.28,fn:()=>{for(const e of foes(RR))hitEnemy(e,Math.max(1,Math.round(atk*1.0*pw)),Math.atan2(e.y-P.y,e.x-P.x),1);fxRings.push({x:P.x,y:P.y,r:20,max:RR+10,c:'#cfe8ff',t:0});sfx('swing');}});sfx('swing');break;}
+      case 'dash':{const x0=P.x,y0=P.y,c=Math.cos(a),s=Math.sin(a);for(let i=0;i<(L3?17:12);i++)moveE(P,c*14,s*14);P.inv=Math.max(P.inv||0,.35);const L=Math.hypot(P.x-x0,P.y-y0);
+        for(const e of enemies){if(e.dead||e.animal)continue;const dx=e.x-x0,dy=e.y-y0,al=dx*c+dy*s,sd=Math.abs(-dx*s+dy*c);if(al>-10&&al<L+30&&sd<34){hitEnemy(e,Math.max(1,Math.round(atk*1.8*pw)),a,1.2);if(L5){const ee=e;miss.push({k:'x',t:0,dur:.3,fn:()=>{if(!ee.dead){hitEnemy(ee,Math.max(1,Math.round(atk*.9*pw)),a,.5);vfx({k:'xslash',x:ee.x,y:ee.y-26,dur:.3});}}});}}}
         for(let i=0;i<12;i++)parts.push({x:x0+c*i*14,y:y0-20+s*i*14,vx:0,vy:0,t:0,life:.3,c:'rgba(220,235,255,.8)'});sfx('dash');break;}
-      case 'quake':for(const e of foes(135)){hitEnemy(e,Math.max(1,Math.round(atk*1.4*pw)),Math.atan2(e.y-P.y,e.x-P.x),1);e.stun=Math.max(e.stun||0,e.boss?.3:1.2);}rings.push({x:P.x,y:P.y,r:0,max:140,spd:420,c:'#d9b38a',friendly:true,hit:true});fxRings.push({x:P.x,y:P.y,r:10,max:140,c:'#d9b38a',t:0});shake=Math.max(shake,8);sfx('boss');break;
-      case 'warcry':P._warcry=time+8;burst(P.x,P.y-30,'#ffcf3a',24,200);sfx('lvl');break;
+      case 'quake':if(L5)miss.push({k:'x',t:0,dur:.5,fn:()=>{for(const e of foes(175))hitEnemy(e,Math.max(1,Math.round(atk*.8*pw)),Math.atan2(e.y-P.y,e.x-P.x),.8);rings.push({x:P.x,y:P.y,r:0,max:180,spd:420,c:'#d9b38a',friendly:true,hit:true});shake=Math.max(shake,8);}});for(const e of foes(135+gl*10)){hitEnemy(e,Math.max(1,Math.round(atk*1.4*pw)),Math.atan2(e.y-P.y,e.x-P.x),1);e.stun=Math.max(e.stun||0,e.boss?.3:(L3?1.7:1.2));}rings.push({x:P.x,y:P.y,r:0,max:140,spd:420,c:'#d9b38a',friendly:true,hit:true});fxRings.push({x:P.x,y:P.y,r:10,max:140,c:'#d9b38a',t:0});shake=Math.max(shake,8);sfx('boss');break;
+      case 'warcry':P._warcry=time+8+gl;if(L5){const h=Math.max(1,Math.round(P.maxHp*.1));P.hp=Math.min(P.maxHp,P.hp+h);floatText(P.x,P.y-60,'📣 +'+h,'#ffcf3a');}burst(P.x,P.y-30,'#ffcf3a',24,200);sfx('lvl');break;
       case 'fireball':{const T2=foes(340).sort((p,q)=>angDiff(Math.atan2(p.y-P.y,p.x-P.x),a)-angDiff(Math.atan2(q.y-P.y,q.x-P.x),a))[0];const tx=T2?T2.x:P.x+Math.cos(a)*260,ty=T2?T2.y:P.y+Math.sin(a)*260;
-        miss.push({k:'fire',x0:P.x,y0:P.y-26,tx,ty,t:0,dur:Math.max(.2,Math.hypot(tx-P.x,ty-P.y)/520),fn:()=>{for(const e of enemies){if(e.dead||e.animal||Math.hypot(e.x-tx,e.y-ty)>75)continue;hitEnemy(e,Math.max(1,Math.round(atk*1.6*pw)),Math.atan2(e.y-ty,e.x-tx),1.2);e.burn=Math.max(e.burn||0,3);}burst(tx,ty-10,'#ff7a2a',26,220);fxRings.push({x:tx,y:ty,r:10,max:80,c:'#ff7a2a',t:0});vfx({k:'flash',x:tx,y:ty-12,r:70,c:'255,150,50',dur:.35});vfx({k:'scorch',x:tx,y:ty,r:46,dur:2.2});shake=Math.max(shake,5);}});sfx('shoot');break;}
-      case 'icicle':for(const d of [-.22,0,.22])projs.push({x:P.x,y:P.y-26,vx:Math.cos(a+d)*560,vy:Math.sin(a+d)*560,r:8,dmg:Math.max(1,Math.round(atk*1.1*pw)),t:0,life:.9,friendly:true,arrow:true,pierce:true,el:'ice',c:'#bfefff',hitSet:new Set()});sfx('shoot');break;
-      case 'thunder':{const T3=foes(320).sort((p,q)=>Math.hypot(p.x-P.x,p.y-P.y)-Math.hypot(q.x-P.x,q.y-P.y)).slice(0,3);if(!T3.length)floatText(P.x,P.y-60,'附近沒有敵人','#ccc');
+        if(L5)for(const dd of [-.35,.35]){const ax=P.x+Math.cos(a+dd)*240,ay=P.y+Math.sin(a+dd)*240;miss.push({k:'fire',x0:P.x,y0:P.y-26,tx:ax,ty:ay,t:0,dur:.45,fn:()=>{for(const e of enemies){if(e.dead||e.animal||Math.hypot(e.x-ax,e.y-ay)>70)continue;hitEnemy(e,Math.max(1,Math.round(atk*1.0*pw)),Math.atan2(e.y-ay,e.x-ax),1);e.burn=Math.max(e.burn||0,3);}burst(ax,ay-10,'#ff7a2a',18,180);}});}
+        miss.push({k:'fire',x0:P.x,y0:P.y-26,tx,ty,t:0,dur:Math.max(.2,Math.hypot(tx-P.x,ty-P.y)/520),fn:()=>{for(const e of enemies){if(e.dead||e.animal||Math.hypot(e.x-tx,e.y-ty)>(L3?100:75))continue;hitEnemy(e,Math.max(1,Math.round(atk*1.6*pw)),Math.atan2(e.y-ty,e.x-tx),1.2);e.burn=Math.max(e.burn||0,3);}burst(tx,ty-10,'#ff7a2a',26,220);fxRings.push({x:tx,y:ty,r:10,max:80,c:'#ff7a2a',t:0});vfx({k:'flash',x:tx,y:ty-12,r:70,c:'255,150,50',dur:.35});vfx({k:'scorch',x:tx,y:ty,r:46,dur:2.2});shake=Math.max(shake,5);}});sfx('shoot');break;}
+      case 'icicle':for(const d of (L5?[-.42,-.28,-.14,0,.14,.28,.42]:L3?[-.3,-.15,0,.15,.3]:[-.22,0,.22]))projs.push({x:P.x,y:P.y-26,vx:Math.cos(a+d)*560,vy:Math.sin(a+d)*560,r:8,dmg:Math.max(1,Math.round(atk*1.1*pw)),t:0,life:.9,friendly:true,arrow:true,pierce:true,el:'ice',c:'#bfefff',hitSet:new Set()});sfx('shoot');break;
+      case 'thunder':{const T3=foes(320).sort((p,q)=>Math.hypot(p.x-P.x,p.y-P.y)-Math.hypot(q.x-P.x,q.y-P.y)).slice(0,L5?7:L3?5:3);if(!T3.length)floatText(P.x,P.y-60,'附近沒有敵人','#ccc');
         T3.forEach((e,i)=>miss.push({k:'bolt',e,t:-i*.12,dur:.3,fn:()=>{if(e.dead)return;hitEnemy(e,Math.max(1,Math.round(atk*1.7*pw)),-Math.PI/2,.4);e.shockT=Math.max(e.shockT||0,1);e.stun=Math.max(e.stun||0,e.boss?.2:.8);flashT=.08;vfx({k:'flash',x:e.x,y:e.y-24,r:60,c:'210,190,255',dur:.25});vfx({k:'sparks',x:e.x,y:e.y-20,dur:.5,c:'#e8d8ff'});}}));sfx('boss');break;}
-      case 'heal':{P.hp=Math.min(P.maxHp,P.hp+2);P._healT=6;P._healTick=2;burst(P.x,P.y-30,'#7fe0a0',24,160);floatText(P.x,P.y-60,'💚 +2','#7fe0a0',true);
-        if(story&&story.on){story.hp=story.hp||{};for(const f of followers)if(f.coop&&HERO[f.id]){const mx=recalcHp(HERO[f.id]);story.hp[f.id]=Math.min(mx,(story.hp[f.id]??mx)+2);}}sfx('lvl');break;}
-      case 'haste':P._haste=time+8;burst(P.x,P.y-10,'#bfffd0',18,180);sfx('dash');break;
-      case 'blades':for(let d=-2;d<=2;d++)projs.push({x:P.x,y:P.y-26,vx:Math.cos(a+d*.2)*600,vy:Math.sin(a+d*.2)*600,r:7,dmg:Math.max(1,Math.round(atk*1.0*pw)),t:0,life:.7,friendly:true,arrow:true,pierce:true,c:'#d0d8e0',hitSet:new Set()});sfx('shoot');break;
-      case 'poison':{const T2=foes(300).sort((p,q)=>Math.hypot(p.x-P.x,p.y-P.y)-Math.hypot(q.x-P.x,q.y-P.y))[0];const zx=T2?T2.x:P.x+Math.cos(a)*160,zy=T2?T2.y:P.y+Math.sin(a)*160;zones2.push({k:'poison',x:zx,y:zy,r:85,t:0,life:5,tick:0,dmg:Math.max(1,Math.round(atk*.35*pw))});sfx('shoot');break;}
-      case 'spikes':for(let i=1;i<=7;i++){const sx=P.x+Math.cos(a)*i*40,sy=P.y+Math.sin(a)*i*40;miss.push({k:'spike',x:sx,y:sy,t:-i*.06,dur:.05,fn:()=>{for(const e of enemies){if(e.dead||e.animal||Math.hypot(e.x-sx,e.y-sy)>34)continue;hitEnemy(e,Math.max(1,Math.round(atk*1.3*pw)),a,.4);if(window.__launch)window.__launch(e,.8);}burst(sx,sy,'#b8a07a',8,120);vfx({k:'spike',x:sx,y:sy,dur:.55,s:.85+Math.random()*.4});}});}sfx('boss');break;
-      case 'frostnova':for(const e of foes(125)){hitEnemy(e,Math.max(1,Math.round(atk*.8*pw)),Math.atan2(e.y-P.y,e.x-P.x),.6);e.stun=Math.max(e.stun||0,e.boss?.4:1.5);e.slowT=Math.max(e.slowT||0,3);}fxRings.push({x:P.x,y:P.y,r:10,max:130,c:'#bfefff',t:0});burst(P.x,P.y-20,'#dff6ff',30,220);sfx('boss');break;
-      case 'pull':{const cx=P.x+Math.cos(a)*55,cy=P.y+Math.sin(a)*55;for(const e of foes(270)){if(e.boss||e.king)continue;const d=Math.hypot(cx-e.x,cy-e.y)||1;moveE(e,(cx-e.x)*.85,(cy-e.y)*.85);e.stun=Math.max(e.stun||0,.6);hitEnemy(e,Math.max(1,Math.round(atk*.5*pw)),Math.atan2(cy-e.y,cx-e.x),0);}fxRings.push({x:cx,y:cy,r:200,max:201,c:'#c39bff',t:0});sfx('dash');break;}
+      case 'heal':{const h0=Math.max(2,Math.round(P.maxHp*(L3?.15:.12)));P._healPct=L3?.04:.03;if(L5){P._iron=Math.max(P._iron||0,time+3);floatText(P.x,P.y-84,'🛡️ 3 秒減傷','#bfe0ff');}P.hp=Math.min(P.maxHp,P.hp+h0);P._healT=6;P._healTick=1;P.poisonT=0;P.burnT=0;P.slowT=0;P.poison=0;P.burn=0;burst(P.x,P.y-30,'#7fe0a0',30,180);floatText(P.x,P.y-60,'💚 +'+h0+'　解除異常狀態','#7fe0a0',true);
+        if(story&&story.on){story.hp=story.hp||{};for(const f of followers)if(f.coop&&HERO[f.id]){const mx=recalcHp(HERO[f.id]);story.hp[f.id]=Math.min(mx,(story.hp[f.id]??mx)+Math.max(2,Math.round(mx*.25)));}}sfx('lvl');break;}
+      case 'haste':P._haste=time+8+gl*1.5;if(L5){P.sta=P.maxSta;floatText(P.x,P.y-84,'⚡ 精力全滿','#9fffc0');}burst(P.x,P.y-10,'#bfffd0',18,180);sfx('dash');break;
+      case 'blades':for(let d=(L5?-4:L3?-3:-2);d<=(L5?4:L3?3:2);d++)projs.push({x:P.x,y:P.y-26,vx:Math.cos(a+d*.2)*600,vy:Math.sin(a+d*.2)*600,r:7,dmg:Math.max(1,Math.round(atk*1.0*pw)),t:0,life:.7,friendly:true,arrow:true,pierce:true,c:'#d0d8e0',hitSet:new Set()});sfx('shoot');break;
+      case 'poison':{const T2=foes(300).sort((p,q)=>Math.hypot(p.x-P.x,p.y-P.y)-Math.hypot(q.x-P.x,q.y-P.y))[0];const zx=T2?T2.x:P.x+Math.cos(a)*160,zy=T2?T2.y:P.y+Math.sin(a)*160;zones2.push({k:'poison',x:zx,y:zy,r:85+gl*8,t:0,life:5+gl,tick:0,dmg:Math.max(1,Math.round(atk*.35*pw))});sfx('shoot');break;}
+      case 'spikes':for(let i=1;i<=(L5?13:L3?10:7);i++){const sx=P.x+Math.cos(a)*i*40,sy=P.y+Math.sin(a)*i*40;miss.push({k:'spike',x:sx,y:sy,t:-i*.06,dur:.05,fn:()=>{for(const e of enemies){if(e.dead||e.animal||Math.hypot(e.x-sx,e.y-sy)>34)continue;hitEnemy(e,Math.max(1,Math.round(atk*1.3*pw)),a,.4);if(window.__launch)window.__launch(e,.8);}burst(sx,sy,'#b8a07a',8,120);vfx({k:'spike',x:sx,y:sy,dur:.55,s:.85+Math.random()*.4});}});}sfx('boss');break;
+      case 'frostnova':for(const e of foes(125+gl*10)){hitEnemy(e,Math.max(1,Math.round(atk*.8*pw)),Math.atan2(e.y-P.y,e.x-P.x),.6);e.stun=Math.max(e.stun||0,e.boss?.4:1.5+gl*.2);e.slowT=Math.max(e.slowT||0,3);}fxRings.push({x:P.x,y:P.y,r:10,max:130,c:'#bfefff',t:0});burst(P.x,P.y-20,'#dff6ff',30,220);sfx('boss');break;
+      case 'pull':{const cx=P.x+Math.cos(a)*55,cy=P.y+Math.sin(a)*55;for(const e of foes(270+gl*15)){if(e.boss||e.king)continue;const d=Math.hypot(cx-e.x,cy-e.y)||1;moveE(e,(cx-e.x)*.85,(cy-e.y)*.85);e.stun=Math.max(e.stun||0,.6);hitEnemy(e,Math.max(1,Math.round(atk*.5*pw)),Math.atan2(cy-e.y,cx-e.x),0);}fxRings.push({x:cx,y:cy,r:200,max:201,c:'#c39bff',t:0});sfx('dash');break;}
       case 'meteor':{const T2=foes(340).sort((p,q)=>Math.hypot(p.x-P.x,p.y-P.y)-Math.hypot(q.x-P.x,q.y-P.y))[0];const mx=T2?T2.x:P.x+Math.cos(a)*200,my=T2?T2.y:P.y+Math.sin(a)*200;
-        miss.push({k:'meteor',tx:mx,ty:my,t:0,dur:.8,fn:()=>{for(const e of enemies){if(e.dead||e.animal||Math.hypot(e.x-mx,e.y-my)>95)continue;hitEnemy(e,Math.max(1,Math.round(atk*2.4*pw)),Math.atan2(e.y-my,e.x-mx),1.8);e.burn=Math.max(e.burn||0,4);}burst(mx,my-10,'#ff8a2a',40,280);fxRings.push({x:mx,y:my,r:10,max:100,c:'#ff7a2a',t:0});vfx({k:'flash',x:mx,y:my-16,r:130,c:'255,170,60',dur:.45});vfx({k:'scorch',x:mx,y:my,r:90,dur:3.5});vfx({k:'debris',x:mx,y:my,dur:.9,seed:Math.random()*99});shake=Math.max(shake,12);sfx('boss');}});break;}
-      case 'holy':{P.hp=Math.min(P.maxHp,P.hp+3);P.burnT=P.poisonT=P.slowT=P.shockT=0;floatText(P.x,P.y-60,'✨ +3','#fff3b0',true);burst(P.x,P.y-30,'#fff3b0',30,200);
-        if(story&&story.on){story.hp=story.hp||{};for(const f of followers)if(f.coop&&HERO[f.id]){const mx=recalcHp(HERO[f.id]);story.hp[f.id]=Math.min(mx,(story.hp[f.id]??mx)+3);}}sfx('lvl');break;}
-      case 'berserk':P._berserk=time+8;burst(P.x,P.y-30,'#ff5a5a',26,200);sfx('boss');break;
+        if(L5)for(let q=0;q<2;q++){const ox=mx+(Math.random()-.5)*220,oy=my+(Math.random()-.5)*160;miss.push({k:'meteor',tx:ox,ty:oy,t:-.3-q*.25,dur:.8,fn:()=>{for(const e of enemies){if(e.dead||e.animal||Math.hypot(e.x-ox,e.y-oy)>80)continue;hitEnemy(e,Math.max(1,Math.round(atk*1.4*pw)),Math.atan2(e.y-oy,e.x-ox),1.4);e.burn=Math.max(e.burn||0,3);}burst(ox,oy-10,'#ff8a2a',30,240);shake=Math.max(shake,10);}});}
+        miss.push({k:'meteor',tx:mx,ty:my,t:0,dur:.8,fn:()=>{for(const e of enemies){if(e.dead||e.animal||Math.hypot(e.x-mx,e.y-my)>(L3?120:95))continue;hitEnemy(e,Math.max(1,Math.round(atk*2.4*pw)),Math.atan2(e.y-my,e.x-mx),1.8);e.burn=Math.max(e.burn||0,4);}burst(mx,my-10,'#ff8a2a',40,280);fxRings.push({x:mx,y:my,r:10,max:100,c:'#ff7a2a',t:0});vfx({k:'flash',x:mx,y:my-16,r:130,c:'255,170,60',dur:.45});vfx({k:'scorch',x:mx,y:my,r:90,dur:3.5});vfx({k:'debris',x:mx,y:my,dur:.9,seed:Math.random()*99});shake=Math.max(shake,12);sfx('boss');}});break;}
+      case 'holy':{const hh=Math.max(3,Math.round(P.maxHp*(.15+.05*gl)));P.hp=Math.min(P.maxHp,P.hp+hh);P.burnT=P.poisonT=P.slowT=P.shockT=0;floatText(P.x,P.y-60,'✨ +'+hh,'#fff3b0',true);burst(P.x,P.y-30,'#fff3b0',30,200);
+        if(story&&story.on){story.hp=story.hp||{};for(const f of followers)if(f.coop&&HERO[f.id]){const mx=recalcHp(HERO[f.id]);story.hp[f.id]=Math.min(mx,(story.hp[f.id]??mx)+Math.max(3,Math.round(mx*(.15+.05*gl))));}}sfx('lvl');break;}
+      case 'berserk':P._berserk=time+8+gl;burst(P.x,P.y-30,'#ff5a5a',26,200);sfx('boss');break;
       case 'blink':{const T2=foes(300).sort((p,q)=>Math.hypot(p.x-P.x,p.y-P.y)-Math.hypot(q.x-P.x,q.y-P.y))[0];if(!T2){floatText(P.x,P.y-60,'附近沒有敵人','#ccc');break;}
         const b=Math.atan2(T2.y-P.y,T2.x-P.x);ghosts.push({x:P.x,y:P.y,fx:P.fx,t:0,cls:P.cls});const nx=T2.x+Math.cos(b)*30,ny=T2.y+Math.sin(b)*30;if(!collides||!collides(nx,ny,P.r||10)){P.x=nx;P.y=ny;}P.fx=-Math.cos(b);P.fy=-Math.sin(b);P.inv=Math.max(P.inv||0,.4);
-        hitEnemy(T2,Math.max(1,Math.round(atk*1.2*pw)),b,.6);vfx({k:'xslash',x:T2.x,y:T2.y-26,dur:.35});vfx({k:'smoke',x:nx,y:ny,dur:.4});miss.push({k:'x',t:0,dur:.15,fn:()=>{if(!T2.dead)hitEnemy(T2,Math.max(1,Math.round(atk*1.2*pw)),b,1);}});sfx('dash');break;}
-      case 'storm':zones2.push({k:'storm',follow:true,x:P.x,y:P.y,r:110,t:0,life:5,tick:0,dmg:Math.max(1,Math.round(atk*.4*pw))});sfx('dash');break;
-      case 'ironwall':P._iron=time+6;burst(P.x,P.y-30,'#cfe8ff',20,160);sfx('clang');break;
-      case 'vamp':{let n=0;for(const e of foes(95)){hitEnemy(e,Math.max(1,Math.round(atk*1.4*pw)),Math.atan2(e.y-P.y,e.x-P.x),1.2);n++;}const h=Math.min(3,n);if(h){P.hp=Math.min(P.maxHp,P.hp+h);floatText(P.x,P.y-60,'🩸 +'+h,'#ff6b8a',true);}fxRings.push({x:P.x,y:P.y,r:20,max:100,c:'#a0203a',t:0});sfx('swing');break;}
-      case 'timefreeze':for(const e of foes(320)){e.stun=Math.max(e.stun||0,e.boss?.8:2.5);e._frz=time+(e.boss?.8:2.5);}P._frzT=time+2.5;sfx('boss');flashT=.15;break;}
+        hitEnemy(T2,Math.max(1,Math.round(atk*1.2*pw)),b,.6);vfx({k:'xslash',x:T2.x,y:T2.y-26,dur:.35});vfx({k:'smoke',x:nx,y:ny,dur:.4});miss.push({k:'x',t:0,dur:.15,fn:()=>{if(!T2.dead)hitEnemy(T2,Math.max(1,Math.round(atk*1.2*pw)),b,1);}});if(L3)miss.push({k:'x',t:0,dur:.3,fn:()=>{if(!T2.dead){hitEnemy(T2,Math.max(1,Math.round(atk*1.2*pw)),b,1);vfx({k:'xslash',x:T2.x,y:T2.y-26,dur:.3});}}});
+        if(L5){const T4=foes(260).filter(e=>e!==T2).sort((p,q)=>Math.hypot(p.x-P.x,p.y-P.y)-Math.hypot(q.x-P.x,q.y-P.y))[0];if(T4)miss.push({k:'x',t:0,dur:.45,fn:()=>{if(T4.dead)return;const b2=Math.atan2(T4.y-P.y,T4.x-P.x);ghosts.push({x:P.x,y:P.y,fx:P.fx,t:0,cls:P.cls});const nx2=T4.x+Math.cos(b2)*30,ny2=T4.y+Math.sin(b2)*30;if(!collides||!collides(nx2,ny2,P.r||10)){P.x=nx2;P.y=ny2;}hitEnemy(T4,Math.max(1,Math.round(atk*1.6*pw)),b2,1);vfx({k:'xslash',x:T4.x,y:T4.y-26,dur:.35});sfx('dash');}});}sfx('dash');break;}
+      case 'storm':zones2.push({k:'storm',follow:true,x:P.x,y:P.y,r:110+gl*10,t:0,life:5+gl,tick:0,dmg:Math.max(1,Math.round(atk*.4*pw))});sfx('dash');break;
+      case 'ironwall':P._iron=time+6+gl*.75;if(L5){P.inv=Math.max(P.inv||0,1);floatText(P.x,P.y-84,'✨ 1 秒無敵','#cfe8ff');}burst(P.x,P.y-30,'#cfe8ff',20,160);sfx('clang');break;
+      case 'vamp':{let n=0;for(const e of foes(L3?115:95)){hitEnemy(e,Math.max(1,Math.round(atk*1.4*pw)),Math.atan2(e.y-P.y,e.x-P.x),1.2);n++;}const h=Math.min(Math.max(3,Math.round(P.maxHp*(L5?.2:.12))),n*Math.max(1,Math.round(P.maxHp*(L5?.06:.04))));if(h){P.hp=Math.min(P.maxHp,P.hp+h);floatText(P.x,P.y-60,'🩸 +'+h,'#ff6b8a',true);}fxRings.push({x:P.x,y:P.y,r:20,max:100,c:'#a0203a',t:0});sfx('swing');break;}
+      case 'timefreeze':{const fz=2.5+gl*.3;for(const e of foes(320)){e.stun=Math.max(e.stun||0,e.boss?.8:fz);e._frz=time+(e.boss?.8:fz);}P._frzT=time+fz;}sfx('boss');flashT=.15;break;}
     castFx(id,a);const S0=S();S0.uses[id]=(S0.uses[id]||0)+1;const nl=skLv(id);if(nl>lv){floatText(P.x,P.y-104,'✨ '+k.n+' 熟練度 Lv.'+nl+'！','#ffd25a',true);sfx('lvl');}}
   function castSlot(i){if(!P||state!=='play'||dlg||scene)return;if(!sysOpen()){if(i===1)floatText(P.x,P.y-62,'✨ 技能系統在 Lv.'+SKLV+' 開放','#ccc');return;}const sl=slots(P.cls)[i];if(!sl||sl==='ws'){if(i===1)floatText(P.x,P.y-62,'技能格 2 還是空的（☰ → ✨ 技能）','#ccc');return;}cast(sl);}
   window.__castSlot=castSlot;
@@ -9779,7 +9782,7 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
   let bkT=0;
   const _u=update;update=function(dt){const px=P?P.x:0,py=P?P.y:0;_u(dt);if(!P||state!=='play')return;
     if(P._haste>time&&!P.mount){const dx=P.x-px,dy=P.y-py;if(dx||dy)moveE(P,dx*.4,dy*.4);if(Math.random()<.3)parts.push({x:P.x,y:P.y-4,vx:0,vy:0,t:0,life:.3,c:'rgba(190,255,210,.6)'});}
-    if(P._healT>0){P._healT-=dt;P._healTick-=dt;if(P._healTick<=0){P._healTick=2;P.hp=Math.min(P.maxHp,P.hp+1);floatText(P.x,P.y-60,'💚 +1','#7fe0a0');}}
+    if(P._healT>0){P._healT-=dt;P._healTick-=dt;if(Math.random()<.35)parts.push({x:P.x+(Math.random()-.5)*50,y:P.y-Math.random()*20,vx:0,vy:-50,t:0,life:.6,c:'#9fffc0'});if(P._healTick<=0){P._healTick=1;const h=Math.max(1,Math.round(P.maxHp*(P._healPct||.03)));P.hp=Math.min(P.maxHp,P.hp+h);floatText(P.x,P.y-60,'💚 +'+h,'#7fe0a0');}}
     for(const z of zones2){z.t+=dt;if(z.follow){z.x=P.x;z.y=P.y;}if((z.tick-=dt)<=0){z.tick=.5;for(const e of enemies){if(e.dead||e.animal||Math.hypot(e.x-z.x,e.y-z.y)>z.r)continue;hitEnemy(e,z.dmg,Math.atan2(e.y-z.y,e.x-z.x),z.k==='storm'?.8:0);if(z.k==='poison')e.poisonT=Math.max(e.poisonT||0,1);}}}
     for(let i=zones2.length-1;i>=0;i--)if(zones2[i].t>=zones2[i].life)zones2.splice(i,1);
     for(const m of miss){m.t+=dt;if(m.t>=m.dur&&!m.done){m.done=true;try{m.fn();}catch(e){}}}for(let i=miss.length-1;i>=0;i--)if(miss[i].done)miss.splice(i,1);
@@ -9837,7 +9840,7 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
   function slotMenu(id){const k=SK[id],sl=slots(P.cls);window.__pickMenu(k.i+' '+k.n,`<div style="text-align:center">要裝在 ${nmHero()} 的哪一格？<br><small>技能格 1 原本是武技（O），技能格 2 按 P（手機是攻擊鈕左上那顆）</small></div>`,
       [{t:'技能格 1（O）　現在：'+(sl[0]==='ws'?'🌀 武技':SK[sl[0]].i+SK[sl[0]].n),bg:'#e8f0ff',fn:()=>{sl[0]=id;saveGame();}},{t:'技能格 2（P）　現在：'+(sl[1]&&SK[sl[1]]?SK[sl[1]].i+SK[sl[1]].n:'（空）'),bg:'#fff3cf',fn:()=>{sl[1]=id;saveGame();}},{t:'先不要裝',bg:'#eee',fn:null}]);}
   function manageMenu(){const sl=slots(P.cls),L=Object.keys(S().learned).filter(id=>SK[id]);const nm=x=>x==='ws'?'🌀 武技（武器自帶）':x&&SK[x]?SK[x].i+' '+SK[x].n+' Lv.'+skLv(x):'（空）';
-    window.__pickMenu('✨ 技能・'+nmHero(),`<div style="text-align:left;font-size:13px">${BOOKS.map(B=>has(B.id)?`✅ <b>${B.n}</b>：${B.sk.map(i=>SK[i].i+SK[i].n+' Lv.'+skLv(i)).join('、')}`:`🔒 ${B.n}<br>　<small style="color:#777">${B.hint}</small>`).join('<br>')}<br><small>技能越常用越熟練（Lv.1～5），威力變大、冷卻變短</small></div>`,
+    window.__pickMenu('✨ 技能・'+nmHero(),`<div style="text-align:left;font-size:13px">${BOOKS.map(B=>has(B.id)?`✅ <b>${B.n}</b>：${B.sk.map(i=>SK[i].i+SK[i].n+' Lv.'+skLv(i)).join('、')}`:`🔒 ${B.n}<br>　<small style="color:#777">${B.hint}</small>`).join('<br>')}<br><small>技能越常用越熟練（Lv.1～5）：每級威力 +15%、冷卻 -6%，Lv.3 和 Lv.5 還會解鎖新效果</small></div>`,
       [{t:'技能格 1（O）：'+nm(sl[0]),bg:'#e8f0ff',fn:()=>pickFor(0)},{t:'技能格 2（P）：'+nm(sl[1]),bg:'#fff3cf',fn:()=>pickFor(1)},{t:'關閉',bg:'#eee',fn:null}]);
     function pickFor(i){const opts=(i===0?[['ws','🌀 武技（武器自帶）']]:[[null,'（空）']]).concat(L.map(id=>[id,SK[id].i+' '+SK[id].n+' Lv.'+skLv(id)]));
       window.__pickMenu('技能格 '+(i+1),'',opts.map(([id,t])=>({t,bg:sl[i]===id?'#ffe9a8':'#fff',fn:()=>{sl[i]=id;saveGame();manageMenu();}})).concat([{t:'返回',bg:'#eee',fn:manageMenu}]));}}
@@ -11349,7 +11352,7 @@ CHANGELOG.unshift(['v3.6.5','2026.11.20',[
     ctx.fillStyle='#a8a296';ctx.beginPath();ctx.moveTo(x-16,y-14);ctx.lineTo(x-6,y-23);ctx.lineTo(x+6,y-21);ctx.lineTo(x-2,y-12);ctx.closePath();ctx.fill();
     ctx.fillStyle='#3a362e';for(const [a,b] of [[-12,-4],[6,-6],[14,-14]]){ctx.beginPath();ctx.arc(x+a,y+b,1.8,0,6.283);ctx.fill();}
     for(const [a,b,s] of [[-8,-10,6],[8,-15,7],[13,-3,5]]){const g=.6+.4*Math.sin(time*3+a);ctx.globalAlpha=g;ctx.fillStyle=l.c;ctx.beginPath();ctx.moveTo(x+a,y+b-s);ctx.lineTo(x+a+s*.6,y+b);ctx.lineTo(x+a,y+b+s*.7);ctx.lineTo(x+a-s*.6,y+b);ctx.closePath();ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1;ctx.stroke();}_r();
-    if(Math.hypot(P.x-d.x,P.y-d.y)<70){ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=(L().mine.q>=1||(P.items||{}).pick>0?'⛏️ ':'🔒 ')+l.ore+'礦脈';ctx.strokeText(t,x,y-44);ctx.fillStyle='#fff';ctx.fillText(t,x,y-44);}};
+    if(Math.hypot(P.x-d.x,P.y-d.y)<70){ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=(L().mine.q>=1||(P.items||{}).pick>0?'⛏️ '+l.ore+'礦脈　'+(isTouch?'按「挖礦」':'按 E 挖礦'):'🔒 '+l.ore+'礦脈（要十字鎬）');ctx.strokeText(t,x,y-44);ctx.fillStyle='#fff';ctx.fillText(t,x,y-44);}};
   function nearVein(){let b=null,bd=56;for(const v of VEINS){if(v.hp<=0)continue;const d=Math.hypot(v.x-P.x,v.y-P.y);if(d<bd){bd=d;b=v;}}return b;}
   function roll(v){const r=Math.random();if(r<.32)return giveOre(v.ore,1+(Math.random()<.25?1:0),v.x,v.y);
     if(r<.35){P.items.ore=(P.items.ore||0)+1;floatText(v.x,v.y-60,'🔩 精鐵 +1','#c9d6ff',true);return;}
@@ -11368,7 +11371,7 @@ CHANGELOG.unshift(['v3.6.5','2026.11.20',[
     window.__pickMenu('⛏️ 收購礦石','<div style="text-align:center">'+parts2.join('　')+'<br>全部賣掉可以拿到 <b>🪙'+tot+'</b></div>',[{t:'全部賣掉　🪙'+tot,bg:'#ffe08a',fn:()=>{for(const k in STONE)S[k]=0;P.coins+=tot;sfx('coin');floatText(P.x,P.y-70,'🪙 +'+tot,'#ffcf3a',true);saveGame();}},{t:'先留著',bg:'#eee',fn:()=>{}}]);}
   function minerTalk(){const M=L().mine;
     if(M.q===0){say('⛏️ 老礦工',['唉……腰又閃到了。','年輕人，你看起來力氣不錯，幫老頭子一個忙吧？','這把十字鎬借你。鎮上的礦場有幾塊亮晶晶的礦脈，','去挖 3 座礦脈回來給我看看！'],()=>{M.q=1;M.dug=0;floatText(P.x,P.y-80,'⛏️ 得到了十字鎬！','#ffcf3a',true);sfx('lvl');showCard('⛏️ 支線：老礦工的十字鎬','挖 3 座礦脈（0/3）');saveGame();});return;}
-    if(M.q===1){if((M.dug||0)<3){say('⛏️ 老礦工',['礦脈就在鎮上的礦場，站在旁邊按「對話」就能挖。','現在挖了 '+(M.dug||0)+' 座，再加油！']);return;}
+    if(M.q===1){if((M.dug||0)<3){say('⛏️ 老礦工',['礦脈就在鎮上的礦場，站在旁邊按 E（手機按「挖礦」）就能挖。','現在挖了 '+(M.dug||0)+' 座，再加油！']);return;}
       say('⛏️ 老礦工',['喔喔！挖得不錯嘛！','這把十字鎬，就送你了。','告訴你一個秘密——各地的城鎮裡，都有自己的礦場。','熔岩村有火晶石、雪原有寒冰礦、雷の都有雷鳴石……','傳說這七種礦石，會跟「七片碎片」起共鳴。','打開角色面板的「🌌 星圖」看看吧！'],()=>{M.q=2;P.coins+=150;floatText(P.x,P.y-80,'🪙 +150　十字鎬是你的了！','#ffcf3a',true);sfx('lvl');showCard('⛏️ 支線完成','可以在各地礦場挖礦了，星圖也打開了');saveGame();});return;}
     window.__pickMenu('⛏️ 老礦工','<div style="text-align:center">要做什麼？</div>',[{t:'💰 賣礦石',bg:'#ffe08a',fn:sellMenu},{t:'🗺️ 礦場在哪？',bg:'#d8ecff',fn:()=>say('⛏️ 老礦工',['火晶石在熔岩鍛冶村、寒冰礦在雪原驛站和冰の都、雷鳴石在雷の都，','蒼風玉在妖精の村、日輪石在空の都、大地岩在綠洲鎮，','隕鐵嘛……就在我們礦工鎮！挖完的礦脈，過兩三分鐘會再長出來。'])},{t:'沒事',bg:'#eee',fn:()=>{}}]);}
   // 鍛冶屋也收礦石
@@ -11470,7 +11473,7 @@ CHANGELOG.unshift(['v3.6.6','2026.11.20',[
     village:['crucian','loach','carp','goldcarp'],water:['sardine','aji','bass','seabream','octopus'],forest:['shrimp','trout','medaka','fairyfish'],
     desert:['catfish','crab','goldsand'],snow:['icefish','salmon','cod','aurora'],islet:['mackerel','tuna','puffer','babyshark']};
   const PLACE={village:'古夢碎村的池塘',water:'水の都的碼頭',forest:'妖精の村的池塘',desert:'綠洲鎮的綠洲',snow:'雪原驛站的冰洞',islet:'釣魚阿伯的小島'};
-  const W=[0.62,0.27,0.08,0.008];const WIN=[.95,.75,.55,.42];
+  window.__fishPrice=k=>(FISH[k]||[0,0,0,0])[3];const W=[0.62,0.27,0.08,0.008];const WIN=[.95,.75,.55,.42];
   const FL=()=>{life.fish=life.fish||{q:0,n:0,bag:{},dex:{}};return life.fish;};
   const SPOTS=[];window.__fishSpots=SPOTS;
   function pond(t){const cand=[];
@@ -11512,7 +11515,7 @@ CHANGELOG.unshift(['v3.6.6','2026.11.20',[
     if(F.phase==='bite'){ctx.font='900 34px sans-serif';ctx.textAlign='center';ctx.lineWidth=6;ctx.strokeStyle='#3a1a00';ctx.strokeText('！',P.x,P.y-92);ctx.fillStyle='#ffd23a';ctx.fillText('！',P.x,P.y-92);
       ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=2;for(let i=1;i<=2;i++){ctx.beginPath();ctx.ellipse(bx,by+2,8+i*9*((time*3)%1),3+i*3*((time*3)%1),0,0,6.283);ctx.stroke();}}
     ctx.restore();}
-    if(!F&&Math.hypot(P.x-s.x,P.y-s.y)<60){ctx.font='bold 13px sans-serif';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=FL().q>=1||(P.items||{}).rod>0?'🎣 按「對話」拋竿':'🔒 需要釣竿（道具店有賣）';ctx.strokeText(t,s.x,s.y-56);ctx.fillStyle='#fff';ctx.fillText(t,s.x,s.y-56);}};
+    if(!F&&Math.hypot(P.x-s.x,P.y-s.y)<60){ctx.font='bold 13px sans-serif';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=FL().q>=1||(P.items||{}).rod>0?(isTouch?'🎣 按「釣魚」拋竿':'🎣 按 E 拋竿'):'🔒 需要釣竿（道具店有賣）';ctx.strokeText(t,s.x,s.y-56);ctx.fillStyle='#fff';ctx.fillText(t,s.x,s.y-56);}};
   const _rn=render;render=function(){_rn.apply(this,arguments);if(!F||state!=='play')return;try{const dpr=ctx.canvas.width/VW;
     const msg=F.phase==='wait'?'🎣 等魚上鉤……（移動就收竿）':F.phase==='bite'?'❗ 上鉤了！快按'+(isTouch?'「攻擊」':' J 或 E')+'！':'';if(msg){ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.font='800 16px sans-serif';ctx.textAlign='center';const w=ctx.measureText(msg).width+28,y=VH*.24;
       ctx.fillStyle=F.phase==='bite'?'rgba(120,40,0,.85)':'rgba(10,30,50,.75)';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(VW/2-w/2,y-18,w,32,16);else ctx.rect(VW/2-w/2,y-18,w,32);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(msg,VW/2,y+4);ctx.restore();}
@@ -11540,7 +11543,7 @@ CHANGELOG.unshift(['v3.6.6','2026.11.20',[
   const dex=()=>{const L=FL(),all=Object.keys(FISH).filter(k=>FISH[k][2]>=0),got=all.filter(k=>L.dex[k]);
     window.__pickMenu('📖 魚類圖鑑　'+got.length+'/'+all.length,'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;font-size:13px">'+all.map(k=>L.dex[k]?`<div style="background:#eef6ff;border-radius:8px;padding:3px">${FISH[k][1]} ${FISH[k][0]}<br><small>×${L.dex[k]}</small></div>`:`<div style="background:#ddd;border-radius:8px;padding:3px;color:#888">❓ ？？？</div>`).join('')+'</div>',[{t:'關閉',bg:'#eee',fn:()=>{}}]);};
   const _tk=talk;talk=function(n){if(!n||n.id!=='fisher')return _tk.apply(this,arguments);const L=FL();
-    if(L.q===0){say('🎣 釣魚阿伯',['喔？居然有人划船來到這座小島。','我在這裡釣了一整天，一條都沒釣到……','年輕人，這支舊釣竿借你，幫我釣 3 條魚來看看！','就在旁邊的水邊，按「對話」拋竿，','浮標往下沉、出現「！」的時候，馬上收竿！'],()=>{L.q=1;L.n=0;floatText(P.x,P.y-80,'🎣 得到了釣竿！','#7fd8ff',true);sfx('lvl');showCard('🎣 支線：釣魚阿伯的釣竿','釣 3 條魚（0/3）');saveGame();});return;}
+    if(L.q===0){say('🎣 釣魚阿伯',['喔？居然有人划船來到這座小島。','我在這裡釣了一整天，一條都沒釣到……','年輕人，這支舊釣竿借你，幫我釣 3 條魚來看看！','就在旁邊的水邊，按 E（手機按「釣魚」）拋竿，','浮標往下沉、出現「！」的時候，馬上收竿！'],()=>{L.q=1;L.n=0;floatText(P.x,P.y-80,'🎣 得到了釣竿！','#7fd8ff',true);sfx('lvl');showCard('🎣 支線：釣魚阿伯的釣竿','釣 3 條魚（0/3）');saveGame();});return;}
     if(L.q===1){if((L.n||0)<3){say('🎣 釣魚阿伯',['現在釣到 '+(L.n||0)+' 條了，再加油！','浮標一沉就要收竿，太早太晚魚都會跑掉喔。']);return;}
       say('🎣 釣魚阿伯',['哇哈哈！你比我還會釣！','這支釣竿就送你吧。','其實啊，各地的城鎮裡都有釣點——','古夢碎村和妖精の村的池塘、水の都的碼頭、綠洲鎮的綠洲、雪原驛站的冰洞。','每個地方的魚都不一樣，聽說還有一種會發出七色光的魚……','釣到的魚可以拿來賣我，也可以烤來吃！'],()=>{L.q=2;P.coins+=120;floatText(P.x,P.y-80,'🪙 +120　釣竿是你的了！','#ffcf3a',true);sfx('lvl');showCard('🎣 支線完成','各地的釣點都可以釣魚了');saveGame();});return;}
     window.__pickMenu('🎣 釣魚阿伯','<div style="text-align:center">今天也來釣魚嗎？</div>',[{t:'💰 賣魚',bg:'#ffe08a',fn:sellAll},{t:'🍢 烤一條來吃（回血、回精力）',bg:'#ffd8b0',fn:grill},{t:'📖 魚類圖鑑',bg:'#d8ecff',fn:dex},{t:'🗺️ 哪裡可以釣魚？',bg:'#e0f0d8',fn:()=>say('🎣 釣魚阿伯',['古夢碎村和妖精の村的池塘、水の都的碼頭、','綠洲鎮的綠洲、雪原驛站的冰洞，還有我這座小島。'])},{t:'沒事',bg:'#eee',fn:()=>{}}]);};
@@ -11951,7 +11954,7 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
 
 // ================= 📜 更新紀錄：整理成精簡版（依版本由新到舊） =================
 CHANGELOG.length=0;CHANGELOG.push(
-  ['v3.6.13','2026.11.21',['🐻‍❄️ 熊掌變順手：出手間隔 0.7 → 0.45 秒、推人的力道只剩四分之一、攻擊範圍稍大，連按可以一直打到','🐴 被敵人打下坐騎後，坐騎會受驚 5 秒，這段時間不能再騎上去','🛒 道具店開始賣⛏️十字鎬、🎣釣竿，不用專程跑去礦工鎮或小島；接了老礦工、釣魚阿伯的支線就會直接借你，不用自己買','🌌 星圖加上說明：第一次打開會教你怎麼用（右上 ❓ 可以再看），下面有「還差什麼」的進度清單','🔭 開槍不再一縮一放、畫面不抖（連射不推人、不震動）','🏹 江家：按住攻擊＝拉弓＋瞄準，拉滿威力 ×1.8；L 換箭；新武器連弩、重弩','🏹 屬性箭：火焰、冰霜、雷電，在鍛冶屋用礦石做（1 顆 → 20 支）','💨 煙霧彈回到忍宇專屬；修好軍用小刀的翻滾刺殺']],
+  ['v3.6.13','2026.11.21',['✨ 技能等級更有感：升級更快（Lv.5 要用 60 次，以前 90 次），每級威力 +15%、冷卻 -6%，而且 Lv.3、Lv.5 會解鎖新效果（旋風斬轉兩圈、火球變 3 顆、雷擊劈 7 隻……）；技能說明裡都有寫','🐟 魚可以料理了：冒險手帳 →「料理」，在城鎮或傳送石旁邊做「鹽烤魚」「鮮魚蘑菇湯」「漁夫派」','💚 治療光環加強：馬上補 12% 血並解除異常，之後每秒再補 3%（總共約 30%，一瓶回復藥的量），冷卻 20 → 16 秒','⌨️ 挖礦、釣魚的提示改成「按 E」（手機顯示按哪顆鈕）','🐻‍❄️ 熊掌變順手：出手間隔 0.7 → 0.45 秒、推人的力道只剩四分之一、攻擊範圍稍大，連按可以一直打到','🐴 被敵人打下坐騎後，坐騎會受驚 5 秒，這段時間不能再騎上去','🛒 道具店開始賣⛏️十字鎬、🎣釣竿，不用專程跑去礦工鎮或小島；接了老礦工、釣魚阿伯的支線就會直接借你，不用自己買','🌌 星圖加上說明：第一次打開會教你怎麼用（右上 ❓ 可以再看），下面有「還差什麼」的進度清單','🔭 開槍不再一縮一放、畫面不抖（連射不推人、不震動）','🏹 江家：按住攻擊＝拉弓＋瞄準，拉滿威力 ×1.8；L 換箭；新武器連弩、重弩','🏹 屬性箭：火焰、冰霜、雷電，在鍛冶屋用礦石做（1 顆 → 20 支）','💨 煙霧彈回到忍宇專屬；修好軍用小刀的翻滾刺殺']],
   ['v3.6.11','2026.11.21',['🎯 軍軍：絕招改成「呼叫轟炸」、迷彩 7 秒（冷卻 10 秒）、趴姿重畫、狙擊槍要拉槍栓、拿長槍走得慢','💣 手榴彈、閃光彈改成用丟的，撞牆會反彈','🔪 軍用小刀只給時雨、軍軍當副武器']],
   ['v3.6.9','2026.11.21',['🛡️ 魔王霸體：一般攻擊推不動、打不斷，打破霸體條才會暈','🕳️ 九隻洞窟守衛全部重新設計造型，各有兩招專屬招式']],
   ['v3.6.7','2026.11.20',['🌌 七碎片星圖（角色面板）：用礦石點亮星脈，全隊變強','⛏️ 挖礦、🎣 釣魚：由老礦工、釣魚阿伯的支線開始，礦場和釣點都在城鎮裡']],
@@ -11980,6 +11983,21 @@ CHANGELOG.length=0;CHANGELOG.push(
   const _dm=dismount;dismount=function(fall){const had=!!(P&&P.mount);const r=_dm.apply(this,arguments);if(had&&fall&&P&&!P.mount){P.remountT=time+CD;floatText(P.x,P.y-88,'坐騎受驚了！'+CD+' 秒後才能再騎','#ffb08a');}return r;};
   const _tm=toggleMount;toggleMount=function(){if(P&&!P.mount&&(P.remountT||0)>time){floatText(P.x,P.y-60,'坐騎還在受驚…… '+Math.ceil(P.remountT-time)+' 秒','#ffb08a');return;}return _tm.apply(this,arguments);};
   const _u=update;update=function(dt){_u.apply(this,arguments);try{if(isTouch&&P&&!P.mount&&(P.remountT||0)>time){const b=document.getElementById('bM');if(b&&b.querySelector('.lb'))tbSet('bM','受驚 '+Math.ceil(P.remountT-time),0,1,true);}}catch(_){}};
+})();
+
+
+// ================= 🐟 魚可以拿來料理（冒險手帳 → 料理，在城鎮或傳送石旁） =================
+(()=>{
+  ING.fish='🐟';
+  FOODS.grillfish=['鹽烤魚','🐟',{fish:1},{hp:6}];
+  FOODS.fishsoup=['鮮魚蘑菇湯','🍜',{fish:1,mushroom:1},{hp:99,regen:90}];
+  FOODS.fishpie=['漁夫派','🥧',{fish:2,berry:1},{hp:8,def:90}];
+  const FISHV={};const edible=()=>{const L=life&&life.fish;if(!L||!L.bag)return [];const out=[];for(const k in L.bag){const n=L.bag[k]||0;if(n>0&&!/^(boot|weed|box)$/.test(k))out.push(k);}return out;};
+  let synced=null;
+  function sync(){try{if(!life||!life.bag)return;const L=life.fish||(life.fish={q:0,n:0,bag:{},dex:{}});const cnt=()=>edible().reduce((a,k)=>a+L.bag[k],0);
+    if(synced!=null&&(life.bag.fish||0)<synced){let need=synced-(life.bag.fish||0);const ks=edible().sort((a,b)=>(window.__fishPrice?window.__fishPrice(a):0)-(window.__fishPrice?window.__fishPrice(b):0));for(const k of ks){while(need>0&&L.bag[k]>0){L.bag[k]--;need--;}}}
+    life.bag.fish=cnt();synced=life.bag.fish;}catch(_){}}
+  setInterval(sync,250);window.__fishSync=sync;
 })();
 
 requestAnimationFrame(loop);
