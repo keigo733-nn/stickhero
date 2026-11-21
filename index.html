@@ -2085,7 +2085,7 @@ const FEM=['elemental','reaper','bard','tamer','umbrella'],isFem=()=>!!P;
 const lifeEl=()=>document.getElementById('life');
 function openLife(tab){if(!P||(state!=='play'&&state!=='shop'))return;if(tab)lifeTab=tab;document.getElementById('warp').classList.add('hide');state='shop';lifeMsg='';if(false&&P.cls==='umbrella'&&!life.tenchiGag){life.tenchiGag=1;lifeMsg='🐢 小龜：「咦？天地，你怎麼也有手帳？這不是女生才……」<br>☂️ 天地：「……面具底下的事，不要問。」';}renderLife();lifeEl().classList.remove('hide');}
 function closeLife(){lifeEl().classList.add('hide');state='play';saveGame();}
-function renderLife(){const fem=isFem(),TABS=fem?[['cos','👗 換裝'],['pet','🐾 夥伴'],['cook','🍳 料理'],['pal','💝 好感'],['home','🏠 小屋'],['dex','📚 圖鑑'],['world','🌍 世界']]:[['cos','👗 換裝'],['home','🏠 小屋'],['world','🌍 世界']];if(!TABS.some(t=>t[0]===lifeTab))lifeTab='cos';document.getElementById('lifeTitle').textContent='📖 冒險手帳';
+function renderLife(){const fem=isFem(),TABS=fem?[['cos','👗 換裝'],['pet','🐾 夥伴'],['cook','🍳 料理'],['pal','💝 好感'],['home','🏠 小屋'],['dex','📚 圖鑑'],['world','🌍 世界']]:[['cos','👗 換裝'],['cook','🍳 料理'],['home','🏠 小屋'],['world','🌍 世界']];if(!TABS.some(t=>t[0]===lifeTab))lifeTab='cos';document.getElementById('lifeTitle').textContent='📖 冒險手帳';
   document.getElementById('lifeTabs').innerHTML=TABS.map(([k,n])=>`<button class="ltab${lifeTab===k?' on':''}" data-a="tab:${k}">${n}</button>`).join('')+(fem?`<div class="lbar">🪙 ${P.coins}　🍖 ${ingHave('meat')}　🌸 ${life.bag.flower}　🍓 ${life.bag.berry}　🍄 ${life.bag.mushroom}</div>`:`<div class="lbar">🪙 ${P.coins}</div>`)+(lifeMsg?`<div class="lmsg">${lifeMsg}</div>`:'');
   let h='';const row=(t,d,b)=>`<div class="srow"><div><b>${t}</b><div class="sdesc">${d}</div></div>${b}</div>`,btn=(a,t,dis)=>`<button class="sbtn${dis?'':' buy'}" data-a="${a}" ${dis?'disabled':''}>${t}</button>`;
   if(lifeTab==='cos'){h+='<canvas id="cosCv" width="240" height="200" style="display:block;margin:0 auto 6px;width:150px;height:125px;border-radius:12px"></canvas>';
@@ -9610,28 +9610,28 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
 // ================= ✨ 技能系統：升級拿技能點，去王城學戰技、法術；兩個技能格（O、P）=================
 (()=>{
   const SK={
-    whirl:{n:'旋風斬',i:'🌀',type:'戰技',cost:1,cd:7,sta:18,d:'原地轉一圈，砍周圍所有敵人　📈 範圍變大；威力 +15%、冷卻 -6%　⭐Lv.3：轉兩圈（多砍一次）　🌟Lv.5：先把周圍的小怪吸過來再轉'},
+    whirl:{n:'旋風斬',i:'🌀',type:'戰技',cost:1,cd:7,sta:18,d:'原地轉一圈，砍周圍所有敵人　📈 每級範圍變大、威力 +15%、冷卻 -6%　⭐Lv.3：轉兩圈（多砍一次）　🌟Lv.5：先把周圍的小怪吸過來再轉'},
     dash:{n:'突進斬',i:'💨',type:'戰技',cost:1,cd:6,sta:16,d:'往前衝刺，砍過一整排敵人　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：衝刺距離 +40%　🌟Lv.5：衝過去後殘影再補一刀'},
-    quake:{n:'震地',i:'💥',type:'戰技',cost:2,cd:10,sta:24,d:'砸地震出一圈衝擊波，周圍敵人暈眩　📈 範圍變大；威力 +15%、冷卻 -6%　⭐Lv.3：暈眩更久　🌟Lv.5：0.5 秒後再震一次更大的餘震'},
-    warcry:{n:'戰吼',i:'📣',type:'戰技',cost:2,cd:18,sta:20,d:'8 秒內，你和隊友的攻擊 +30%　📈 每級 +1 秒；威力 +15%、冷卻 -6%　🌟Lv.5：喊完回 10% 血'},
+    quake:{n:'震地',i:'💥',type:'戰技',cost:2,cd:10,sta:24,d:'砸地震出一圈衝擊波，周圍敵人暈眩　📈 每級範圍變大、威力 +15%、冷卻 -6%　⭐Lv.3：暈眩 1.2 → 1.7 秒　🌟Lv.5：0.5 秒後再震一次更大的餘震'},
+    warcry:{n:'戰吼',i:'📣',type:'戰技',cost:2,cd:18,sta:20,d:'8 秒內，你和隊友的攻擊 +30%　📈 每級多 1 秒、冷卻 -6%　🌟Lv.5：喊完回 10% 血'},
     fireball:{n:'火球',i:'🔥',type:'法術',cost:1,cd:5,sta:14,d:'丟出會爆炸的火球，敵人會燒起來　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：爆炸範圍變大　🌟Lv.5：一次丟出 3 顆火球'},
     icicle:{n:'冰柱',i:'🧊',type:'法術',cost:1,cd:6,sta:14,d:'扇形射出 3 根穿透的冰柱　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：5 根冰柱　🌟Lv.5：7 根冰柱'},
     thunder:{n:'雷擊',i:'⚡',type:'法術',cost:2,cd:9,sta:20,d:'落雷劈向附近最多 3 個敵人，會麻痺　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：劈 5 個敵人　🌟Lv.5：劈 7 個敵人'},
-    heal:{n:'治療光環',i:'💚',type:'法術',cost:2,cd:16,sta:22,d:'馬上補 12% 血並解除中毒、燒傷、緩速，之後 6 秒每秒再補 3%（總共約 30%，跟一瓶回復藥差不多）；隊友也補 25%　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：總共補約 40%　🌟Lv.5：另外 3 秒減傷'},
-    haste:{n:'加速',i:'👟',type:'法術',cost:1,cd:16,sta:12,d:'8 秒內移動速度 +40%　📈 每級 +1.5 秒；威力 +15%、冷卻 -6%　🌟Lv.5：施放時精力全滿'},
+    heal:{n:'治療光環',i:'💚',type:'法術',cost:2,cd:16,sta:22,d:'馬上補 12% 血並解除中毒、燒傷、緩速，之後 6 秒每秒再補 3%（總共約 30%，跟一瓶回復藥差不多）；隊友也補 25%　📈 每級冷卻 -6%　⭐Lv.3：馬上補 15%、之後每秒 4%（總共約 40%）　🌟Lv.5：另外 3 秒減傷'},
+    haste:{n:'加速',i:'👟',type:'法術',cost:1,cd:16,sta:12,d:'8 秒內移動速度 +40%　📈 每級多 1.5 秒、冷卻 -6%　🌟Lv.5：施放時精力全滿'},
     blades:{n:'飛刃',i:'🗡️',type:'戰技',cd:6,sta:14,d:'扇形丟出 5 把穿透的飛刃　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：7 把飛刃　🌟Lv.5：9 把飛刃'},
-    poison:{n:'毒霧',i:'☠️',type:'法術',cd:9,sta:16,d:'在敵人腳下放一團毒霧，5 秒內持續傷害　📈 每級範圍變大、+1 秒；威力 +15%、冷卻 -6%'},
+    poison:{n:'毒霧',i:'☠️',type:'法術',cd:9,sta:16,d:'在敵人腳下放一團毒霧，5 秒內持續傷害　📈 每級範圍變大、多 1 秒、威力 +15%、冷卻 -6%'},
     spikes:{n:'地刺',i:'🪨',type:'法術',cd:8,sta:18,d:'地上往前竄出一排石刺，把敵人刺上天　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：石刺變長（10 根）　🌟Lv.5：石刺更長（13 根）'},
-    frostnova:{n:'冰霜新星',i:'❄️',type:'法術',cd:11,sta:20,d:'身邊炸出一圈寒氣，把敵人凍住 1.5 秒　📈 每級範圍變大、凍更久；威力 +15%、冷卻 -6%'},
-    pull:{n:'引力',i:'🧲',type:'法術',cd:10,sta:16,d:'把周圍的敵人全部吸到你面前（接旋風斬超好用）　📈 每級吸得更遠；威力 +15%、冷卻 -6%'},
+    frostnova:{n:'冰霜新星',i:'❄️',type:'法術',cd:11,sta:20,d:'身邊炸出一圈寒氣，把敵人凍住 1.5 秒　📈 每級範圍變大、多凍 0.2 秒、威力 +15%、冷卻 -6%'},
+    pull:{n:'引力',i:'🧲',type:'法術',cd:10,sta:16,d:'把周圍的敵人全部吸到你面前（接旋風斬超好用）　📈 每級吸得更遠、威力 +15%、冷卻 -6%'},
     meteor:{n:'流星',i:'☄️',type:'法術',cd:14,sta:24,d:'召喚一顆流星砸下來，大範圍爆炸、燃燒　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：爆炸範圍變大　🌟Lv.5：多砸 2 顆小流星'},
-    holy:{n:'聖光',i:'✨',type:'法術',cd:22,sta:20,d:'全隊補 15% 血（每級 +5%），還會清掉燒傷、中毒、冰凍、麻痺　📈 每級多補 5%；威力 +15%、冷卻 -6%'},
-    berserk:{n:'狂暴',i:'😤',type:'戰技',cd:20,sta:10,d:'8 秒內攻擊 +50%，但受到的傷害也會變多　📈 每級 +1 秒；威力 +15%、冷卻 -6%'},
+    holy:{n:'聖光',i:'✨',type:'法術',cd:22,sta:20,d:'全隊補 15% 血，還會清掉燒傷、中毒、冰凍、麻痺　📈 每級多補 5%、冷卻 -6%'},
+    berserk:{n:'狂暴',i:'😤',type:'戰技',cd:20,sta:10,d:'8 秒內攻擊 +50%，但受到的傷害也會變多　📈 每級多 1 秒、冷卻 -6%'},
     blink:{n:'瞬影斬',i:'👤',type:'戰技',cd:8,sta:16,d:'瞬間移動到最近的敵人背後，連砍兩刀　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：連砍三刀　🌟Lv.5：砍完再瞬移到第二個敵人'},
-    storm:{n:'風暴領域',i:'🌪️',type:'法術',cd:16,sta:22,d:'5 秒內身邊颳起風暴，一直傷害靠近的敵人　📈 每級範圍變大、+1 秒；威力 +15%、冷卻 -6%'},
-    ironwall:{n:'鐵壁',i:'🛡️',type:'戰技',cd:18,sta:16,d:'6 秒內受到的傷害減半　📈 每級 +0.75 秒；威力 +15%、冷卻 -6%　🌟Lv.5：開的時候 1 秒無敵'},
-    vamp:{n:'吸血斬',i:'🩸',type:'戰技',cd:9,sta:16,d:'砍周圍的敵人，每砍到一個回 4% 血（最多 12%）　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：範圍變大　🌟Lv.5：回血更多'},
-    timefreeze:{n:'時間凍結',i:'⏳',type:'法術',cd:24,sta:26,d:'讓附近所有敵人停住 2.5 秒　📈 每級多凍 0.3 秒；威力 +15%、冷卻 -6%'}};
+    storm:{n:'風暴領域',i:'🌪️',type:'法術',cd:16,sta:22,d:'5 秒內身邊颳起風暴，一直傷害靠近的敵人　📈 每級範圍變大、多 1 秒、威力 +15%、冷卻 -6%'},
+    ironwall:{n:'鐵壁',i:'🛡️',type:'戰技',cd:18,sta:16,d:'6 秒內受到的傷害減半　📈 每級多 0.75 秒、冷卻 -6%　🌟Lv.5：開的時候 1 秒無敵'},
+    vamp:{n:'吸血斬',i:'🩸',type:'戰技',cd:9,sta:16,d:'砍周圍的敵人，每砍到一個回 4% 血（最多 12%）　📈 每級威力 +15%、冷卻 -6%　⭐Lv.3：範圍變大　🌟Lv.5：每砍到一個回 6%（最多 20%）'},
+    timefreeze:{n:'時間凍結',i:'⏳',type:'法術',cd:24,sta:26,d:'讓附近所有敵人停住 2.5 秒　📈 每級多凍 0.3 秒、冷卻 -6%'}};
   window.__SK=SK;
   const BOOKS=[
     {id:'b1',n:'⚔️《騎士劍技之書》',sk:['whirl','dash'],hint:'王城的騎士團長，在找能打贏競技場「三波挑戰」的勇士'},
@@ -9729,7 +9729,7 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
     if(P._berserk>time&&Math.random()<.5)parts.push({x:P.x+(Math.random()-.5)*24,y:P.y-Math.random()*40,vx:0,vy:-70,t:0,life:.35,c:'rgba(255,80,60,.8)'});
     if(P._warcry>time&&Math.random()<.25)parts.push({x:P.x+(Math.random()-.5)*30,y:P.y-10,vx:0,vy:-50,t:0,life:.5,c:'rgba(255,214,90,.8)'});};
   function cast(id){const k=SK[id];if(!k||!P)return;if(P.flying||P.mount&&false){floatText(P.x,P.y-62,'現在不能放技能','#ccc');return;}
-    const cdk=P.cls+':'+id;if(cdm[cdk]>time){floatText(P.x,P.y-62,k.n+' 還要 '+Math.ceil(cdm[cdk]-time)+' 秒','#ccc');return;}
+    const cdk=P.cls+':'+id;if(cdm[cdk]-time>k.cd+1)cdm[cdk]=0;if(cdm[cdk]>time){floatText(P.x,P.y-62,k.n+' 還要 '+Math.ceil(cdm[cdk]-time)+' 秒','#ccc');return;}
     if(!useSta(k.sta)){floatText(P.x,P.y-60,'精力不夠','#ccc');return;}
     const lv=skLv(id),pw=1+.15*(lv-1),L3=lv>=3,L5=lv>=5,gl=lv-1;cdm[cdk]=time+k.cd*(1-.06*(lv-1));
     const atk=atkPower(),a=autoAim?autoAim(Math.atan2(P.fy||0,P.fx||1)):Math.atan2(P.fy||0,P.fx||1);P.fx=Math.cos(a);P.fy=Math.sin(a);
@@ -9770,9 +9770,10 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
       case 'ironwall':P._iron=time+6+gl*.75;if(L5){P.inv=Math.max(P.inv||0,1);floatText(P.x,P.y-84,'✨ 1 秒無敵','#cfe8ff');}burst(P.x,P.y-30,'#cfe8ff',20,160);sfx('clang');break;
       case 'vamp':{let n=0;for(const e of foes(L3?115:95)){hitEnemy(e,Math.max(1,Math.round(atk*1.4*pw)),Math.atan2(e.y-P.y,e.x-P.x),1.2);n++;}const h=Math.min(Math.max(3,Math.round(P.maxHp*(L5?.2:.12))),n*Math.max(1,Math.round(P.maxHp*(L5?.06:.04))));if(h){P.hp=Math.min(P.maxHp,P.hp+h);floatText(P.x,P.y-60,'🩸 +'+h,'#ff6b8a',true);}fxRings.push({x:P.x,y:P.y,r:20,max:100,c:'#a0203a',t:0});sfx('swing');break;}
       case 'timefreeze':{const fz=2.5+gl*.3;for(const e of foes(320)){e.stun=Math.max(e.stun||0,e.boss?.8:fz);e._frz=time+(e.boss?.8:fz);}P._frzT=time+fz;}sfx('boss');flashT=.15;break;}
-    castFx(id,a);const S0=S();S0.uses[id]=(S0.uses[id]||0)+1;const nl=skLv(id);if(nl>lv){floatText(P.x,P.y-104,'✨ '+k.n+' 熟練度 Lv.'+nl+'！','#ffd25a',true);sfx('lvl');}}
+    castFx(id,a);const S0=S();S0.uses[id]=(S0.uses[id]||0)+1;const nl=skLv(id);if(nl>lv){floatText(P.x,P.y-104,'✨ '+k.n+' 熟練度 Lv.'+nl+'！','#ffd25a',true);sfx('lvl');const pm=(k.d||'').match(nl===3?/⭐Lv\.3：([^　]+)/:nl===5?/🌟Lv\.5：([^　]+)/:null);if(pm)floatText(P.x,P.y-128,'🔓 '+pm[1],'#fff3b0',true);}}
   function castSlot(i){if(!P||state!=='play'||dlg||scene)return;if(!sysOpen()){if(i===1)floatText(P.x,P.y-62,'✨ 技能系統在 Lv.'+SKLV+' 開放','#ccc');return;}const sl=slots(P.cls)[i];if(!sl||sl==='ws'){if(i===1)floatText(P.x,P.y-62,'技能格 2 還是空的（☰ → ✨ 技能）','#ccc');return;}cast(sl);}
   window.__castSlot=castSlot;
+  {const _sgc=startGame;startGame=function(){for(const q in cdm)delete cdm[q];return _sgc.apply(this,arguments);};}
   // O：技能格 1（預設是武技）
   const _ws=weaponSkill;weaponSkill=function(){const sl=P&&slots(P.cls)[0];if(sl&&sl!=='ws'&&SK[sl]){cast(sl);return;}return _ws.apply(this,arguments);};
   addEventListener('keydown',e=>{if(e.repeat)return;if(e.key==='p'||e.key==='P'){if(state==='play'){castSlot(1);}}});
@@ -9840,7 +9841,7 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
   function slotMenu(id){const k=SK[id],sl=slots(P.cls);window.__pickMenu(k.i+' '+k.n,`<div style="text-align:center">要裝在 ${nmHero()} 的哪一格？<br><small>技能格 1 原本是武技（O），技能格 2 按 P（手機是攻擊鈕左上那顆）</small></div>`,
       [{t:'技能格 1（O）　現在：'+(sl[0]==='ws'?'🌀 武技':SK[sl[0]].i+SK[sl[0]].n),bg:'#e8f0ff',fn:()=>{sl[0]=id;saveGame();}},{t:'技能格 2（P）　現在：'+(sl[1]&&SK[sl[1]]?SK[sl[1]].i+SK[sl[1]].n:'（空）'),bg:'#fff3cf',fn:()=>{sl[1]=id;saveGame();}},{t:'先不要裝',bg:'#eee',fn:null}]);}
   function manageMenu(){const sl=slots(P.cls),L=Object.keys(S().learned).filter(id=>SK[id]);const nm=x=>x==='ws'?'🌀 武技（武器自帶）':x&&SK[x]?SK[x].i+' '+SK[x].n+' Lv.'+skLv(x):'（空）';
-    window.__pickMenu('✨ 技能・'+nmHero(),`<div style="text-align:left;font-size:13px">${BOOKS.map(B=>has(B.id)?`✅ <b>${B.n}</b>：${B.sk.map(i=>SK[i].i+SK[i].n+' Lv.'+skLv(i)).join('、')}`:`🔒 ${B.n}<br>　<small style="color:#777">${B.hint}</small>`).join('<br>')}<br><small>技能越常用越熟練（Lv.1～5）：每級威力 +15%、冷卻 -6%，Lv.3 和 Lv.5 還會解鎖新效果</small></div>`,
+    window.__pickMenu('✨ 技能・'+nmHero(),`<div style="text-align:left;font-size:13px">${BOOKS.map(B=>has(B.id)?`✅ <b>${B.n}</b>：${B.sk.map(i=>SK[i].i+SK[i].n+' Lv.'+skLv(i)).join('、')}`:`🔒 ${B.n}<br>　<small style="color:#777">${B.hint}</small>`).join('<br>')}<br><small>技能越常用越熟練（Lv.1～5）：每級冷卻 -6%，攻擊技威力 +15%、輔助技時間變長；Lv.3 和 Lv.5 還會解鎖新效果（寫在技能說明裡）</small></div>`,
       [{t:'技能格 1（O）：'+nm(sl[0]),bg:'#e8f0ff',fn:()=>pickFor(0)},{t:'技能格 2（P）：'+nm(sl[1]),bg:'#fff3cf',fn:()=>pickFor(1)},{t:'關閉',bg:'#eee',fn:null}]);
     function pickFor(i){const opts=(i===0?[['ws','🌀 武技（武器自帶）']]:[[null,'（空）']]).concat(L.map(id=>[id,SK[id].i+' '+SK[id].n+' Lv.'+skLv(id)]));
       window.__pickMenu('技能格 '+(i+1),'',opts.map(([id,t])=>({t,bg:sl[i]===id?'#ffe9a8':'#fff',fn:()=>{sl[i]=id;saveGame();manageMenu();}})).concat([{t:'返回',bg:'#eee',fn:manageMenu}]));}}
@@ -9925,7 +9926,7 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
   let lastO='';const _uO=update;update=function(dt){_uO(dt);const b=document.getElementById('bO');if(!b||!P)return;const id=slots(P.cls)[0],k=id&&id!=='ws'?SK[id]:null;
     const lbl=k?k.i+'|'+k.n:'ws';if(lbl===lastO)return;lastO=lbl;const lb=b.querySelector('.lb');if(lb)lb.textContent=k?k.n:'武技';if(k)b.dataset.ic=k.i;else delete b.dataset.ic;};
   document.head.insertAdjacentHTML('beforeend','<style>#touch #bO[data-ic]::before{content:attr(data-ic)!important}</style>');
-  const _ss=skillState;skillState=function(){const k=_ss.apply(this,arguments);try{const id=slots(P.cls)[0];if(id&&id!=='ws'&&SK[id]){const left=Math.max(0,(cdm[P.cls+':'+id]||0)-time);k.ws=Object.assign({},k.ws,{cd:left,max:SK[id].cd,off:P.sta<SK[id].sta});}}catch(e){}return k;};
+  const _ss=skillState;skillState=function(){const k=_ss.apply(this,arguments);try{const id=slots(P.cls)[0];if(id&&id!=='ws'&&SK[id]){const left=Math.max(0,Math.min(SK[id].cd,(cdm[P.cls+':'+id]||0)-time));k.ws=Object.assign({},k.ws,{cd:left,max:SK[id].cd,off:P.sta<SK[id].sta});}}catch(e){}return k;};
   // 訓練師 NPC
   function trainers(){const c=CASTLES.find(q=>q.id==='raiCastle');if(!c||NPCS.some(n=>n.id==='trainK'))return;const iX0=c.x+5,iX1=c.x+c.w-6,iY1=c.y+c.h-6;
     NPCS.push({id:'trainK',role:'story',name:'騎士團長',x:(iX0+5.5)*T,y:(iY1-4.2)*T,color:'#4b3f8f',hat:'knight',onTalk:()=>knight()});
@@ -11325,11 +11326,11 @@ CHANGELOG.unshift(['v3.6.5','2026.11.20',[
   // ---------- 礦石掉落（打怪、開寶箱也有一點） ----------
   const REG2={lava:'fire',snow:'ice',ice:'ice',thunder:'thunder',forest:'wind',grass:'wind',water:'wind',mountain:'light',desert:'earth',cave:'blade'};
   function giveOre(k,n,x,y){const l=LK[k];if(!l||!n)return;L().ores[k]=(life.ores[k]||0)+n;floatText(x,y-60,l.oi+' '+l.ore+' +'+n,l.c,true);}
-  const _lk=lifeKill;lifeKill=function(e){const r=_lk.apply(this,arguments);try{const k=REG2[e.reg];if(k&&(e.boss||e.king||Math.random()<.05))giveOre(k,e.boss||e.king?3:1,e.x,e.y);}catch(_){}return r;};
+  const _lk=lifeKill;lifeKill=function(e){const r=_lk.apply(this,arguments);try{const k=REG2[e.reg];if(k&&(e.boss||e.king||Math.random()<.07))giveOre(k,e.boss||e.king?3:1,e.x,e.y);}catch(_){}return r;};
   const _oc=openChest;openChest=function(c){const was=c.opened;const r=_oc.apply(this,arguments);try{if(!was&&c.opened&&Math.random()<.4){const k=REG2[c.reg]||LN[Math.floor(Math.random()*7)].k;giveOre(k,1+Math.floor(Math.random()*2),c.x,c.y-20);}}catch(_){}return r;};
   // ---------- 礦場（每個礦場都在城鎮柵欄裡） ----------
   const QUARRY=[['lava','fire'],['snow','ice'],['ice','ice'],['thunder','thunder'],['forest','wind'],['mountain','light'],['desert','earth'],['cave','blade']];
-  const VEINS=[];window.__veins=VEINS;
+  const VEINS=[];window.__veins=VEINS;window.__lifeMineQ=()=>L().mine.q;
   function placeVeins(){if(VEINS.length)return;for(const [tid,k] of QUARRY){const t=TOWNS.find(t=>t.id===tid);if(!t)continue;const cand=[];
       for(let y=t.y+2;y<t.y+t.h-2;y++)for(let x=t.x+2;x<t.x+t.w-2;x++){let ok=true;
         for(let j=-1;j<=1&&ok;j++)for(let i=-1;i<=1&&ok;i++){const tt=getT(x+i,y+j);if(tt!==G&&tt!==FLOWER)ok=false;}
@@ -11338,7 +11339,7 @@ CHANGELOG.unshift(['v3.6.5','2026.11.20',[
         if(NPCS.some(n=>Math.hypot(n.x-px,n.y-py)<90))continue;if(townDeco.some(d=>Math.hypot(d.x-px,d.y-py)<34))continue;
         cand.push({x,y,px,py,s:Math.min(x-t.x,t.x+t.w-1-x,y-t.y,t.y+t.h-1-y)});}
       cand.sort((a,b)=>a.s-b.s||a.y-b.y);const pick=[];for(const c of cand){if(pick.length>=4)break;if(pick.some(p=>Math.hypot(p.x-c.x,p.y-c.y)<3))continue;if(pick.length&&Math.hypot(pick[0].x-c.x,pick[0].y-c.y)>9)continue;pick.push(c);}
-      for(const p of pick){const v={kind:'vein',ore:k,town:tid,x:p.px,y:p.py,hp:3,regrow:0,shake:0};VEINS.push(v);townDeco.push(v);}
+      pick.forEach((p,i)=>{const id=tid+i,VS=(L().mine.vh=L().mine.vh||{});const v={kind:'vein',id,ore:k,town:tid,x:p.px,y:p.py,hp:VS[id]!=null?VS[id]:6,regrow:1e12,shake:0};VEINS.push(v);townDeco.push(v);});
       if(pick.length){const sx=pick.reduce((a,p)=>a+p.px,0)/pick.length,sy=Math.min(...pick.map(p=>p.py))-46;townDeco.push({kind:'qsign',x:sx,y:sy,ore:k});}}}
   window.__quarries=()=>QUARRY.map(([tid,k])=>{const t=TOWNS.find(t=>t.id===tid),v=VEINS.filter(v=>v.town===tid);return (t?t.name:tid)+'：'+LK[k].ore+' ×'+v.length+(v[0]?' @'+Math.round(v[0].x/T)+','+Math.round(v[0].y/T):'');});
   const _dd=drawTownDeco;drawTownDeco=function(d){
@@ -11352,15 +11353,15 @@ CHANGELOG.unshift(['v3.6.5','2026.11.20',[
     ctx.fillStyle='#a8a296';ctx.beginPath();ctx.moveTo(x-16,y-14);ctx.lineTo(x-6,y-23);ctx.lineTo(x+6,y-21);ctx.lineTo(x-2,y-12);ctx.closePath();ctx.fill();
     ctx.fillStyle='#3a362e';for(const [a,b] of [[-12,-4],[6,-6],[14,-14]]){ctx.beginPath();ctx.arc(x+a,y+b,1.8,0,6.283);ctx.fill();}
     for(const [a,b,s] of [[-8,-10,6],[8,-15,7],[13,-3,5]]){const g=.6+.4*Math.sin(time*3+a);ctx.globalAlpha=g;ctx.fillStyle=l.c;ctx.beginPath();ctx.moveTo(x+a,y+b-s);ctx.lineTo(x+a+s*.6,y+b);ctx.lineTo(x+a,y+b+s*.7);ctx.lineTo(x+a-s*.6,y+b);ctx.closePath();ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1;ctx.stroke();}_r();
-    if(Math.hypot(P.x-d.x,P.y-d.y)<70){ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=(L().mine.q>=1||(P.items||{}).pick>0?'⛏️ '+l.ore+'礦脈　'+(isTouch?'按「挖礦」':'按 E 挖礦'):'🔒 '+l.ore+'礦脈（要十字鎬）');ctx.strokeText(t,x,y-44);ctx.fillStyle='#fff';ctx.fillText(t,x,y-44);}};
+    if(Math.hypot(P.x-d.x,P.y-d.y)<70){ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=(L().mine.q>=1||(P.items||{}).pick>0?'⛏️ '+l.ore+'礦脈　'+(isTouch?'按 E／「挖礦」':'按 E 挖礦'):'🔒 '+l.ore+'礦脈（要十字鎬）');ctx.strokeText(t,x,y-44);ctx.fillStyle='#fff';ctx.fillText(t,x,y-44);}};
   function nearVein(){let b=null,bd=56;for(const v of VEINS){if(v.hp<=0)continue;const d=Math.hypot(v.x-P.x,v.y-P.y);if(d<bd){bd=d;b=v;}}return b;}
-  function roll(v){const r=Math.random();if(r<.32)return giveOre(v.ore,1+(Math.random()<.25?1:0),v.x,v.y);
-    if(r<.35){P.items.ore=(P.items.ore||0)+1;floatText(v.x,v.y-60,'🔩 精鐵 +1','#c9d6ff',true);return;}
-    const k=r<.36?'gem':r<.46?'copper':r<.68?'coal':'stone';const s=STONE[k];L().stones[k]=(life.stones[k]||0)+1;floatText(v.x,v.y-60,s[0]+' '+s[1]+' +1',k==='gem'?'#7fe8ff':'#e0d8c8',k==='gem');}
+  function roll(v){const r=Math.random();if(r<.45)return giveOre(v.ore,1+(Math.random()<.25?1:0),v.x,v.y);
+    if(r<.48){P.items.ore=(P.items.ore||0)+1;floatText(v.x,v.y-60,'🔩 精鐵 +1','#c9d6ff',true);return;}
+    const k=r<.49?'gem':r<.59?'copper':r<.78?'coal':'stone';const s=STONE[k];L().stones[k]=(life.stones[k]||0)+1;floatText(v.x,v.y-60,s[0]+' '+s[1]+' +1',k==='gem'?'#7fe8ff':'#e0d8c8',k==='gem');}
   let swingT=0;
   function mine(v){const M=L().mine;if(M.q<1&&!((P.items||{}).pick>0)){floatText(P.x,P.y-70,'需要十字鎬……（道具店有賣）','#ffcf3a');if(!M.hint){M.hint=1;say('💭',['（這是礦脈。沒有工具挖不動……）','（道具店有賣十字鎬。礦工鎮的老礦工好像也在找幫手，幫他忙會借你一把。）']);}return;}
-    if(swingT>time)return;swingT=time+.32;v.hp--;v.shake=.2;P.atkT=Math.max(P.atkT||0,.18);sfx('clang');shake=Math.max(shake,3);burst(v.x,v.y-14,'#c8c0b0',8,140);burst(v.x,v.y-14,LK[v.ore].c,4,120);
-    if(v.hp<=0){v.regrow=time+150;roll(v);roll(v);if(Math.random()<.35)roll(v);M.dug=(M.dug||0)+1;sfx('coin');saveGame();}}
+    if(swingT>time)return;swingT=time+.32;v.hp--;(L().mine.vh=L().mine.vh||{})[v.id]=v.hp;v.shake=.2;P.atkT=Math.max(P.atkT||0,.18);sfx('clang');shake=Math.max(shake,3);burst(v.x,v.y-14,'#c8c0b0',8,140);burst(v.x,v.y-14,LK[v.ore].c,4,120);
+    roll(v);if(v.hp<=0){v.regrow=1e12;giveOre(v.ore,1,v.x,v.y-24);floatText(v.x,v.y-96,'這座礦脈挖光了','#ccc');M.dug=(M.dug||0)+1;sfx('coin');saveGame();}}
   // ---------- 老礦工（支線：學會挖礦） ----------
   let MINER=null;
   function addMiner(){if(MINER)return;const t=TOWNS.find(t=>t.id==='cave');const v=VEINS.find(v=>v.town==='cave');if(!t)return;let x=v?v.x+56:(t.cx+3)*T,y=v?v.y+36:(t.cy+3)*T;for(const [a,b] of [[56,36],[-56,36],[0,60],[60,-10],[-60,-10]]){if(v&&!solidAt(v.x+a,v.y+b)&&!houses.some(h=>v.x+a>h.x*T-10&&v.x+a<(h.x+h.w)*T+10&&v.y+b>h.y*T-10&&v.y+b<(h.y+h.h)*T+30)){x=v.x+a;y=v.y+b;break;}}
@@ -11388,7 +11389,7 @@ CHANGELOG.unshift(['v3.6.5','2026.11.20',[
     if(state==='play'&&P&&TOWNS&&townDeco&&VEINS.length){addMiner();addHints();
       if(!dlg&&!scene&&(pressed.e||pressed.enter||tTalk)){const v=nearVein();if(v){let nn=false;for(const n of NPCS){if(!n._hid&&Math.hypot(n.x-P.x,n.y-P.y)<Math.hypot(v.x-P.x,v.y-P.y))nn=true;}if(!nn){pressed.e=pressed.enter=false;tTalk=false;mine(v);}}}}
     _u.apply(this,arguments);if(state==='play'&&P&&!VEINS.length&&(window.__vf=(window.__vf||0)+1)>8)placeVeins();
-    for(const v of VEINS){if(v.shake>0)v.shake-=dt;if(v.hp<=0&&time>v.regrow){v.hp=3;}}
+    for(const v of VEINS){if(v.shake>0)v.shake-=dt;}
     if(isTouch&&state==='play'&&!dlg){const v=nearVein(),bT=document.getElementById('bT');if(v&&bT&&bT.classList.contains('hide')){bT.classList.remove('hide');try{tbSet('bT','挖礦',0,1,false);}catch(_){}}}};
   // ---------- 星圖介面 ----------
   const css=document.createElement('style');css.textContent=`#starOv .card{background:#17151f;color:#eee;max-width:640px;width:96vw;max-height:94vh;overflow:auto;border:2px solid #4a4060;border-radius:18px;padding:12px 14px}
@@ -11406,7 +11407,7 @@ CHANGELOG.unshift(['v3.6.5','2026.11.20',[
       <div>① 七片碎片各有一條<b>星脈</b>。故事裡拿到哪片碎片，那條才會連起來（虛線＝還沒拿到）。</div>
       <div>② <b>點一下星脈</b>，下面會顯示效果和下一格要多少<b>礦石＋金幣</b>，夠了就按「點亮」。</div>
       <div>③ 會<b>發光的圓圈</b>＝下一格可以點的位置。每條 5 格，第 5 格有特殊效果。</div>
-      <div>④ 礦石要<b>挖礦</b>：在道具店買十字鎬（或接礦工鎮老礦工的支線，他會借你），再到各城鎮的「⛏️ 礦場」挖。</div>
+      <div>④ 礦石要<b>挖礦</b>：在道具店買十字鎬（或接礦工鎮老礦工的支線，他會借你），再到各城鎮的「⛏️ 礦場」挖。礦脈<b>挖光就沒了</b>，不夠的要靠打那一帶的怪、開寶箱、釣魚。</div>
       <div style="color:#c8c0dc;font-size:13px;margin-top:4px">點亮後全隊都變強，碎片持有者本人效果 ×1.5。</div>
       <button class="sbtn" style="width:100%;margin-top:10px;background:#7a6aa8;color:#fff;border-color:#fff">知道了</button></div>`;
     g.querySelector('button').onclick=ev=>{ev.stopPropagation();g.remove();};g.onclick=ev=>{if(ev.target===g)g.remove();};document.body.appendChild(g);}
@@ -11475,7 +11476,7 @@ CHANGELOG.unshift(['v3.6.6','2026.11.20',[
   const PLACE={village:'古夢碎村的池塘',water:'水の都的碼頭',forest:'妖精の村的池塘',desert:'綠洲鎮的綠洲',snow:'雪原驛站的冰洞',islet:'釣魚阿伯的小島'};
   window.__fishPrice=k=>(FISH[k]||[0,0,0,0])[3];const W=[0.62,0.27,0.08,0.008];const WIN=[.95,.75,.55,.42];
   const FL=()=>{life.fish=life.fish||{q:0,n:0,bag:{},dex:{}};return life.fish;};
-  const SPOTS=[];window.__fishSpots=SPOTS;
+  const SPOTS=[];window.__fishSpots=SPOTS;window.__lifeFishQ=()=>FL().q;
   function pond(t){const cand=[];
     for(let y=t.y+2;y<t.y+t.h-4;y++)for(let x=t.x+2;x<t.x+t.w-5;x++){let ok=true;
       for(let j=-1;j<=3&&ok;j++)for(let i=-1;i<=3&&ok;i++){const tt=getT(x+i,y+j);if(tt!==G&&tt!==FLOWER)ok=false;}
@@ -11515,7 +11516,7 @@ CHANGELOG.unshift(['v3.6.6','2026.11.20',[
     if(F.phase==='bite'){ctx.font='900 34px sans-serif';ctx.textAlign='center';ctx.lineWidth=6;ctx.strokeStyle='#3a1a00';ctx.strokeText('！',P.x,P.y-92);ctx.fillStyle='#ffd23a';ctx.fillText('！',P.x,P.y-92);
       ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=2;for(let i=1;i<=2;i++){ctx.beginPath();ctx.ellipse(bx,by+2,8+i*9*((time*3)%1),3+i*3*((time*3)%1),0,0,6.283);ctx.stroke();}}
     ctx.restore();}
-    if(!F&&Math.hypot(P.x-s.x,P.y-s.y)<60){ctx.font='bold 13px sans-serif';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=FL().q>=1||(P.items||{}).rod>0?(isTouch?'🎣 按「釣魚」拋竿':'🎣 按 E 拋竿'):'🔒 需要釣竿（道具店有賣）';ctx.strokeText(t,s.x,s.y-56);ctx.fillStyle='#fff';ctx.fillText(t,s.x,s.y-56);}};
+    if(!F&&Math.hypot(P.x-s.x,P.y-s.y)<60){ctx.font='bold 13px sans-serif';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=FL().q>=1||(P.items||{}).rod>0?(isTouch?'🎣 按 E／「釣魚」拋竿':'🎣 按 E 拋竿'):'🔒 需要釣竿（道具店有賣）';ctx.strokeText(t,s.x,s.y-56);ctx.fillStyle='#fff';ctx.fillText(t,s.x,s.y-56);}};
   const _rn=render;render=function(){_rn.apply(this,arguments);if(!F||state!=='play')return;try{const dpr=ctx.canvas.width/VW;
     const msg=F.phase==='wait'?'🎣 等魚上鉤……（移動就收竿）':F.phase==='bite'?'❗ 上鉤了！快按'+(isTouch?'「攻擊」':' J 或 E')+'！':'';if(msg){ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.font='800 16px sans-serif';ctx.textAlign='center';const w=ctx.measureText(msg).width+28,y=VH*.24;
       ctx.fillStyle=F.phase==='bite'?'rgba(120,40,0,.85)':'rgba(10,30,50,.75)';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(VW/2-w/2,y-18,w,32,16);else ctx.rect(VW/2-w/2,y-18,w,32);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(msg,VW/2,y+4);ctx.restore();}
@@ -11548,7 +11549,7 @@ CHANGELOG.unshift(['v3.6.6','2026.11.20',[
       say('🎣 釣魚阿伯',['哇哈哈！你比我還會釣！','這支釣竿就送你吧。','其實啊，各地的城鎮裡都有釣點——','古夢碎村和妖精の村的池塘、水の都的碼頭、綠洲鎮的綠洲、雪原驛站的冰洞。','每個地方的魚都不一樣，聽說還有一種會發出七色光的魚……','釣到的魚可以拿來賣我，也可以烤來吃！'],()=>{L.q=2;P.coins+=120;floatText(P.x,P.y-80,'🪙 +120　釣竿是你的了！','#ffcf3a',true);sfx('lvl');showCard('🎣 支線完成','各地的釣點都可以釣魚了');saveGame();});return;}
     window.__pickMenu('🎣 釣魚阿伯','<div style="text-align:center">今天也來釣魚嗎？</div>',[{t:'💰 賣魚',bg:'#ffe08a',fn:sellAll},{t:'🍢 烤一條來吃（回血、回精力）',bg:'#ffd8b0',fn:grill},{t:'📖 魚類圖鑑',bg:'#d8ecff',fn:dex},{t:'🗺️ 哪裡可以釣魚？',bg:'#e0f0d8',fn:()=>say('🎣 釣魚阿伯',['古夢碎村和妖精の村的池塘、水の都的碼頭、','綠洲鎮的綠洲、雪原驛站的冰洞，還有我這座小島。'])},{t:'沒事',bg:'#eee',fn:()=>{}}]);};
   // 道具店和酒館也收魚
-  const _ft=facTalk;facTalk=function(n){const L=FL();if(n&&(n.fac==='tavern'||n.fac==='inn')&&Object.values(L.bag||{}).some(v=>v>0)){window.__pickMenu(n.name,'<div style="text-align:center">要做什麼？</div>',[{t:n.fac==='inn'?'🛏️ 住宿':'🍺 酒館',bg:'#ffe08a',fn:()=>_ft.call(this,n)},{t:'🐟 把魚賣給廚房',bg:'#d8ecff',fn:sellAll}]);return;}return _ft.apply(this,arguments);};
+  const _ft=facTalk;facTalk=function(n){const L=FL();if(n&&(n.fac==='tavern'||n.fac==='inn')&&Object.values(L.bag||{}).some(v=>v>0)){window.__pickMenu(n.name,'<div style="text-align:center">要做什麼？</div>',[{t:n.fac==='inn'?'🛏️ 住宿':'🍺 酒館',bg:'#ffe08a',fn:()=>_ft.call(this,n)},{t:'🍳 借廚房做魚料理',bg:'#ffd8b0',fn:()=>openLife('cook')},{t:'🐟 把魚賣給廚房',bg:'#d8ecff',fn:sellAll}]);return;}return _ft.apply(this,arguments);};
   // ---------- 村民提點 ----------
   let hinted=false;function addHints(){if(hinted)return;let any=false;for(const n of NPCS){if(!n.id||!String(n.id).startsWith('amb_')||!Array.isArray(n.lines))continue;any=true;const tid=String(n.id).slice(4,-1);
       if(String(n.id).endsWith('1'))n.lines.push(['水の都外海的小島上，住著一個釣魚阿伯。','聽說他一條魚都釣不到，正在找幫手呢。']);
@@ -11954,7 +11955,7 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
 
 // ================= 📜 更新紀錄：整理成精簡版（依版本由新到舊） =================
 CHANGELOG.length=0;CHANGELOG.push(
-  ['v3.6.13','2026.11.21',['✨ 技能等級更有感：升級更快（Lv.5 要用 60 次，以前 90 次），每級威力 +15%、冷卻 -6%，而且 Lv.3、Lv.5 會解鎖新效果（旋風斬轉兩圈、火球變 3 顆、雷擊劈 7 隻……）；技能說明裡都有寫','🐟 魚可以料理了：冒險手帳 →「料理」，在城鎮或傳送石旁邊做「鹽烤魚」「鮮魚蘑菇湯」「漁夫派」','💚 治療光環加強：馬上補 12% 血並解除異常，之後每秒再補 3%（總共約 30%，一瓶回復藥的量），冷卻 20 → 16 秒','⌨️ 挖礦、釣魚的提示改成「按 E」（手機顯示按哪顆鈕）','🐻‍❄️ 熊掌變順手：出手間隔 0.7 → 0.45 秒、推人的力道只剩四分之一、攻擊範圍稍大，連按可以一直打到','🐴 被敵人打下坐騎後，坐騎會受驚 5 秒，這段時間不能再騎上去','🛒 道具店開始賣⛏️十字鎬、🎣釣竿，不用專程跑去礦工鎮或小島；接了老礦工、釣魚阿伯的支線就會直接借你，不用自己買','🌌 星圖加上說明：第一次打開會教你怎麼用（右上 ❓ 可以再看），下面有「還差什麼」的進度清單','🔭 開槍不再一縮一放、畫面不抖（連射不推人、不震動）','🏹 江家：按住攻擊＝拉弓＋瞄準，拉滿威力 ×1.8；L 換箭；新武器連弩、重弩','🏹 屬性箭：火焰、冰霜、雷電，在鍛冶屋用礦石做（1 顆 → 20 支）','💨 煙霧彈回到忍宇專屬；修好軍用小刀的翻滾刺殺']],
+  ['v3.6.13','2026.11.21',['🌙 晚上路人會回家睡覺，天亮再出來；商店、旅館、傳送石、任務 NPC 和守夜衛兵照常在','⛏️ 礦脈挖光就沒了（存檔會記住）：每座可以敲 6 下、每下都可能掉東西，挖完再送 1 顆礦；全部礦場大約只夠點亮星脈的一半，剩下要靠打那一帶的怪（掉率 5%→7%）、開寶箱、釣魚','⛏️🎣 站在礦脈、釣點旁邊時，畫面下方會固定出現「按 E 挖礦／拋竿」的提示','🐛 修正：回標題重開或讀檔後，技能冷卻可能變成好幾百秒','✨ 技能等級更有感：升級更快（Lv.5 要用 60 次，以前 90 次），每級威力 +15%、冷卻 -6%，而且 Lv.3、Lv.5 會解鎖新效果（旋風斬轉兩圈、火球變 3 顆、雷擊劈 7 隻……）；技能說明裡都有寫','🍳 身上有魚時，旅館、酒館多一個「借廚房做魚料理」，直接打開料理頁（或按 C 冒險手帳 → 🍳 料理）','💖 聖光、吸血斬改成按最大血量的百分比補血（聖光 15%～35%、吸血斬每隻 4%～6%），後期不會再只補幾滴','🐟 魚可以料理了：冒險手帳 →「料理」，在城鎮或傳送石旁邊做「鹽烤魚」「鮮魚蘑菇湯」「漁夫派」','💚 治療光環加強：馬上補 12% 血並解除異常，之後每秒再補 3%（總共約 30%，一瓶回復藥的量），冷卻 20 → 16 秒','⌨️ 挖礦、釣魚的提示改成「按 E」（手機顯示按哪顆鈕）','🐻‍❄️ 熊掌變順手：出手間隔 0.7 → 0.45 秒、推人的力道只剩四分之一、攻擊範圍稍大，連按可以一直打到','🐴 被敵人打下坐騎後，坐騎會受驚 5 秒，這段時間不能再騎上去','🛒 道具店開始賣⛏️十字鎬、🎣釣竿，不用專程跑去礦工鎮或小島；接了老礦工、釣魚阿伯的支線就會直接借你，不用自己買','🌌 星圖加上說明：第一次打開會教你怎麼用（右上 ❓ 可以再看），下面有「還差什麼」的進度清單','🔭 開槍不再一縮一放、畫面不抖（連射不推人、不震動）','🏹 江家：按住攻擊＝拉弓＋瞄準，拉滿威力 ×1.8；L 換箭；新武器連弩、重弩','🏹 屬性箭：火焰、冰霜、雷電，在鍛冶屋用礦石做（1 顆 → 20 支）','💨 煙霧彈回到忍宇專屬；修好軍用小刀的翻滾刺殺']],
   ['v3.6.11','2026.11.21',['🎯 軍軍：絕招改成「呼叫轟炸」、迷彩 7 秒（冷卻 10 秒）、趴姿重畫、狙擊槍要拉槍栓、拿長槍走得慢','💣 手榴彈、閃光彈改成用丟的，撞牆會反彈','🔪 軍用小刀只給時雨、軍軍當副武器']],
   ['v3.6.9','2026.11.21',['🛡️ 魔王霸體：一般攻擊推不動、打不斷，打破霸體條才會暈','🕳️ 九隻洞窟守衛全部重新設計造型，各有兩招專屬招式']],
   ['v3.6.7','2026.11.20',['🌌 七碎片星圖（角色面板）：用礦石點亮星脈，全隊變強','⛏️ 挖礦、🎣 釣魚：由老礦工、釣魚阿伯的支線開始，礦場和釣點都在城鎮裡']],
@@ -11998,6 +11999,30 @@ CHANGELOG.length=0;CHANGELOG.push(
     if(synced!=null&&(life.bag.fish||0)<synced){let need=synced-(life.bag.fish||0);const ks=edible().sort((a,b)=>(window.__fishPrice?window.__fishPrice(a):0)-(window.__fishPrice?window.__fishPrice(b):0));for(const k of ks){while(need>0&&L.bag[k]>0){L.bag[k]--;need--;}}}
     life.bag.fish=cnt();synced=life.bag.fish;}catch(_){}}
   setInterval(sync,250);window.__fishSync=sync;
+})();
+
+// ===== v3.6.13 挖礦／釣魚：畫面下方固定提示「按 E」 =====
+(function(){
+  const _rn=render;render=function(){_rn.apply(this,arguments);try{if(state!=='play'||!P||dlg||scene||(window.__fstate&&window.__fstate()))return;
+    let t=null;const it=P.items||{};
+    for(const v of (window.__veins||[])){if(v.hp<=0&&Math.hypot(v.x-P.x,v.y-P.y)<56){t='🪨 這座礦脈已經挖光了（不會再長出來）';continue;}if(v.hp>0&&Math.hypot(v.x-P.x,v.y-P.y)<56){t=(it.pick>0||((window.__lifeMineQ&&window.__lifeMineQ())>=1))?'⛏️ 按 E 挖礦（還能挖 '+v.hp+' 下）':'🔒 要先有十字鎬（道具店有賣）';break;}}
+    if(!t)for(const s of (window.__fishSpots||[])){if(Math.hypot(s.x-P.x,s.y-P.y)<60){t=(it.rod>0||((window.__lifeFishQ&&window.__lifeFishQ())>=1))?'🎣 按 E 拋竿釣魚':'🔒 要先有釣竿（道具店有賣）';break;}}
+    if(!t)return;if(isTouch)t=t.replace('按 E','按 E／右下按鈕');
+    const dpr=ctx.canvas.width/VW;ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.font='800 17px sans-serif';ctx.textAlign='center';const w=ctx.measureText(t).width+34,y=VH*.68;
+    ctx.fillStyle='rgba(20,30,45,.82)';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(VW/2-w/2,y-20,w,36,18);else ctx.rect(VW/2-w/2,y-20,w,36);ctx.fill();ctx.strokeStyle='rgba(255,220,120,.8)';ctx.lineWidth=2;ctx.stroke();
+    ctx.fillStyle='#fff';ctx.fillText(t,VW/2,y+5);ctx.restore();}catch(_){}};
+})();
+
+// ===== v3.6.13 晚上路人回家（商店、旅館、任務 NPC 照常） =====
+(function(){
+  const home=n=>n&&n.id&&String(n.id).startsWith('amb_')&&!/衛兵|守夜/.test(n.name||'');
+  const _u=update;update=function(dt){_u(dt);try{if(!P||state!=='play')return;const nk=nightK(),vw=VW/(Z||1)/2+120,vh=VH/(Z||1)/2+120;
+    for(const n of NPCS){if(!home(n))continue;const want=nk>.5;
+      if(n._home!==want){const off=Math.abs(n.x-P.x)>vw||Math.abs(n.y-P.y)>vh;n._homeW=(n._homeW||0)+dt;
+        if(off||n._homeW>5||dlg){n._home=want;n._homeW=0;if(!off){burst(n.x,n.y-20,'#e8e0d0',10,90);floatText(n.x,n.y-60,want?'🏠 回家睡覺了':'☀️ 早安！','#ffe9b0');}}}
+      else n._homeW=0;
+      if(n._home)n._hid=true;}
+  }catch(_){}};
 })();
 
 requestAnimationFrame(loop);
