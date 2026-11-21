@@ -1153,8 +1153,8 @@ function gunTick(dt,ix,iy){const w=W();if(P.ammoW!==P.weapon){P.ammoW=P.weapon;P
 }
   else{P.aiming=false;fireGun(w);}}
 function fireGun(w){const a=Math.atan2(P.aimY-(P.y-20),P.aimX-P.x),sx=P.x+Math.cos(a)*22,sy=P.y-22+Math.sin(a)*22;P.ammo=Math.max(0,(P.ammo||0)-1);if(P.ammoMap)P.ammoMap[P.weapon]=P.ammo;P.atkT=.16;P.atkDur=.16;P.cur={ranged:true,pose:'bowdraw'};P.atkAng=a;
-  if(w.shotgun){for(let i=0;i<6;i++){const b=a+(i-2.5)*(P.aimT>=.6?.06:.1);projs.push({x:sx,y:sy,vx:Math.cos(b)*950,vy:Math.sin(b)*950,r:5,dmg:Math.max(1,Math.round(atkPower()*1.1)),t:0,life:w.range/950,c:'#ffe58a',friendly:true,arrow:true,bullet:true});}shake=Math.max(shake,8);moveE(P,-Math.cos(a)*14,-Math.sin(a)*14);}
-  else{projs.push({x:sx,y:sy,vx:Math.cos(a)*1400,vy:Math.sin(a)*1400,r:5,dmg:Math.round(atkPower()*(w.power||3)*(P.aimT>=.6?1.5:1)),t:0,life:w.range/1400+.04,c:P.aimT>=.6?'#ff9a9a':'#fff3a0',friendly:true,arrow:true,bullet:true,hitSet:w.pierceN?new Set():null,pierceN:w.pierceN});shake=Math.max(shake,5);moveE(P,-Math.cos(a)*6,-Math.sin(a)*6);}
+  if(w.shotgun){for(let i=0;i<6;i++){const b=a+(i-2.5)*(P.aimT>=.6?.06:.1);projs.push({x:sx,y:sy,vx:Math.cos(b)*950,vy:Math.sin(b)*950,r:5,dmg:Math.max(1,Math.round(atkPower()*1.1)),t:0,life:w.range/950,c:'#ffe58a',friendly:true,arrow:true,bullet:true});}shake=Math.max(shake,P.aimT>=.6?5:1.5);moveE(P,-Math.cos(a)*14,-Math.sin(a)*14);}
+  else{projs.push({x:sx,y:sy,vx:Math.cos(a)*1400,vy:Math.sin(a)*1400,r:5,dmg:Math.round(atkPower()*(w.power||3)*(P.aimT>=.6?1.5:1)),t:0,life:w.range/1400+.04,c:P.aimT>=.6?'#ff9a9a':'#fff3a0',friendly:true,arrow:true,bullet:true,hitSet:w.pierceN?new Set():null,pierceN:w.pierceN});shake=Math.max(shake,P.aimT>=.6?3.5:.8);moveE(P,-Math.cos(a)*6,-Math.sin(a)*6);}
   burst(sx,sy,'#ffe14a',8,160);sfx('shoot');sfx('clang');if(P.aimT>=.6)floatText(P.x,P.y-70,'🎯 穩穩一槍！','#ff6a6a');P.aimT=0;if(P.ammo<=0){P.forceMap=P.forceMap||{};P.forceMap[P.weapon]=true;P.reloading=true;P.relT=0;floatText(P.x,P.y-62,'🔄 子彈打完，自動裝彈中…','#ff9a6a');}}
 function drawGunUI(){const w=W();if(!P||!w||!w.gun)return;const n=P.ammo??w.mag,bx=P.x-(w.mag*7)/2,by=P.y-92-(P.flyH||0);
   for(let i=0;i<w.mag;i++){ctx.fillStyle=i<n?'#e8b923':'rgba(0,0,0,.35)';ctx.strokeStyle='#222';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(bx+i*7,by,5,9,2);ctx.fill();ctx.stroke();}
@@ -3091,7 +3091,7 @@ function renderInv(){
 
 // ================= 武技（每類武器一招，按 O） =================
 const WSK={deadeye:'死神之眼',slug:'獨頭彈',umbfly:'撐傘飛行',camo:'迷彩狙擊',wolfride:'騎狼衝鋒',crossbolt:'雷鳴十字',dashslash:'衝刺斬',triple:'三段突',quake:'震地重擊',knives:'手裏劍',bigarrow:'穿雲箭',push:'傘擊',barrage:'百裂拳',nova:'元素爆發',whirl:'迴旋鞭',boom:'音爆',flysickle:'飛鐮',thousand:'千本打擊',alleyoop:'空中接力'};
-const WSK_DESC={deadeye:'時間變慢，對看得到的最多 3 個敵人各補一槍爆頭（會用掉子彈）',slug:'打出一發超重的獨頭彈，穿透一整排敵人（用掉 1 發）',umbfly:'按一下起飛、再按一下降落：飛過樹、石頭、水和矮牆，近戰打不到你；精力掉很快，被遠距打到會摔下來',camo:'像軍軍一樣偽裝 3 秒：附近敵人看不見你，下一發變成三倍傷害的爆頭射擊',wolfride:'跳上小灰往前衝，撞飛路上的敵人（小灰受傷休息時改成迴旋鞭）',crossbolt:'雙劍交叉斬出十字雷光，打中的敵人會把電傳給旁邊的敵人',dashslash:'往前衝刺，砍過整條路上的敵人',triple:'連續三次長距離突刺',quake:'砸地震出一圈衝擊波，周圍敵人暈眩',knives:'扇形丟出 5 枚手裏劍（拿風魔大手裏劍時：3 枚大的，更痛、會穿透）',bigarrow:'射出一支巨大的穿透箭，會飛過樹林',
+const WSK_DESC={deadeye:'時間變慢，對看得到的最多 3 個敵人各補一槍爆頭（會用掉子彈）',slug:'打出一發超重的獨頭彈，穿透一整排敵人（用掉 1 發）',umbfly:'按一下起飛、再按一下降落：飛過樹、石頭、水和矮牆，近戰打不到你；精力掉很快，被遠距打到會摔下來',camo:'像軍軍一樣隱身 7 秒：附近敵人看不見你，下一發變成三倍傷害的爆頭射擊',wolfride:'跳上小灰往前衝，撞飛路上的敵人（小灰受傷休息時改成迴旋鞭）',crossbolt:'雙劍交叉斬出十字雷光，打中的敵人會把電傳給旁邊的敵人',dashslash:'往前衝刺，砍過整條路上的敵人',triple:'連續三次長距離突刺',quake:'砸地震出一圈衝擊波，周圍敵人暈眩',knives:'扇形丟出 5 枚手裏劍（拿風魔大手裏劍時：3 枚大的，更痛、會穿透）',bigarrow:'射出一支巨大的穿透箭，會飛過樹林',
   push:'撐傘把前方敵人全部推開，順便擋掉飛來的東西',barrage:'前方狂打 8 拳',nova:'向四周射出一圈元素魔法彈',whirl:'鞭子橫掃一圈',boom:'音爆震暈周圍敵人',flysickle:'丟出迴力鏢鐮刀',thousand:'一口氣打出三顆球',alleyoop:'丟出巨大籃球，連彈 6 次'};
 function wfam(w){return w.gun?(w.shotgun?'slug':'deadeye'):w.snipeGun?'camo':w.ball?'alleyoop':w.bat?'thousand':w.sickle?'flysickle':w.sonic?'boom':w.whip?(P.cls==='tamer'&&pets.some(q=>!q.temp&&!(q.downT>0))?'wolfride':'whirl'):w.bolt?'nova':w.fist?'barrage':w.umb?(P&&P.cls==='umbrella'?'umbfly':'push'):w.ranged?'bigarrow':w.cls==='thief'?'knives':w===WEAPONS.great?'quake':w.cls==='chisei'?'crossbolt':(w===WEAPONS.spear||w.cls==='lancer')?'triple':'dashslash';}
 const WS_COST=20,WS_CD=3.5;
@@ -3121,7 +3121,7 @@ function weaponSkill(){
       if(!ts.length){floatText(P.x,P.y-62,P.ammo?'沒有看得到的目標':'沒子彈了','#ccc');P.wsCD=.5;break;}
       slowT=.45;ts.forEach((e,i)=>setTimeout(()=>{if(e.dead||state!=='play'||!W().gun)return;P.aimX=e.x;P.aimY=e.y-20;fireGun(w2);floatText(e.x,e.y-70,'爆頭！','#ffcf3a');},130*i));break;}
     case 'slug':{if(!(P.ammo>0)){floatText(P.x,P.y-62,'沒子彈了','#ccc');P.wsCD=.5;break;}P.ammo--;const b=autoAim(a,.8);projs.push({x:P.x+Math.cos(b)*22,y:P.y-22+Math.sin(b)*22,vx:Math.cos(b)*1100,vy:Math.sin(b)*1100,r:8,dmg:Math.round(atk*4),t:0,life:.4,c:'#ffcf3a',friendly:true,arrow:true,bullet:true,big:true,hitSet:new Set()});shake=10;moveE(P,-Math.cos(b)*22,-Math.sin(b)*22);sfx('boss');break;}
-    case 'camo':{P.camoT=6;P.headshot=1;let n=0;for(const e of enemies){if(e.dead||eZone(e)!==_plZone||Math.hypot(e.x-P.x,e.y-P.y)>420)continue;const el=e.boss||e.king||e.caveId||e.jun;e.blindT=Math.max(e.blindT||0,el?1:2.5);e.tgx=null;n++;}burst(P.x,P.y-20,'#8a9a6a',20,140);floatText(P.x,P.y-74,'🌿 迷彩！下一發爆頭','#c9d6a0',true);break;}
+    case 'camo':{P.camoT=7;P.headshot=1;let n=0;for(const e of enemies){if(e.dead||eZone(e)!==_plZone||Math.hypot(e.x-P.x,e.y-P.y)>420)continue;const el=e.boss||e.king||e.caveId||e.jun;e.blindT=Math.max(e.blindT||0,el?1:2.5);e.tgx=null;n++;}burst(P.x,P.y-20,'#8a9a6a',20,140);floatText(P.x,P.y-74,'🌿 迷彩！下一發爆頭','#c9d6a0',true);break;}
     case 'wolfride':{const wv=pets.find(q=>!q.temp&&!(q.downT>0));if(wv){wv.riding=true;P.rideWolf=wv;}P.mount='wolf';P.wsT=.7;P.wsLock=true;P.wsHit=new Set();P.inv=Math.max(P.inv,.3);sfx('dash');burst(P.x,P.y,'#bbb',14,140);break;}
     case 'crossbolt':{fxRings.push({x:P.x,y:P.y,r:10,max:110,c:'#ffe14a',t:0});for(const k of [.785,-.785])slashes.push({x:P.x,y:P.y-20,t:0,a:a+k});const hitL=[];
       for(const e of enemies){if(e.dead)continue;if(Math.hypot(e.x-P.x,e.y-P.y)<105+e.r*.5){hitEnemy(e,Math.round(atk*1.3),Math.atan2(e.y-P.y,e.x-P.x),.8,true);hitL.push(e);}}
@@ -4450,6 +4450,7 @@ function render(){
   for(const p of projs){
     if(p.arrow&&p.big){const a=Math.atan2(p.vy,p.vx);ctx.strokeStyle='rgba(255,207,58,.35)';ctx.lineWidth=18;line(p.x-Math.cos(a)*50,p.y-Math.sin(a)*50,p.x,p.y);ctx.strokeStyle='#ffcf3a';ctx.lineWidth=7;line(p.x-Math.cos(a)*40,p.y-Math.sin(a)*40,p.x+Math.cos(a)*14,p.y+Math.sin(a)*14);}
     else if(p.knife){const S=p.big?2:1;ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.t*28);ctx.scale(S,S);const g=ctx.createLinearGradient(-8,-8,8,8);g.addColorStop(0,p.poisonHit?'#9cf59c':'#f4f7fa');g.addColorStop(1,p.poisonHit?'#2f8f2f':'#7b8794');ctx.fillStyle=g;ctx.strokeStyle='#2a2f36';ctx.lineWidth=1;ctx.beginPath();for(let i=0;i<4;i++){const q=i*Math.PI/2;ctx.lineTo(Math.cos(q)*9,Math.sin(q)*9);ctx.lineTo(Math.cos(q+Math.PI/4)*2.6,Math.sin(q+Math.PI/4)*2.6);}ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='#2a2f36';ctx.fillRect(-1.3,-1.3,2.6,2.6);ctx.restore();}
+    else if(p.arrow&&window.__drawArrow&&window.__drawArrow(p)){}
     else if(p.arrow){const a=Math.atan2(p.vy,p.vx);ctx.strokeStyle=p.c;ctx.lineWidth=p.snipe?4:2.5;line(p.x-Math.cos(a)*(p.snipe?22:10),p.y-Math.sin(a)*10,p.x+Math.cos(a)*6,p.y+Math.sin(a)*6);ctx.fillStyle='#ddd';ctx.beginPath();ctx.arc(p.x+Math.cos(a)*6,p.y+Math.sin(a)*6,2.5,0,Math.PI*2);ctx.fill();}
     else if(p.shard){const a=Math.atan2(p.vy,p.vx);ctx.save();ctx.translate(p.x,p.y);ctx.rotate(a);ctx.fillStyle='#d6f3ff';ctx.strokeStyle='#5dade2';ctx.lineWidth=1.5;
       ctx.beginPath();ctx.moveTo(10,0);ctx.lineTo(0,-4);ctx.lineTo(-10,0);ctx.lineTo(0,4);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}
@@ -5286,9 +5287,9 @@ function act3Update(dt){
   if(s===121&&enemies.some(e=>e.storyTag==='gate2')&&!enemies.some(e=>(e.storyTag==='pal1'||e.storyTag==='gate2')&&!e.dead)){story.step=121.5;const c=CASTLES.find(c=>c.id==='imperial');setGateTiles(c,'keep',false);clearMobs('pal1');clearMobs('gate2');clearMobs('palA');clearMobs('pal0');
     chain([[NARR,['禁衛軍倒下了，大門也打開了。','前面，就是王座之間。']]],()=>fadeTo(()=>{tp(A3.throne[0],A3.throne[1]+3);setStep(122);},'（走進王座之間……）'));}
   if(s===122){const b=enemies.find(e=>e.storyTag==='seijo'&&!e.dead);
-    if(b&&b.hp<b.maxHp*.3){story.step=122.5;b.stun=99;for(const m of enemies)if(m.summonedBy===b&&!m.dead)m.dead=true;
+    if(b&&(b.sjDone||(!b.sjPh&&b.hp<b.maxHp*.3))){story.step=122.5;b.stun=99;for(const m of enemies)if(m.summonedBy===b&&!m.dead)m.dead=true;
       forceDilo();showCard('最後的炎紅拳の卷','');
-      storyLater(2,()=>chain([['聖上',['……不可能。','區區幾片碎片……']],['迪洛',['不是「幾片碎片」。','是七個人！']],
+      storyLater(2,()=>chain([['暗邪獸',['……不可能。','區區幾片碎片……']],['迪洛',['不是「幾片碎片」。','是七個人！']],
         [NARR,['七片碎片一起亮了起來，全部流進了迪洛的拳頭。']],['迪洛',['這一拳……是大家的！','炎——紅——拳——！！']]],()=>{
         flashT=.5;shake=30;sfx('boss');const core=storyProps.find(p=>p.kind==='core');
         for(let i=0;i<120;i++){const a=Math.random()*Math.PI*2,v=200+Math.random()*500;parts.push({x:b.x,y:b.y-30,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:0,life:1+Math.random()*.6,c:['#ff7a2a','#ffd23a','#fff','#9fe3ff','#c39bff','#7bd88f','#bfe9ff'][i%7]});}
@@ -6002,7 +6003,7 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
     revolver:{cls:'gunner',name:'未來左輪',price:0,dmg:0,gun:true,mag:6,rel:.35,range:430,power:3,ranged:true,color:'#5a5f66',desc:'六發左輪。按住攻擊開瞄準鏡、放開開一槍；不開槍時自動裝彈'},
     heavyrev:{cls:'gunner',name:'重型左輪',price:140,dmg:2,gun:true,mag:6,rel:.4,range:450,power:3.2,ranged:true,color:'#3a3f46',desc:'攻擊 +2，子彈更痛、射程稍長'},
     shotgun:{cls:'gunner',name:'霰彈槍',price:190,dmg:1,gun:true,shotgun:true,mag:2,rel:.55,range:230,ranged:true,color:'#6b4a2a',desc:'只有 2 發，一次噴出 6 顆彈丸。射程很短、近距離超痛，開槍會被往後震'},
-    cknife:{cls:'thief',name:'軍用小刀',price:0,hidden:true,dmg:1,range:50,arc:1.1,cd:.18,dur:.13,kb:.7,len:30,w:3,color:'#9aa4ae',desc:'時雨的軍用小刀。放在副武器時，時雨翻滾會順手刺殺經過的敵人'}});
+    cknife:{cls:'gunner',subOnly:true,name:'軍用小刀',price:0,hidden:true,dmg:1,range:50,arc:1.1,cd:.18,dur:.13,kb:.7,len:30,w:3,color:'#9aa4ae',desc:'軍人專用（時雨、軍軍），只能當副武器。時雨的軍用小刀。放在副武器時，時雨翻滾會順手刺殺經過的敵人'}});
   CLASSES.gunner={name:'時雨',icon:'🔫',color:'#4a6b2a',hp:6,spd:172,weapon:'revolver',dashMax:2,dashRe:.6,ult:'未來兵器・加特林',ultCD:12,
     desc:'【客串・未來】謎一般的槍手，從未來穿越而來，正在尋找失憶的女友軍軍。左輪只有 6 發：按住攻擊開瞄準鏡、放開開一槍（沒有連發、不用蓄力；射程比弓短，但更痛）。不開槍時會自動一發一發裝彈，裝到一半也能開槍。L 丟手榴彈。副武器帶小刀時，翻滾會順手刺殺。武技「死神之眼」連續爆頭；絕招「未來兵器・加特林」'};
   STA.gunner={max:100,regen:22,atk:4,dash:15,sp:20,ult:50};HP_CAP.gunner=22;HERO_SCALE.gunner=1.06;
@@ -9599,7 +9600,7 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
 
 // ===== ⚔️ 武器限本職：主、副武器都只能拿自己職業的（天地可以拿刀雙持；盾照舊） =====
 (()=>{const blade=w=>w&&!w.ranged&&!w.umb&&!w.gun&&!w.ball&&(w.blade||w.cls==='warrior'||w.cls==='chisei'||w.cls==='thief');
-  const canSub=(cls,id)=>{if(!id||String(id).startsWith('sh:'))return true;const w=WEAPONS[id];if(!w)return false;if(w.cls===cls)return true;if(id==='cknife'&&(cls==='gunner'||cls==='sniper'))return true;if(cls==='umbrella'&&blade(w)&&!w.legend)return true;return false;};
+  const canSub=(cls,id)=>{if(!id||String(id).startsWith('sh:'))return true;const w=WEAPONS[id];if(!w)return false;if(id==='cknife')return cls==='gunner'||cls==='sniper';if(w.cls===cls)return true;if(cls==='umbrella'&&blade(w)&&!w.legend)return true;return false;};
   window.__canSub=canSub;
   const _ss=setSub;setSub=function(id){if(P&&!canSub(P.cls,id)){floatText(P.x,P.y-70,'副武器只能帶自己職業的武器','#ffd23a');return;}return _ss.apply(this,arguments);};
   let tk=0;const _u=update;update=function(dt){_u(dt);if(!P||(tk-=dt)>0)return;tk=.5;const cs=story&&story.on?teamOf().map(h=>HERO[h]).filter(Boolean):[P.cls];
@@ -10469,12 +10470,12 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
 
   // ---- 🎯 軍軍：失憶的狙擊手 ----
   Object.assign(WEAPONS,{
-    jrifle:{cls:'sniper',name:'軍用狙擊槍',price:0,dmg:0,gun:true,mag:5,rel:.7,range:820,power:4.2,pierceN:2,hammer:.5,ranged:true,color:'#4a5530',desc:'軍軍的狙擊槍。5 發，射得很遠、子彈能穿過 2 隻敵人。按住攻擊瞄準、放開開槍；瞄準 0.6 秒以上是「穩穩一槍」（×1.5）'},
-    dmr:{cls:'sniper',name:'精準步槍',price:220,dmg:1,gun:true,mag:8,rel:.45,range:680,power:3,pierceN:1,upMag:2,hammer:.25,ranged:true,color:'#3a3f36',desc:'攻擊 +1。8 發、裝彈快，射程比狙擊槍短一點。改造每級 +2 發'}});
+    jrifle:{cls:'sniper',name:'軍用狙擊槍',price:0,dmg:0,gun:true,mag:5,rel:.7,range:820,power:4.2,pierceN:2,hammer:1.25,ranged:true,color:'#4a5530',desc:'軍軍的狙擊槍。5 發，射得很遠、子彈能穿過 2 隻敵人。按住攻擊瞄準、放開開槍；瞄準 0.6 秒以上是「穩穩一槍」（×1.5）'},
+    dmr:{cls:'sniper',name:'精準步槍',price:220,dmg:1,gun:true,mag:8,rel:.45,range:680,power:3,pierceN:1,upMag:2,hammer:.6,ranged:true,color:'#3a3f36',desc:'攻擊 +1。8 發、裝彈快，射程比狙擊槍短一點。改造每級 +2 發'}});
   try{applyGunLv();}catch(e){}
   for(const k of ['mountain','ice','thunder'])if(SHOPS[k]&&SHOPS[k].weapons&&!SHOPS[k].weapons.includes('dmr'))SHOPS[k].weapons.push('dmr');
   CLASSES.sniper={name:'軍軍',icon:'🎯',color:'#5b6b3a',hp:4,spd:168,weapon:'jrifle',dashMax:2,dashRe:.6,ult:'狙殺標記',ultCD:13,
-    desc:'【客串・未來】蒼岩高山上的神秘狙擊手，什麼都忘了——除了怎麼開槍。按住攻擊瞄準、放開開槍（5 發，射得超遠、會穿透）。敵人貼太近時，按攻擊會改用短刀刺。L 丟閃光彈，讓一圈敵人暈眩。武技「迷彩狙擊」：偽裝 3 秒，下一發變三倍爆頭。絕招「狙殺標記」：標記畫面上最多 6 個敵人，一口氣全部狙殺'};
+    desc:'【客串・未來】蒼岩高山上的神秘狙擊手，什麼都忘了——除了怎麼開槍。按住攻擊瞄準、放開開槍（5 發，射得超遠、會穿透）。敵人貼太近時，按攻擊會改用短刀刺。L 丟閃光彈，讓一圈敵人暈眩。武技「迷彩狙擊」：隱身 7 秒（冷卻 10 秒），下一發變三倍爆頭。絕招「狙殺標記」：標記畫面上最多 6 個敵人，一口氣全部狙殺'};
   STA.sniper={max:100,regen:22,atk:4,dash:15,sp:22,ult:50};HP_CAP.sniper=18;HERO_SCALE.sniper=.98;
   HERO_LOOK.sniper={color:'#1a1a1a',hat:'none'};OUTFIT.sniper={top:'#5b6b3a',inner:'#3a4426',belt:'#2a2a1a',bottom:'#4a5530',shape:'pants',hair:'#2a1a12',camo:'#3e4a2a'};
   ROLE_NAME.sniper='狙擊手・失憶';try{SPLN.sniper='閃光彈';}catch(e){}HERO_ORDER.push('sniper');
@@ -10881,18 +10882,20 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
   const knifeMode=()=>P&&P.cls==='gunner'&&W()===WEAPONS.cknife;
   // ---- 爆頭類武技冷卻拉長：迷彩狙擊、死神之眼 3.5 秒 → 8 秒 ----
   const HSCD=8;
-  let lastCD=0;const hsCheck=()=>{if(!P)return;const c=P.wsCD||0;if(lastCD<=0&&c>0&&(P.wsKind==='camo'||P.wsKind==='deadeye')&&c<=WS_CD+.01)P.wsCD=c/WS_CD*HSCD;lastCD=P.wsCD||0;};
-  WSK_DESC.camo=(WSK_DESC.camo||'')+'（冷卻 8 秒）';WSK_DESC.deadeye=(WSK_DESC.deadeye||'')+'（冷卻 8 秒）';
+  let lastCD=0;const hsCheck=()=>{if(!P)return;const c=P.wsCD||0;if(lastCD<=0&&c>0&&(P.wsKind==='camo'||P.wsKind==='deadeye')&&c<=WS_CD+.01)P.wsCD=c/WS_CD*(P.wsKind==='camo'?10:HSCD);lastCD=P.wsCD||0;};
+  WSK_DESC.camo=(WSK_DESC.camo||'')+'（冷卻 10 秒）';WSK_DESC.deadeye=(WSK_DESC.deadeye||'')+'（冷卻 8 秒）';
   // ---- 時雨・小刀模式 L：煙霧彈 ----
   const smokes=[];
   const _cs=classSpecial;classSpecial=function(press,holding,dt,w,ix,iy){if(!knifeMode())return _cs.apply(this,arguments);if(P.shockT>0)return;
     if(press&&P.specCD<=0&&!P.flying&&useSta(25)){P.specCD=7;const a=Math.atan2(P.fy,P.fx),x=P.x+Math.cos(a)*40,y=P.y+Math.sin(a)*40;smokes.push({x,y,r:115,t:0,life:5});sfx('shoot');floatText(P.x,P.y-66,'💨 煙霧彈！','#ddd');for(let i=0;i<18;i++)parts.push({x:x+(Math.random()-.5)*60,y:y-10+(Math.random()-.5)*30,vx:(Math.random()-.5)*120,vy:-20-Math.random()*40,t:0,life:.8,c:'rgba(220,220,220,.8)'});}};
   // ---- 時雨・小刀模式 絕招：呼叫空襲 ----
   const bombs=[];
-  const _su=startUlt2;startUlt2=function(a){if(!knifeMode())return _su.apply(this,arguments);
-    const aa=autoAim(a,.9),n=7;floatText(P.x,P.y-80,'📻 呼叫空襲！','#ffe58a',true);sfx('boss');
-    for(let i=0;i<n;i++){const d=80+i*55,x=P.x+Math.cos(aa)*d+(Math.random()-.5)*30,y=P.y+Math.sin(aa)*d+(Math.random()-.5)*30;bombs.push({x,y,t:-(i*.12),warn:1.1,r:62});}
-    P.ultT=0;};
+  const planes=[];
+  const _su=startUlt2;startUlt2=function(a){if(!P||P.cls!=='sniper')return _su.apply(this,arguments);
+    const aa=autoAim(a,.9),n=9,sp=55;P.aiming=false;P.radioT=1.2;sfx('boss');if(!window.__cutIn)floatText(P.x,P.y-80,'📻 呼叫轟炸！','#ffe58a',true);if(window.__cutIn)window.__cutIn('呼叫轟炸','軍軍','#3e4a2a','sniper');
+    const c=Math.cos(aa),sn=Math.sin(aa),L0=-520,L1=80+n*sp+420,SPD=900,t0=.9;planes.push({x0:P.x+c*L0,y0:P.y+sn*L0,c,s:sn,t:-t0,dur:(L1-L0)/SPD,L:L1-L0});
+    for(let i=0;i<n;i++){const d=80+i*sp,x=P.x+c*d+(Math.random()-.5)*34,y=P.y+sn*d+(Math.random()-.5)*34,pass=(d-L0)/SPD;bombs.push({x,y,t:-(pass-.55),warn:1.1,r:64});}
+    P.ultT=0;return true;};
   // ---- 軍軍 按住 K：匍匐前進 ----
   let tHold=false;try{const bd=document.getElementById('bD');if(bd){bd.addEventListener('pointerdown',()=>{tHold=true;});addEventListener('pointerup',()=>{tHold=false;});addEventListener('pointercancel',()=>{tHold=false;});}}catch(e){}
   let kHeldT=0;
@@ -10901,12 +10904,13 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
     // 匍匐
     const held=!!(keys.k||tHold);if(held&&P.cls==='sniper')kHeldT+=dt;else kHeldT=0;
     const was=P.prone;P.prone=kHeldT>.35&&proneOK();
-    if(P.prone){if(!was){floatText(P.x,P.y-60,'匍匐前進','#c8d68a');}P.x=x0+(P.x-x0)*.5;P.y=y0+(P.y-y0)*.5;
+    if(P.prone){if(!was){floatText(P.x,P.y-60,'匍匐前進','#c8d68a');}P.x=x0+(P.x-x0)*.3;P.y=y0+(P.y-y0)*.3;
       for(const e of enemies){if(e.dead||e.boss||e.king)continue;if(Math.hypot(e.x-P.x,e.y-P.y)>170){e.blindT=Math.max(e.blindT||0,.25);e.tgx=null;}}}
     if(g<=0)return;
     // 煙霧
     for(let i=smokes.length-1;i>=0;i--){const z=smokes[i];z.t+=g;if(z.t>z.life){smokes.splice(i,1);continue;}
       for(const e of enemies){if(e.dead||e.boss&&!(Math.random()<.5))continue;if(Math.hypot(e.x-z.x,e.y-z.y)<z.r){e.blindT=Math.max(e.blindT||0,e.boss||e.king?.3:.6);e.tgx=null;}}}
+    for(let i=planes.length-1;i>=0;i--){const q=planes[i];q.t+=g;if(q.t>q.dur+.3)planes.splice(i,1);else if(q.t>0&&Math.random()<.4)sfx('shoot');}
     // 空襲
     for(let i=bombs.length-1;i>=0;i--){const b=bombs[i];b.t+=g;if(b.t<b.warn)continue;bombs.splice(i,1);
       const dmg=Math.round(atkPower()*4);for(const e of enemies){if(e.dead)continue;if(Math.hypot(e.x-b.x,(e.y-10)-b.y)<b.r+(e.r||12)*.5)hitEnemy(e,dmg,Math.atan2(e.y-b.y,e.x-b.x),1.2,true);}
@@ -10915,15 +10919,52 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
   {const _fg=fireGun;fireGun=function(w){const n=projs.length;const r=_fg.apply(this,arguments);if(P&&P.prone){for(let i=n;i<projs.length;i++)projs[i].dmg=Math.round(projs[i].dmg*1.5);}return r;};}
   // 趴下時不能翻滾（翻滾鍵改成趴著）
   // ---- 畫圖 ----
-  const _dS=drawStick;drawStick=function(x,y,o){if(P&&P.prone&&o&&Math.abs(x-P.x)<1&&Math.abs(y-(P.y-(P.mount?22:0)))<1){const f=(P.fx||1)>=0?1:-1,rot=f*Math.PI/2*.92;o=Object.assign({},o,{rot,gunA:o.gunA!=null?o.gunA-rot:null});return _dS.call(this,x,y+6,o);}return _dS.apply(this,arguments);};
+  let pxLast=0,crawl=0;
+  function drawProne(x,y,f){const O='#1a1a1a',mv=Math.abs(P.x-pxLast)>.05;pxLast=P.x;if(mv)crawl+=.25;const sw=Math.sin(crawl)*(mv?5:0);
+    ctx.save();ctx.translate(x,y);ctx.scale(f,1);ctx.lineCap='round';ctx.lineJoin='round';
+    ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(-2,1,34,6,0,0,6.283);ctx.fill();
+    const leg=(x1,y1,x2,y2)=>{ctx.strokeStyle=O;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(-10,-6);ctx.lineTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();ctx.strokeStyle='#4a5530';ctx.lineWidth=5.5;ctx.stroke();
+      ctx.fillStyle='#3e4a2a';for(const u of [.3,.7]){ctx.beginPath();ctx.arc(-10+(x2+10)*u,-6+(y2+6)*u,1.8,0,6.283);ctx.fill();}ctx.fillStyle=O;ctx.beginPath();ctx.ellipse(x2-2,y2,4,3,0,0,6.283);ctx.fill();};
+    leg(-22,-4-sw*.4,-34+sw,-3);leg(-22,-2+sw*.4,-36-sw,-1);
+    ctx.strokeStyle=O;ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(-12,-6);ctx.lineTo(12,-8);ctx.stroke();ctx.strokeStyle='#5b6b3a';ctx.lineWidth=9;ctx.stroke();
+    ctx.fillStyle='#3e4a2a';for(const [a,b] of [[-6,-8],[3,-7],[9,-10]]){ctx.beginPath();ctx.arc(a,b,2,0,6.283);ctx.fill();}
+    ctx.strokeStyle='#2a2a1a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(-8,-6);ctx.lineTo(8,-8);ctx.stroke();
+    // 長髮（畫在身體後面一點）
+    ctx.fillStyle='#4a2a16';ctx.strokeStyle=O;ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(22,-24);ctx.quadraticCurveTo(10,-26,2,-16);ctx.quadraticCurveTo(-6,-10+sw*.3,-10,-9);ctx.quadraticCurveTo(2,-13,10,-12);ctx.quadraticCurveTo(14,-14,22,-18);ctx.closePath();ctx.fill();ctx.stroke();
+    // 狙擊槍（跟站著時同一把：木頭槍托、綠色槍身、藍鏡片的瞄準鏡、腳架）
+    ctx.strokeStyle='#5a3418';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(4,-9);ctx.lineTo(16,-11);ctx.stroke();
+    ctx.strokeStyle='#4a5530';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(14,-11);ctx.lineTo(34,-12);ctx.stroke();
+    ctx.strokeStyle='#2b2b2b';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(34,-12);ctx.lineTo(54,-12.5);ctx.stroke();
+    ctx.fillStyle='#1a1a1a';ctx.fillRect(18,-18,14,4);ctx.fillStyle='#7fd8ff';ctx.fillRect(31,-18,2.5,4);
+    ctx.strokeStyle='#2b2b2b';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(44,-12);ctx.lineTo(41,0);ctx.moveTo(44,-12);ctx.lineTo(47,0);ctx.stroke();
+    const arm=(ex,ey,hx,hy)=>{ctx.strokeStyle=O;ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(10,-9);ctx.lineTo(ex,ey);ctx.lineTo(hx,hy);ctx.stroke();};
+    arm(16+sw*.5,-1,22,-10);arm(8-sw*.5,-1,13,-9);
+    // 頭：跟站著時一樣是黑色火柴人頭＋白眼睛＋長髮瀏海
+    ctx.fillStyle=O;ctx.beginPath();ctx.arc(20,-17,7,0,6.283);ctx.fill();
+    ctx.fillStyle='#4a2a16';ctx.beginPath();ctx.arc(18,-19,7.3,Math.PI*.95,Math.PI*1.9);ctx.fill();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.ellipse(24,-17,1.8,1.3,0,0,6.283);ctx.fill();
+    if(mv&&Math.random()<.15)parts.push({x:x-f*30,y:y,vx:-f*20,vy:-10,t:0,life:.4,c:'rgba(150,130,90,.6)'});
+    ctx.restore();}
+  const _dS=drawStick;drawStick=function(x,y,o){if(P&&P.prone&&o&&Math.abs(x-P.x)<1&&Math.abs(y-(P.y-(P.mount?22:0)))<1){drawProne(x,y,(P.fx||1)>=0?1:-1);return;}return _dS.apply(this,arguments);};
   const _dO=drawOrbs;drawOrbs=function(){_dO.apply(this,arguments);
     for(const z of smokes){const k=Math.min(1,z.t/.3)*Math.min(1,(z.life-z.t)/.8);ctx.save();for(let i=0;i<9;i++){const b=i*.7+z.t*.4,rr=z.r*(.35+.4*((i*37)%10)/10);ctx.fillStyle=`rgba(200,200,200,${.35*k})`;ctx.beginPath();ctx.arc(z.x+Math.cos(b)*rr,z.y-12+Math.sin(b)*rr*.45,z.r*.42,0,6.283);ctx.fill();}ctx.restore();}
     for(const b of bombs){if(b.t<0)continue;const k=Math.min(1,b.t/b.warn);ctx.save();ctx.fillStyle=`rgba(255,60,50,${.08+.15*k})`;ctx.strokeStyle=`rgba(255,80,60,${.35+.4*k})`;ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(b.x,b.y,b.r,b.r*.6,0,0,6.283);ctx.fill();ctx.stroke();
       ctx.beginPath();ctx.moveTo(b.x-10,b.y);ctx.lineTo(b.x+10,b.y);ctx.moveTo(b.x,b.y-7);ctx.lineTo(b.x,b.y+7);ctx.stroke();
-      if(k>.6){const h=(1-k)/.4*160;ctx.fillStyle='#333';ctx.beginPath();ctx.ellipse(b.x,b.y-10-h,4,8,0,0,6.283);ctx.fill();}ctx.restore();}};
+      if(k>.6){const h=(1-k)/.4*160;ctx.fillStyle='#333';ctx.beginPath();ctx.ellipse(b.x,b.y-10-h,4,8,0,0,6.283);ctx.fill();}ctx.restore();}
+    for(const q of planes){if(q.t<0)continue;const u=q.t/q.dur,d=q.L*u,x=q.x0+q.c*d,y=q.y0+q.s*d,a=Math.atan2(q.s,q.c);
+      ctx.save();ctx.fillStyle='rgba(0,0,0,.22)';ctx.translate(x,y);ctx.rotate(a);ctx.beginPath();ctx.ellipse(0,0,46,12,0,0,6.283);ctx.fill();ctx.fillRect(-14,-44,22,88);ctx.restore();
+      ctx.save();ctx.translate(x,y-150);ctx.rotate(a);const O='#1a1f14';
+      ctx.fillStyle='#4e5a3a';ctx.strokeStyle=O;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-10,-58);ctx.lineTo(8,-58);ctx.lineTo(14,58);ctx.lineTo(-16,58);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.beginPath();ctx.moveTo(-40,-16);ctx.lineTo(-30,-16);ctx.lineTo(-26,16);ctx.lineTo(-40,16);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle='#5b6b3a';ctx.beginPath();ctx.ellipse(0,0,50,10,0,0,6.283);ctx.fill();ctx.stroke();
+      ctx.fillStyle='#8fb4c8';ctx.beginPath();ctx.ellipse(38,0,8,5,0,0,6.283);ctx.fill();ctx.stroke();
+      for(const e of [-28,28]){ctx.fillStyle='#3a4428';ctx.fillRect(-2,e-6,18,12);ctx.strokeRect(-2,e-6,18,12);ctx.strokeStyle='rgba(220,220,220,.7)';ctx.lineWidth=1.5;const r=Math.sin(time*80);ctx.beginPath();ctx.moveTo(17,e-9*r);ctx.lineTo(17,e+9*r);ctx.stroke();ctx.strokeStyle=O;ctx.lineWidth=2;}
+      ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(4,-38,4,0,6.283);ctx.arc(4,38,4,0,6.283);ctx.fill();ctx.fillStyle='#c0392b';ctx.beginPath();ctx.arc(4,-38,2,0,6.283);ctx.arc(4,38,2,0,6.283);ctx.fill();
+      ctx.restore();}
+    if(P&&P.radioT>0&&P.cls==='sniper'){P.radioT-=1/60;ctx.save();ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.fillText('📻',P.x+(P.fx>=0?14:-14),P.y-52+Math.sin(time*20)*2);ctx.restore();}};
   // ---- 說明文字 ----
-  try{CLASSES.gunner.desc=(CLASSES.gunner.desc||'')+'　【小刀模式】副武器帶軍用小刀時按 Q 切換：戰技變 CQC 擒拿摔、L 變煙霧彈（敵人在煙裡看不到人）、絕招變「呼叫空襲」（紅圈預警後一排炸彈落下）。';}catch(e){}
-  try{CLASSES.sniper.desc=(CLASSES.sniper.desc||'')+'　按住 K（翻滾）可以趴下匍匐前進：移動變慢，但遠處的敵人發現不了你，趴著開槍傷害 ×1.5。';}catch(e){}
+  try{CLASSES.gunner.desc=(CLASSES.gunner.desc||'')+'　【小刀模式】副武器帶軍用小刀時按 Q 切換：戰技變 CQC 擒拿摔、L 變煙霧彈（敵人在煙裡看不到人）；絕招一樣是加特林機槍（會自動換回主武器）。';}catch(e){}
+  try{CLASSES.sniper.ult='呼叫轟炸';CLASSES.sniper.desc=(CLASSES.sniper.desc||'').replace('絕招「狙殺標記」：標記畫面上最多 6 個敵人，一口氣全部狙殺','絕招「呼叫轟炸」：用無線電叫轟炸機，紅圈預警後一整排炸彈落下')+'　按住 K（翻滾）可以趴下匍匐前進：移動變慢，但遠處的敵人發現不了你，趴著開槍傷害 ×1.5。';}catch(e){}
   try{if(TUT.cls_sniper)TUT.cls_sniper[1]+='按住 K 可以趴下匍匐前進：遠處敵人看不到你，趴著開槍更痛。';}catch(e){}
   window.__soldier={smokes,bombs,knifeMode};
   window.__gunL=()=>knifeMode()?'煙霧彈':'手榴彈';
@@ -11058,6 +11099,803 @@ CHANGELOG.unshift(['v3.6.4','2026.11.18',[
   '🔥 迪洛：翻滾完馬上攻擊的「翻身踢」改成「迴旋踢」，身體轉一圈，踢到身邊一整圈的敵人（三連擊第三下維持腳刀）'
 ]]);
 {const t=document.getElementById('verTag');if(t&&t.firstChild&&t.firstChild.nodeType===3)t.firstChild.nodeValue='v3.6.4　2026.11.18　';}
+
+// ================= 👑 最終戰：聖上 → 闇帝王 → 暗邪獸（三階段，每階段一整條血） =================
+(()=>{
+  const PH=[null,
+    {name:'【一】聖上',mul:.75,spd:100,cap:2.8,pats:['sj_scepter','sj_judge','ring','sj_guard','laser','dash']},
+    {name:'【二】闇帝王',mul:.85,spd:150,cap:2.4,pats:['sj_hands','sj_orbs','sj_blink','clone','sweep','vortex']},
+    {name:'【三】暗邪獸',mul:1,spd:125,cap:1.9,pats:['sj_shards','sj_meteor','sj_cross','sj_nova','sj_hands','charge3']}];
+  const isS=e=>e&&e.sjPh;
+  function setPh(e,n){const C=PH[n];e.sjPh=n;e.name=C.name;e.pats=C.pats.slice();e.pats2=e.pats3=null;e.ph2=e.ph3=true;e._pUsed={};
+    const hp=Math.round(e.sjBase*C.mul);e.maxHp=e.hp=hp;e.spd=C.spd;e.atkTimer=1.2;e.mode='chase';e.stun=0;e.sjTrans=false;e.r=n===1?24:28;}
+  // 聖上出場時改成三階段
+  const _sb=storyBoss;storyBoss=function(tag,name,tx,ty,o){const b=_sb.apply(this,arguments);if(tag==='seijo'&&b){b.sjBase=b.maxHp;setPh(b,1);}return b;};
+  const clearFx=()=>{try{beams.length=0;strikes.length=0;zones.length=0;rings.length=0;for(let i=projs.length-1;i>=0;i--)if(projs[i].orb||projs[i].sjHome)projs.splice(i,1);}catch(_){}};
+  const killSummons=e=>{for(const m of enemies)if(m.summonedBy===e&&!m.dead){m.dead=true;burst(m.x,m.y-20,'#555',10,120);}};
+  function nextPhase(e){if(e.sjTrans)return;e.sjTrans=true;e.hp=0;e.stun=99;e.sjQ=[];killSummons(e);clearFx();shake=24;flashT=.3;sfx('boss');
+    if(e.sjPh===3){e.sjDone=true;return;}
+    const n=e.sjPh+1,lines=n===2?[
+      ['聖上',['……哼。','這具身體，已經撐不住了嗎。']],
+      [NARR,['聖上跪了下來。','一道巨大的黑影，從他的背後慢慢站了起來。']],
+      ['闇帝王',['那就……由我親自來。']],
+      ['天地',['那個影子……才是真正的魔王！','聖上……不，那個人，一直被它附身著！']]]:[
+      ['闇帝王',['七片碎片……','區區七片碎片，也想把我趕出去？']],
+      [NARR,['王座前的黑色水晶，飛進了影子的胸口。','障壁的核心，和闇帝王合而為一——','變成了一頭長著翅膀的巨獸。']],
+      ['暗邪獸',['我就是障壁。','我就是把這個世界關起來的那道牆！']],
+      ['迪洛',['大家——最後一戰了！']]];
+    storyLater(1.4,()=>chain(lines,()=>{setPh(e,n);if(n===3){const core=storyProps.find(p=>p.kind==='core');if(core)core.hide=true;}
+      floatText(e.x,e.y-150,n===2?'第二階段！':'最終階段！','#ff3a5a',true);burst(e.x,e.y-60,n===2?'#2a0a3a':'#b01ad6',60,320);shake=20;sfx('boss');}));}
+  // 每一階段都要打完一整條血：血見底時不會死，而是進入下一階段
+  const _he=hitEnemy;hitEnemy=function(e){if(!isS(e))return _he.apply(this,arguments);if(e.sjTrans||e.dead)return;if(e.sjPower&&typeof arguments[1]==='number')arguments[1]=arguments[1]*1.2;const B=1e7;e.hp+=B;e.maxHp+=B;
+    try{return _he.apply(this,arguments);}finally{e.hp-=B;e.maxHp-=B;if(e.hp<=0)nextPhase(e);}};
+  function power(e){e.sjMid=true;e.sjTrans=true;e.stun=99;e.sjQ=[];clearFx();killSummons(e);
+    storyLater(.6,()=>chain([['蒼流',['……可惡。','這樣下去不是辦法。']],['迪洛',['大家！','讓我們集結七個碎片的力量吧！']],['大家',['好！！！','哦哦哦哦哦——！！！']],
+      [NARR,['炎、蒼、刃、空、雷、冰、地——','七片碎片同時亮了起來。','碎片的光，流進了每一個人的身體裡。','全身都充滿了力量！']],['迪洛',['上吧！把牠打回黑暗裡！']]],()=>{
+      e.sjPower=true;e.sjTrans=false;e.stun=0;e.atkTimer=1.2;flashT=.25;shake=14;sfx('lvl');
+      const C7=['#ff7a2a','#7fd8ff','#e0e0e0','#ffb3cf','#c39bff','#9fe3ff','#e0b080'];for(let i=0;i<70;i++){const a=Math.random()*6.283,v=120+Math.random()*260;parts.push({x:P.x,y:P.y-30,vx:Math.cos(a)*v,vy:Math.sin(a)*v,t:0,life:.9+Math.random()*.5,c:C7[i%7]});}
+      floatText(P.x,P.y-110,'💎 七碎片之力！全隊攻擊 +20%','#ffd23a',true);}));}
+  const _u=update;update=function(dt){_u(dt);for(const e of enemies)if(isS(e)){if(e.sjPh===3&&!e.sjMid&&!e.sjTrans&&e.hp>0&&e.hp<=e.maxHp/2)power(e);if(e.dead&&!e.sjDone){e.dead=false;e.hp=0;nextPhase(e);}if(e.sjTrans){e.stun=Math.max(e.stun||0,1);e.mode='chase';}}};
+  // 招式
+  const Q=(e,t,f)=>{(e.sjQ=e.sjQ||[]).push({t,f});};
+  const orb=(x,y,a,sp,o)=>projs.push(Object.assign({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:9,dmg:1,t:0,life:3,c:'#8a2be2',orb:true},o||{}));
+  const _bx=bossExtra;bossExtra=function(e,p,dx,dy,d,rage,pc,pd){if(!isS(e)||!p.startsWith('sj_'))return _bx.apply(this,arguments);
+    const a0=Math.atan2(dy,dx),hx=e.x,hy=e.y-40;
+    if(p==='sj_scepter'){floatText(e.x,e.y-120,'王杖三連！','#ffd23a',true);for(let i=0;i<3;i++)Q(e,i*.32,()=>{const a=Math.atan2(P.y-e.y,P.x-e.x),n=i===2?9:5;for(let j=0;j<n;j++)orb(e.x,e.y-40,a+(j-(n-1)/2)*.17,300+i*30,{c:'#ffd23a',dmg:pd,r:10});e.slashT=.25;e.slashA=a;sfx('swing');});}
+    else if(p==='sj_judge'){floatText(e.x,e.y-120,'天罰！','#c39bff',true);const a=a0;for(let k=1;k<=9;k++)strikes.push({x:e.x+Math.cos(a)*k*68,y:e.y+Math.sin(a)*k*68,t:0,warn:.5+k*.07,r:44,dmg:pd,el:'shock',kind:'bolt'});
+      if(rage)for(let k=-4;k<=4;k++)if(k)strikes.push({x:P.x-Math.sin(a)*k*68,y:P.y+Math.cos(a)*k*68,t:0,warn:1+Math.abs(k)*.06,r:44,dmg:pd,el:'shock',kind:'bolt'});}
+    else if(p==='sj_guard'){const alive=enemies.filter(m=>m.summonedBy===e&&!m.dead).length,n=Math.min(2,4-alive);
+      for(let i=0;i<n;i++){const m=makeEnemy('royal',Math.floor(e.x/T)+(i?2:-2),Math.floor(e.y/T)+1,e.reg);m.noRespawn=true;m.summonedBy=e;m.awake=true;enemies.push(m);burst(m.x,m.y-20,'#d4a02a',14,160);}
+      floatText(e.x,e.y-120,n>0?'禁衛軍，護駕！':'天罰！','#ffd23a',true);if(n<=0)return bossExtra(e,'sj_judge',dx,dy,d,rage,pc,pd);}
+    else if(p==='sj_hands'){floatText(e.x,e.y-120,'影之手！','#b06aff',true);const px=P.x,py=P.y,n=rage?8:6;for(let i=0;i<n;i++){const a=i/n*6.283;strikes.push({x:px+Math.cos(a)*95,y:py+Math.sin(a)*60,t:0,warn:.85,r:42,dmg:pd,el:null,kind:'dark'});}
+      Q(e,.5,()=>strikes.push({x:P.x,y:P.y,t:0,warn:.75,r:52,dmg:pd+1,el:null,kind:'dark'}));}
+    else if(p==='sj_orbs'){floatText(e.x,e.y-120,'追魂黑球','#b06aff',true);const n=rage?8:6;for(let i=0;i<n;i++)orb(hx,hy,i/n*6.283,150,{sjHome:true,life:4.5,r:11,dmg:pd,c:'#5a1a8a'});sfx('shoot');}
+    else if(p==='sj_blink'){const fx=Math.sign(P.x-e.x)||1;let ok=false;for(const r of [120,90,150]){if(teleport(e,P.x+fx*r,P.y)){ok=true;break;}}
+      floatText(e.x,e.y-120,'……在你後面。','#ff6a8a',true);Q(e,.42,()=>{rings.push({x:e.x,y:e.y,r:10,max:260,spd:340,dmg:pd,c:'#5a1a8a'});shake=12;sfx('boss');burst(e.x,e.y,'#2a0a3a',24,220);});}
+    else if(p==='sj_shards'){floatText(e.x,e.y-130,'七色碎片！','#fff',true);const C7=[['#ff7a2a','fire'],['#9fe3ff','ice'],['#c39bff','shock'],['#6fd36f','poison'],['#7fd8ff',null],['#ffd23a',null],['#e0b080',null]];
+      for(let w=0;w<(rage?4:3);w++)Q(e,w*.28,()=>{const off=w*.22+Math.random()*.1;for(let i=0;i<7;i++){const a=off+i/7*6.283,[c,el]=C7[i];orb(hx,hy,a,200,{c,el,dmg:pd,r:10});}sfx('shoot');});}
+    else if(p==='sj_meteor'){floatText(e.x,e.y-130,'隕石雨！','#ff7a2a',true);const n=rage?10:7;for(let i=0;i<n;i++){const a=Math.random()*6.283,r=i===0?0:50+Math.random()*200;strikes.push({x:P.x+Math.cos(a)*r,y:P.y+Math.sin(a)*r,t:0,warn:1+i*.09,r:58,dmg:pd+1,el:'fire',kind:'meteor'});}}
+    else if(p==='sj_cross'){floatText(e.x,e.y-130,'十字障壁光！','#ff4ad8',true);const dir=Math.random()<.5?1:-1;for(let i=0;i<4;i++)beams.push({x:e.x,y:e.y-26,ang:a0+i*Math.PI/2+.4,len:540,w:24,t:0,warn:.85,dur:2.4,dmg:pd,c:'#ff4ad8',rot:dir*.85,owner:e});sfx('shoot');}
+    else if(p==='sj_nova'){floatText(e.x,e.y-130,'障壁爆發——！','#ff3a5a',true);e.sjNova=time+1.3;e.stun=Math.max(e.stun||0,1.3);sfx('boss');
+      Q(e,1.3,()=>{rings.push({x:e.x,y:e.y,r:10,max:420,spd:380,dmg:pd+1,c:'#b01ad6'});rings.push({x:e.x,y:e.y,r:-140,max:420,spd:380,dmg:pd+1,c:'#ff4ad8'});for(let i=0;i<20;i++)orb(hx,hy,i/20*6.283,230,{dmg:pd,c:'#ff4ad8'});shake=26;flashT=.2;burst(e.x,e.y-40,'#ff4ad8',60,380);});}
+    return true;};
+  const _bt=bossTick;bossTick=function(e,dt){_bt(e,dt);if(!isS(e))return;
+    if(e.sjQ&&!e.sjTrans)for(let i=e.sjQ.length-1;i>=0;i--){const q=e.sjQ[i];q.t-=dt;if(q.t<=0){e.sjQ.splice(i,1);q.f();}}
+    const cap=PH[e.sjPh].cap;if(e.atkTimer>cap)e.atkTimer=cap;
+    for(const p of projs)if(p.sjHome&&p.t<2){const a=Math.atan2(P.y-24-p.y,P.x-p.x),sp=Math.hypot(p.vx,p.vy),c=Math.atan2(p.vy,p.vx);let da=a-c;while(da>Math.PI)da-=6.283;while(da<-Math.PI)da+=6.283;const na=c+Math.max(-1.8*dt,Math.min(1.8*dt,da));p.vx=Math.cos(na)*sp;p.vy=Math.sin(na)*sp;}
+    if(e.sjPh>=2&&Math.random()<.35)parts.push({x:e.x+(Math.random()-.5)*60,y:e.y-20-Math.random()*80,vx:0,vy:-40,t:0,life:.8,c:e.sjPh===3?'rgba(176,26,214,.45)':'rgba(20,6,30,.5)'});};
+  // ---------------- 外觀 ----------------
+  const O='#1a0a14';
+  function poly(pts,fill,st,lw){ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(st){ctx.strokeStyle=st;ctx.lineWidth=lw||2.5;ctx.stroke();}}
+  function glow(x,y,r,c){const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,c);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill();}
+  function crown(x,y,s){poly([[x-13*s,y],[x-15*s,y-14*s],[x-8*s,y-7*s],[x-4*s,y-17*s],[x,y-8*s],[x+4*s,y-17*s],[x+8*s,y-7*s],[x+15*s,y-14*s],[x+13*s,y]],'#e8b830',O,2);
+    ctx.fillStyle='#ff3a5a';ctx.beginPath();ctx.arc(x,y-5*s,2.6*s,0,6.283);ctx.fill();ctx.fillStyle='#4ac8ff';ctx.beginPath();ctx.arc(x-8*s,y-4*s,1.8*s,0,6.283);ctx.arc(x+8*s,y-4*s,1.8*s,0,6.283);ctx.fill();}
+  function emperor(fl,slump){const W=(c)=>fl?'#fff':c,t=time,by=slump?16:0;
+    // 披風
+    const sw=Math.sin(t*2.2)*4;poly([[-14,-70+by],[14,-70+by],[36+sw,0],[10,-4],[-10,-2],[-38+sw,2]],W('#6a0f2a'),O);
+    ctx.strokeStyle='rgba(212,160,42,.8)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(36+sw,0);ctx.lineTo(10,-4);ctx.lineTo(-10,-2);ctx.lineTo(-38+sw,2);ctx.stroke();
+    // 龍袍
+    poly([[-16,-72+by],[16,-72+by],[26,-4],[-26,-4]],W('#3a1450'),O);
+    ctx.fillStyle=W('#d4a02a');ctx.fillRect(-4,-70+by,8,66-by);
+    ctx.strokeStyle=W('#d4a02a');ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(-26,-5);ctx.lineTo(26,-5);ctx.stroke();
+    for(let i=0;i<3;i++){ctx.strokeStyle='rgba(232,184,48,.55)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(-14+i*0,-20-i*14+by*.5,5,0,6.283);ctx.stroke();ctx.beginPath();ctx.arc(14,-20-i*14+by*.5,5,0,6.283);ctx.stroke();}
+    ctx.fillStyle=W('#d4a02a');ctx.fillRect(-18,-42+by*.6,36,6);ctx.fillStyle='#ff3a5a';ctx.fillRect(-3,-42+by*.6,6,6);
+    // 高領
+    poly([[-16,-72+by],[-22,-96+by],[-8,-78+by],[8,-78+by],[22,-96+by],[16,-72+by]],W('#2a0a3a'),O,2);
+    // 手與王杖
+    const hand=[28,-48+by];ctx.strokeStyle=O;ctx.lineWidth=9;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(13,-66+by);ctx.lineTo(hand[0],hand[1]);ctx.stroke();ctx.strokeStyle=W('#3a1450');ctx.lineWidth=6;ctx.stroke();
+    ctx.strokeStyle=O;ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(-13,-66+by);ctx.lineTo(-20,-40+by);ctx.stroke();ctx.strokeStyle=W('#3a1450');ctx.lineWidth=6;ctx.stroke();
+    if(!slump){ctx.strokeStyle=O;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(30,-96);ctx.lineTo(30,0);ctx.stroke();ctx.strokeStyle='#e8b830';ctx.lineWidth=3.5;ctx.stroke();
+      glow(30,-104,18+Math.sin(t*5)*3,'rgba(255,58,90,.7)');ctx.fillStyle='#ff3a5a';ctx.strokeStyle=O;ctx.lineWidth=2;ctx.beginPath();ctx.arc(30,-104,7,0,6.283);ctx.fill();ctx.stroke();
+      ctx.strokeStyle='#e8b830';ctx.lineWidth=2;ctx.beginPath();ctx.arc(30,-104,10,Math.PI*.15,Math.PI*.85);ctx.stroke();}
+    else{ctx.strokeStyle='#8a7a3a';ctx.lineWidth=3.5;ctx.beginPath();ctx.moveTo(30,-30);ctx.lineTo(70,-6);ctx.stroke();}
+    // 頭
+    const hy=-88+by*1.4,hx=slump?6:0;ctx.fillStyle=W('#d8c8b8');ctx.strokeStyle=O;ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(hx,hy,12,0,6.283);ctx.fill();ctx.stroke();
+    poly([[hx-10,hy+4],[hx+10,hy+4],[hx+4,hy+24],[hx,hy+28],[hx-4,hy+24]],W('#eee6d8'),O,1.5);
+    ctx.strokeStyle='#5a4a3a';ctx.lineWidth=1.8;ctx.beginPath();ctx.moveTo(hx-8,hy-4);ctx.lineTo(hx-2,hy-2);ctx.moveTo(hx+8,hy-4);ctx.lineTo(hx+2,hy-2);ctx.stroke();
+    if(slump){ctx.strokeStyle='#333';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(hx-7,hy+1);ctx.lineTo(hx-3,hy+1);ctx.moveTo(hx+3,hy+1);ctx.lineTo(hx+7,hy+1);ctx.stroke();}
+    else{glow(hx-4,hy,6,'rgba(255,40,70,.9)');glow(hx+4,hy,6,'rgba(255,40,70,.9)');ctx.fillStyle='#ff2a4a';ctx.fillRect(hx-6,hy-1,4,2.5);ctx.fillRect(hx+2,hy-1,4,2.5);}
+    crown(hx,hy-10,1);}
+  function shadowForm(fl,big){const t=time,C=fl?'#fff':'#120618';
+    ctx.globalAlpha=.92;for(let i=0;i<9;i++){const yy=-60-i*16,w=(28+Math.sin(i*1.3)*6)*(i<6?1+i*.08:1.4-(i-6)*.15);ctx.fillStyle=C;ctx.beginPath();ctx.ellipse(Math.sin(t*2+i)*4,yy,w,14,0,0,6.283);ctx.fill();}
+    ctx.globalAlpha=1;
+    // 角
+    for(const s of [-1,1]){ctx.fillStyle=fl?'#fff':'#2a1030';ctx.strokeStyle='#000';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(s*16,-184);ctx.quadraticCurveTo(s*44,-196,s*40,-232);ctx.quadraticCurveTo(s*30,-204,s*6,-194);ctx.closePath();ctx.fill();ctx.stroke();}
+    // 眼和嘴
+    for(const s of [-1,1]){glow(s*12,-176,12,'rgba(255,30,60,.9)');ctx.fillStyle='#ff2a4a';ctx.beginPath();ctx.moveTo(s*4,-178);ctx.lineTo(s*22,-182);ctx.lineTo(s*18,-172);ctx.closePath();ctx.fill();}
+    ctx.fillStyle='#ff6a8a';ctx.beginPath();ctx.moveTo(-16,-158);for(let i=0;i<=8;i++)ctx.lineTo(-16+i*4,-158+(i%2?7:0));ctx.lineTo(16,-154);ctx.quadraticCurveTo(0,-146,-16,-154);ctx.closePath();ctx.fill();
+    // 影之爪
+    for(const s of [-1,1]){const bx=s*(66+Math.sin(t*2.4+s)*6),byy=-118+Math.cos(t*2+s)*8;ctx.fillStyle=C;ctx.beginPath();ctx.ellipse(s*36,-130,22,10,s*.5,0,6.283);ctx.fill();
+      ctx.beginPath();ctx.ellipse(bx,byy,16,14,0,0,6.283);ctx.fill();ctx.strokeStyle=C;ctx.lineWidth=5;ctx.lineCap='round';for(let k=0;k<4;k++){const a=(s>0?.2:Math.PI-.2)+(k-1.5)*.38*s+Math.PI/2*0;ctx.beginPath();ctx.moveTo(bx,byy);ctx.lineTo(bx+Math.cos(a)*24,byy+Math.sin(a)*24+10);ctx.stroke();}
+      ctx.strokeStyle='rgba(255,40,80,.6)';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(bx,byy,16,0,6.283);ctx.stroke();}}
+  function demon(fl){const t=time,C=c=>fl?'#fff':c,flap=Math.sin(t*3)*.18;
+    // 翅膀
+    for(const s of [-1,1]){ctx.save();ctx.translate(s*20,-120);ctx.rotate(s*flap);ctx.fillStyle=C('#2a0d3a');ctx.strokeStyle='#000';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(s*70,-60);ctx.lineTo(s*120,-30);
+      ctx.quadraticCurveTo(s*100,-10,s*104,10);ctx.quadraticCurveTo(s*80,0,s*74,24);ctx.quadraticCurveTo(s*56,10,s*44,34);ctx.quadraticCurveTo(s*24,16,0,30);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.strokeStyle='#5a1a7a';ctx.lineWidth=2;for(const [x2,y2] of [[104,10],[74,24],[44,34]]){ctx.beginPath();ctx.moveTo(s*70,-60);ctx.lineTo(s*x2,y2);ctx.stroke();}ctx.restore();}
+    // 下半身化為煙
+    for(let i=0;i<5;i++){ctx.globalAlpha=.75-i*.12;ctx.fillStyle=C('#1a0824');ctx.beginPath();ctx.ellipse(Math.sin(t*3+i)*6,-40+i*8,30-i*4,12,0,0,6.283);ctx.fill();}ctx.globalAlpha=1;
+    // 身體盔甲
+    poly([[-34,-150],[34,-150],[26,-60],[0,-46],[-26,-60]],C('#1e0d2a'),'#000',3);
+    ctx.strokeStyle='#7a2a9a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-26,-60);ctx.lineTo(0,-74);ctx.lineTo(26,-60);ctx.moveTo(-30,-118);ctx.lineTo(30,-118);ctx.stroke();
+    for(const s of [-1,1]){poly([[s*28,-152],[s*54,-160],[s*62,-176],[s*46,-146],[s*34,-136]],C('#2e1240'),'#000',2.5);
+      poly([[s*50,-162],[s*58,-188],[s*60,-162]],C('#cfc0e0'),'#000',1.5);
+      ctx.strokeStyle='#000';ctx.lineWidth=12;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(s*44,-146);ctx.lineTo(s*58,-104);ctx.lineTo(s*50,-72);ctx.stroke();ctx.strokeStyle=C('#2e1240');ctx.lineWidth=8;ctx.stroke();
+      ctx.strokeStyle='#cfc0e0';ctx.lineWidth=2.5;for(let k=0;k<3;k++){ctx.beginPath();ctx.moveTo(s*50,-72);ctx.lineTo(s*(46+k*5),-60);ctx.stroke();}}
+    // 障壁之心
+    const pul=1+Math.sin(t*6)*.12;glow(0,-112,40*pul,'rgba(200,60,255,.7)');poly([[0,-134],[13,-112],[0,-90],[-13,-112]],'#0a0010','#e080ff',2.5);
+    ctx.strokeStyle='rgba(255,150,255,.85)';ctx.lineWidth=1.5;ctx.beginPath();ctx.moveTo(0,-128);ctx.lineTo(4,-114);ctx.lineTo(-3,-104);ctx.moveTo(4,-114);ctx.lineTo(9,-110);ctx.stroke();
+    // 頭盔與角
+    ctx.fillStyle=C('#160a20');ctx.strokeStyle='#000';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(-16,-150);ctx.lineTo(-18,-176);ctx.quadraticCurveTo(0,-192,18,-176);ctx.lineTo(16,-150);ctx.lineTo(0,-142);ctx.closePath();ctx.fill();ctx.stroke();
+    for(const s of [-1,1]){ctx.fillStyle=C('#d8cce8');ctx.beginPath();ctx.moveTo(s*14,-178);ctx.quadraticCurveTo(s*50,-186,s*46,-226);ctx.quadraticCurveTo(s*38,-196,s*8,-186);ctx.closePath();ctx.fill();ctx.stroke();
+      glow(s*7,-164,10,'rgba(255,40,120,.95)');ctx.fillStyle='#ff4ad8';ctx.fillRect(s>0?3:-11,-166,8,3);}
+    // 七色碎片環繞
+    const C7=['#ff7a2a','#9fe3ff','#c39bff','#6fd36f','#7fd8ff','#ffd23a','#e0b080'];for(let i=0;i<7;i++){const a=t*1.4+i/7*6.283,x=Math.cos(a)*78,y=-110+Math.sin(a)*28,front=Math.sin(a)>0;
+      ctx.globalAlpha=front?1:.55;glow(x,y,12,C7[i]+'aa');poly([[x,y-9],[x+5,y],[x,y+9],[x-5,y]],C7[i],'#000',1.5);}ctx.globalAlpha=1;}
+  const _rn=render;render=function(){_rn.apply(this,arguments);try{const b=enemies.find(e=>isS(e)&&e.sjPower&&!e.dead&&!e.sjDone);if(!b||state!=='play')return;
+    const by=VH-(isTouch?(VW<VH?250:150):56)-30;ctx.save();ctx.setTransform(1,0,0,1,0,0);const dpr=ctx.canvas.width/VW;ctx.scale(dpr,dpr);ctx.font='800 15px sans-serif';ctx.textAlign='center';
+    const t='💎 七碎片之力：全隊攻擊 +20%',w=ctx.measureText(t).width+24;ctx.fillStyle='rgba(30,10,40,.8)';ctx.strokeStyle='#ffd23a';ctx.lineWidth=2;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(VW/2-w/2,by-14,w,26,13);else ctx.rect(VW/2-w/2,by-14,w,26);ctx.fill();ctx.stroke();
+    ctx.fillStyle='#ffe58a';ctx.fillText(t,VW/2,by+5);ctx.restore();}catch(_){}};
+  const _db=drawBLook;drawBLook=function(e){if(!isS(e))return _db.apply(this,arguments);
+    if(e.hideT>0)return;const k=1.1,f=(e.fx||((P.x>e.x)?1:-1))<0?-1:1,fl=e.flash>0,tele=e.awake&&e.mode&&e.mode.startsWith('wind_'),ph=e.sjPh,bob=ph===1?0:Math.sin(time*2)*6-(ph===3?14:6);
+    ctx.save();ctx.translate(e.x,e.y);
+    const auraC=ph===1?'rgba(90,10,60,.35)':ph===2?'rgba(20,0,30,.5)':'rgba(176,26,214,.35)';glow(0,-6,ph===1?60:90,auraC);
+    ctx.fillStyle='rgba(0,0,0,.35)';ctx.beginPath();ctx.ellipse(0,0,ph===1?36:52,12,0,0,6.283);ctx.fill();
+    if(tele){ctx.fillStyle=`rgba(255,40,60,${.16+.14*Math.sin(time*40)})`;ctx.beginPath();ctx.arc(0,-70,ph===1?60:90,0,6.283);ctx.fill();}
+    if(e.sjNova>time){const q=1-(e.sjNova-time)/1.3;ctx.strokeStyle=`rgba(255,74,216,${.4+.5*q})`;ctx.lineWidth=4+q*6;ctx.beginPath();ctx.ellipse(0,0,240*(1-q)+30,(240*(1-q)+30)*.55,0,0,6.283);ctx.stroke();}
+    if(e.slashT>0){ctx.strokeStyle=`rgba(255,210,58,${.5+.4*Math.sin(time*40)})`;ctx.lineWidth=5;ctx.beginPath();ctx.arc(0,-40,110,e.slashA-1.2,e.slashA+1.2);ctx.stroke();}
+    ctx.translate(0,bob);ctx.scale(k*f,k);ctx.lineCap='round';ctx.lineJoin='round';
+    if(e.sjTrans&&!e.sjDone){ctx.globalAlpha=.6+.4*Math.sin(time*20);}
+    if(ph===1)emperor(fl,false);else if(ph===2){ctx.save();ctx.translate(0,-bob/k);emperor(fl,true);ctx.restore();ctx.translate(-10,-6);shadowForm(fl);}else demon(fl);
+    ctx.restore();ctx.globalAlpha=1;};
+  // ---------------- 皇宮：敵人多 20%、城門更厚 ----------------
+  const MORE={pal0:1,palA:1,pal1:1,gate1:0,pal2:1};
+  const _sm=spawnMobs;spawnMobs=function(tag,types,tx,ty,rad){if(MORE[tag]&&Array.isArray(types)&&types.length){const n=Math.max(1,Math.round(types.length*.2));types=types.slice();for(let i=0;i<n;i++)types.push(types[Math.floor(Math.random()*types.length)]);arguments[1]=types;}return _sm.apply(this,arguments);};
+  const _mg=makeGate;makeGate=function(tag,name,c,which,hp){if(tag==='gate1'||tag==='gate2'){arguments[4]=Math.round(hp*1.8);}const r=_mg.apply(this,arguments);
+    try{for(const g of enemies)if(g.storyTag===tag&&g.isGate){g.thick=1;g.name=name+'（加厚鐵門）';}}catch(_){}return r;};
+})();
+CHANGELOG.unshift(['v3.6.5','2026.11.20',[
+  '👑 最終戰大改：三階段，每一階段都要打完一整條血——【一】聖上（龍袍、王冠、紅寶石王杖）→【二】闇帝王（巨大黑影從聖上背後站起來，帶角、紅眼、影之爪）→【三】暗邪獸（和障壁核心合體，長出翅膀，胸口是黑水晶，七色碎片繞著轉）；每換一階段都有劇情',
+  '暗邪獸打到半血時有劇情：蒼流「這樣下去不是辦法」、迪洛「讓我們集結七個碎片的力量吧」、大家「好！！！哦哦哦！！！」之後全隊攻擊 +20%，直到打倒牠',
+  '新招式：王杖三連、天罰（直線落雷）、禁衛軍護駕、影之手（從地上抓你）、追魂黑球（會轉彎追你）、瞬移到背後、七色碎片連發、隕石雨、十字障壁光（會旋轉的四道光束）、障壁爆發（蓄力後整圈爆開）',
+  '皇宮攻城戰：敵人數量多 20%，皇宮城門和王座之間的大門更厚（血量 ×1.8）'
+]]);
+{const t=document.getElementById('verTag');if(t&&t.firstChild&&t.firstChild.nodeType===3)t.firstChild.nodeValue='v3.6.5　2026.11.20　';}
+
+// ================= 🌌 七碎片星圖＋⛏️ 挖礦（礦場都在城鎮裡，安全） =================
+(()=>{
+  const LN=[
+    {k:'fire', sh:'炎',hid:'dilo',   at:'火',c:'#d0453a',ore:'火晶石',oi:'🔥',town:'lava'},
+    {k:'wind', sh:'蒼',hid:'jinu',   at:'風',c:'#2fb38f',ore:'蒼風玉',oi:'🍃',town:'forest'},
+    {k:'thunder',sh:'雷',hid:'chisei',at:'雷',c:'#d9a227',ore:'雷鳴石',oi:'⚡',town:'thunder'},
+    {k:'ice',  sh:'冰',hid:'sisi',   at:'冰',c:'#4a74e0',ore:'寒冰礦',oi:'❄️',town:'snow'},
+    {k:'earth',sh:'地',hid:'kosu',   at:'土',c:'#5f9e2f',ore:'大地岩',oi:'🪨',town:'desert'},
+    {k:'light',sh:'空',hid:'tenchi', at:'光',c:'#e8d27a',ore:'日輪石',oi:'☀️',town:'mountain'},
+    {k:'blade',sh:'刃',hid:'bakuryu',at:'斬',c:'#a9b0bc',ore:'隕鐵',  oi:'🌠',town:'cave'}];
+  const LK={};LN.forEach(l=>LK[l.k]=l);
+  const HCLS={dilo:'fighter',jinu:'thief',bakuryu:'warrior',tenchi:'umbrella',chisei:'chisei',sisi:'elemental',kosu:'archer'};
+  const COST_O=[2,4,6,9,14],COST_C=[60,120,240,480,900];
+  const DESC={
+    fire:['火屬性攻擊 +6%','第 5 格：所有人的攻擊有 12% 機率讓敵人燒傷'],
+    wind:['遠距攻擊 +5%、擊退 +8%','第 5 格：遠距攻擊再 +10%，擊退和浮空更遠'],
+    thunder:['雷屬性攻擊 +6%','第 5 格：所有人的攻擊有 10% 機率電到旁邊的敵人'],
+    ice:['冰屬性攻擊 +6%','第 5 格：所有人的攻擊有 12% 機率讓敵人凍緩'],
+    earth:['近距攻擊 +4%（打盾兵、重甲、魔王再 +3%）','第 5 格：近距攻擊有 8% 機率讓敵人暈眩'],
+    light:['對黑暗系敵人 +6%（影子、殭屍、魔王軍……）','第 5 格：對黑暗系再 +15%，有機率放出淨化光爆'],
+    blade:['刀劍類武器攻擊 +5%','第 5 格：刀劍攻擊有 10% 機率「雙斬」再砍一下']};
+  const STONE={stone:['🪨','石頭',2],coal:['⚫','煤炭',5],copper:['🟠','銅礦',12],gem:['💎','寶石',120]};
+  const L=()=>{life.stars=life.stars||{};life.ores=life.ores||{};life.stones=life.stones||{};life.mine=life.mine||{q:0,dug:0};return life;};
+  const lv=k=>(L().stars[k]||0);
+  function open(l){try{if(story&&story.on)return l.hid==='dilo'||(story.party||[]).includes(l.hid);const c=HCLS[l.hid];return !window.__unlocked||window.__unlocked(c);}catch(_){return true;}}
+  window.__starLv=lv;
+  // ---------- 加成 ----------
+  const W0=()=>{try{return W()||{};}catch(_){return {};}};
+  const isRanged=w=>!!(w.ranged||w.gun);
+  const isBlade=w=>!!(w.blade||w.dual||((w.cls==='warrior'||w.cls==='thief')&&!w.thrust));
+  function elOf(pure){if(pure==='burn')return 'fire';const s=_hitSrc;if(s&&s.elem)return s.elem==='shock'?'thunder':s.elem;const w=W0(),n=w.name||'';
+    if(P.cls==='elemental')return P.element||'fire';if(P.cls==='kagerou'||w.fire||/火|炎|日/.test(n))return 'fire';if(P.cls==='chisei'||/雷/.test(n))return 'thunder';if(/冰|霜/.test(n))return 'ice';return null;}
+  const isDark=e=>!!(e.zombie||e.illusion||e.el==='dark'||e.sjPh||e.shadowK||/影|暗|魔|殭屍|幽|骷髏|死/.test(e.name||''));
+  const own=k=>{const c=HCLS[LK[k].hid];return P&&P.cls===c?1.5:1;};
+  let _inSt=false;
+  const _he=hitEnemy;hitEnemy=function(e,dmg,ang,kbm,pure){
+    if(_inSt||!e||e.dead||e.isGate||typeof dmg!=='number'||dmg<=0||!P||!life||pure==='poison')return _he.apply(this,arguments);
+    const S=L().stars,w=W0(),rg=isRanged(w),el=elOf(pure);let m=1,kb=kbm==null?1:kbm;
+    const add=(k,per)=>{const n=S[k]||0;if(n)m+=Math.min(4,n)*per*own(k);return n;};
+    if(el==='fire')add('fire',.06);if(el==='ice')add('ice',.06);if(el==='thunder')add('thunder',.06);
+    if(rg){const n=add('wind',.05);if(n){kb*=1+Math.min(4,n)*.08;if(n>=5){m+=.10*own('wind');kb*=1.4;}}}
+    else{add('earth',.04);if((S.earth||0)&&(e.shield||e.heavy||e.boss||e.king))m+=Math.min(4,S.earth)*.03*own('earth');}
+    if(isBlade(w))add('blade',.05);
+    if(isDark(e)){add('light',.06);if((S.light||0)>=5)m+=.15*own('light');}
+    const d2=m>1?(()=>{const v=dmg*m,f=Math.floor(v);return f+(Math.random()<v-f?1:0);})():dmg;
+    arguments[1]=d2;arguments[3]=kb;const r=_he.apply(this,arguments);
+    if(pure==='burn'||e.dead&&!e.sjPh)return r;
+    // 第 5 格的特效
+    if((S.fire||0)>=5&&Math.random()<.12){e.burn=Math.max(e.burn||0,3);floatText(e.x,e.y-70,'🔥 燒傷','#ff8a3a');}
+    if((S.ice||0)>=5&&Math.random()<.12){e.slowT=Math.max(e.slowT||0,2.5);floatText(e.x,e.y-70,'❄️ 凍緩','#9fe3ff');}
+    if((S.thunder||0)>=5&&Math.random()<.10){const o=enemies.filter(q=>q!==e&&!q.dead&&!q.isGate&&Math.hypot(q.x-e.x,q.y-e.y)<140).sort((a,b)=>Math.hypot(a.x-e.x,a.y-e.y)-Math.hypot(b.x-e.x,b.y-e.y))[0];
+      if(o){_inSt=true;try{_he(o,Math.max(1,Math.round(d2*.4)),Math.atan2(o.y-e.y,o.x-e.x),.3,true);}finally{_inSt=false;}parts.push({x:e.x,y:e.y-20,vx:(o.x-e.x)*3,vy:(o.y-e.y)*3,t:0,life:.25,c:'#ffe14a'});floatText(o.x,o.y-70,'⚡ 連鎖','#ffe14a');}}
+    if(!rg&&(S.earth||0)>=5&&!e.boss&&!e.king&&Math.random()<.08){e.stun=Math.max(e.stun||0,.9);floatText(e.x,e.y-70,'💫 暈眩','#c8b070');}
+    if(isBlade(w)&&(S.blade||0)>=5&&Math.random()<.10){const a=ang;setTimeout(()=>{if(e.dead)return;_inSt=true;try{_he(e,Math.max(1,Math.round(d2*.5)),a,.4,true);}finally{_inSt=false;}floatText(e.x,e.y-80,'⚔️ 雙斬','#dfe6f0');},110);}
+    if(isDark(e)&&(S.light||0)>=5&&Math.random()<.08){floatText(e.x,e.y-80,'☀️ 淨化光爆','#fff3b0',true);burst(e.x,e.y-20,'#fff3b0',24,200);
+      for(const q of enemies)if(!q.dead&&!q.isGate&&q!==e&&Math.hypot(q.x-e.x,q.y-e.y)<90){_inSt=true;try{_he(q,Math.max(1,Math.round(d2*.6)),Math.atan2(q.y-e.y,q.x-e.x),.6,true);}finally{_inSt=false;}}}
+    return r;};
+  // ---------- 礦石掉落（打怪、開寶箱也有一點） ----------
+  const REG2={lava:'fire',snow:'ice',ice:'ice',thunder:'thunder',forest:'wind',grass:'wind',water:'wind',mountain:'light',desert:'earth',cave:'blade'};
+  function giveOre(k,n,x,y){const l=LK[k];if(!l||!n)return;L().ores[k]=(life.ores[k]||0)+n;floatText(x,y-60,l.oi+' '+l.ore+' +'+n,l.c,true);}
+  const _lk=lifeKill;lifeKill=function(e){const r=_lk.apply(this,arguments);try{const k=REG2[e.reg];if(k&&(e.boss||e.king||Math.random()<.05))giveOre(k,e.boss||e.king?3:1,e.x,e.y);}catch(_){}return r;};
+  const _oc=openChest;openChest=function(c){const was=c.opened;const r=_oc.apply(this,arguments);try{if(!was&&c.opened&&Math.random()<.4){const k=REG2[c.reg]||LN[Math.floor(Math.random()*7)].k;giveOre(k,1+Math.floor(Math.random()*2),c.x,c.y-20);}}catch(_){}return r;};
+  // ---------- 礦場（每個礦場都在城鎮柵欄裡） ----------
+  const QUARRY=[['lava','fire'],['snow','ice'],['ice','ice'],['thunder','thunder'],['forest','wind'],['mountain','light'],['desert','earth'],['cave','blade']];
+  const VEINS=[];window.__veins=VEINS;
+  function placeVeins(){if(VEINS.length)return;for(const [tid,k] of QUARRY){const t=TOWNS.find(t=>t.id===tid);if(!t)continue;const cand=[];
+      for(let y=t.y+2;y<t.y+t.h-2;y++)for(let x=t.x+2;x<t.x+t.w-2;x++){let ok=true;
+        for(let j=-1;j<=1&&ok;j++)for(let i=-1;i<=1&&ok;i++){const tt=getT(x+i,y+j);if(tt!==G&&tt!==FLOWER)ok=false;}
+        if(!ok)continue;const px=(x+.5)*T,py=(y+.7)*T;
+        if(houses.some(h=>px>(h.x-2)*T&&px<(h.x+h.w+2)*T&&py>(h.y-2)*T&&py<(h.y+h.h+3)*T))continue;
+        if(NPCS.some(n=>Math.hypot(n.x-px,n.y-py)<90))continue;if(townDeco.some(d=>Math.hypot(d.x-px,d.y-py)<34))continue;
+        cand.push({x,y,px,py,s:Math.min(x-t.x,t.x+t.w-1-x,y-t.y,t.y+t.h-1-y)});}
+      cand.sort((a,b)=>a.s-b.s||a.y-b.y);const pick=[];for(const c of cand){if(pick.length>=4)break;if(pick.some(p=>Math.hypot(p.x-c.x,p.y-c.y)<3))continue;if(pick.length&&Math.hypot(pick[0].x-c.x,pick[0].y-c.y)>9)continue;pick.push(c);}
+      for(const p of pick){const v={kind:'vein',ore:k,town:tid,x:p.px,y:p.py,hp:3,regrow:0,shake:0};VEINS.push(v);townDeco.push(v);}
+      if(pick.length){const sx=pick.reduce((a,p)=>a+p.px,0)/pick.length,sy=Math.min(...pick.map(p=>p.py))-46;townDeco.push({kind:'qsign',x:sx,y:sy,ore:k});}}}
+  window.__quarries=()=>QUARRY.map(([tid,k])=>{const t=TOWNS.find(t=>t.id===tid),v=VEINS.filter(v=>v.town===tid);return (t?t.name:tid)+'：'+LK[k].ore+' ×'+v.length+(v[0]?' @'+Math.round(v[0].x/T)+','+Math.round(v[0].y/T):'');});
+  const _dd=drawTownDeco;drawTownDeco=function(d){
+    if(d.kind==='qsign'){const x=d.x,y=d.y;ctx.strokeStyle='#3a2a1a';ctx.lineWidth=4;ctx.beginPath();ctx.moveTo(x,y+18);ctx.lineTo(x,y-8);ctx.stroke();ctx.fillStyle='#a87a48';ctx.strokeStyle='#3a2a1a';ctx.lineWidth=2;ctx.fillRect(x-38,y-30,76,24);ctx.strokeRect(x-38,y-30,76,24);
+      ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff6e0';ctx.fillText('⛏️ 礦場',x,y-13);return;}
+    if(d.kind!=='vein')return _dd.apply(this,arguments);const l=LK[d.ore],y=d.y;let x=d.x+(d.shake>0?Math.sin(time*60)*2:0);
+    ctx.save();ctx.translate(x,y);ctx.scale(1.35,1.35);ctx.translate(-x,-y);const _r=()=>ctx.restore();
+    ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(x,y+2,22,7,0,0,6.283);ctx.fill();
+    if(d.hp<=0){ctx.fillStyle='#8a8478';ctx.strokeStyle='#3a362e';ctx.lineWidth=2;ctx.beginPath();ctx.ellipse(x,y-3,14,6,0,0,6.283);ctx.fill();ctx.stroke();_r();return;}
+    ctx.fillStyle='#8f8a80';ctx.strokeStyle='#2e2a24';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(x-22,y+2);ctx.lineTo(x-18,y-16);ctx.lineTo(x-6,y-26);ctx.lineTo(x+10,y-24);ctx.lineTo(x+21,y-10);ctx.lineTo(x+22,y+2);ctx.closePath();ctx.fill();ctx.stroke();
+    ctx.fillStyle='#a8a296';ctx.beginPath();ctx.moveTo(x-16,y-14);ctx.lineTo(x-6,y-23);ctx.lineTo(x+6,y-21);ctx.lineTo(x-2,y-12);ctx.closePath();ctx.fill();
+    ctx.fillStyle='#3a362e';for(const [a,b] of [[-12,-4],[6,-6],[14,-14]]){ctx.beginPath();ctx.arc(x+a,y+b,1.8,0,6.283);ctx.fill();}
+    for(const [a,b,s] of [[-8,-10,6],[8,-15,7],[13,-3,5]]){const g=.6+.4*Math.sin(time*3+a);ctx.globalAlpha=g;ctx.fillStyle=l.c;ctx.beginPath();ctx.moveTo(x+a,y+b-s);ctx.lineTo(x+a+s*.6,y+b);ctx.lineTo(x+a,y+b+s*.7);ctx.lineTo(x+a-s*.6,y+b);ctx.closePath();ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1;ctx.stroke();}_r();
+    if(Math.hypot(P.x-d.x,P.y-d.y)<70){ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=(L().mine.q>=1?'⛏️ ':'🔒 ')+l.ore+'礦脈';ctx.strokeText(t,x,y-44);ctx.fillStyle='#fff';ctx.fillText(t,x,y-44);}};
+  function nearVein(){let b=null,bd=56;for(const v of VEINS){if(v.hp<=0)continue;const d=Math.hypot(v.x-P.x,v.y-P.y);if(d<bd){bd=d;b=v;}}return b;}
+  function roll(v){const r=Math.random();if(r<.32)return giveOre(v.ore,1+(Math.random()<.25?1:0),v.x,v.y);
+    if(r<.35){P.items.ore=(P.items.ore||0)+1;floatText(v.x,v.y-60,'🔩 精鐵 +1','#c9d6ff',true);return;}
+    const k=r<.36?'gem':r<.46?'copper':r<.68?'coal':'stone';const s=STONE[k];L().stones[k]=(life.stones[k]||0)+1;floatText(v.x,v.y-60,s[0]+' '+s[1]+' +1',k==='gem'?'#7fe8ff':'#e0d8c8',k==='gem');}
+  let swingT=0;
+  function mine(v){const M=L().mine;if(M.q<1){floatText(P.x,P.y-70,'需要十字鎬……','#ffcf3a');if(!M.hint){M.hint=1;say('💭',['（這是礦脈。沒有工具挖不動……）','（聽說礦工鎮的老礦工，在找願意幫忙的人。）']);}return;}
+    if(swingT>time)return;swingT=time+.32;v.hp--;v.shake=.2;P.atkT=Math.max(P.atkT||0,.18);sfx('clang');shake=Math.max(shake,3);burst(v.x,v.y-14,'#c8c0b0',8,140);burst(v.x,v.y-14,LK[v.ore].c,4,120);
+    if(v.hp<=0){v.regrow=time+150;roll(v);roll(v);if(Math.random()<.35)roll(v);M.dug=(M.dug||0)+1;sfx('coin');saveGame();}}
+  // ---------- 老礦工（支線：學會挖礦） ----------
+  let MINER=null;
+  function addMiner(){if(MINER)return;const t=TOWNS.find(t=>t.id==='cave');const v=VEINS.find(v=>v.town==='cave');if(!t)return;let x=v?v.x+56:(t.cx+3)*T,y=v?v.y+36:(t.cy+3)*T;for(const [a,b] of [[56,36],[-56,36],[0,60],[60,-10],[-60,-10]]){if(v&&!solidAt(v.x+a,v.y+b)&&!houses.some(h=>v.x+a>h.x*T-10&&v.x+a<(h.x+h.w)*T+10&&v.y+b>h.y*T-10&&v.y+b<(h.y+h.h)*T+30)){x=v.x+a;y=v.y+b;break;}}
+    MINER={id:'mq_miner',role:'talk',name:'⛏️ 老礦工',x,y,color:'#6b4a2a',hat:'helmet',lines:[['……']]};NPCS.push(MINER);}
+  const _tk=talk;talk=function(n){if(n&&n.id==='mq_miner')return minerTalk();return _tk.apply(this,arguments);};
+  function sellMenu(){const S=L().stones;let tot=0;const parts2=[];for(const k in STONE){const c=S[k]||0;if(c){tot+=c*STONE[k][2];parts2.push(STONE[k][0]+STONE[k][1]+'×'+c);}}
+    if(!tot){say('⛏️ 老礦工',['石頭、煤炭、銅礦、寶石，挖到了都可以拿來賣我。']);return;}
+    window.__pickMenu('⛏️ 收購礦石','<div style="text-align:center">'+parts2.join('　')+'<br>全部賣掉可以拿到 <b>🪙'+tot+'</b></div>',[{t:'全部賣掉　🪙'+tot,bg:'#ffe08a',fn:()=>{for(const k in STONE)S[k]=0;P.coins+=tot;sfx('coin');floatText(P.x,P.y-70,'🪙 +'+tot,'#ffcf3a',true);saveGame();}},{t:'先留著',bg:'#eee',fn:()=>{}}]);}
+  function minerTalk(){const M=L().mine;
+    if(M.q===0){say('⛏️ 老礦工',['唉……腰又閃到了。','年輕人，你看起來力氣不錯，幫老頭子一個忙吧？','這把十字鎬借你。鎮上的礦場有幾塊亮晶晶的礦脈，','去挖 3 座礦脈回來給我看看！'],()=>{M.q=1;M.dug=0;floatText(P.x,P.y-80,'⛏️ 得到了十字鎬！','#ffcf3a',true);sfx('lvl');showCard('⛏️ 支線：老礦工的十字鎬','挖 3 座礦脈（0/3）');saveGame();});return;}
+    if(M.q===1){if((M.dug||0)<3){say('⛏️ 老礦工',['礦脈就在鎮上的礦場，站在旁邊按「對話」就能挖。','現在挖了 '+(M.dug||0)+' 座，再加油！']);return;}
+      say('⛏️ 老礦工',['喔喔！挖得不錯嘛！','這把十字鎬，就送你了。','告訴你一個秘密——各地的城鎮裡，都有自己的礦場。','熔岩村有火晶石、雪原有寒冰礦、雷の都有雷鳴石……','傳說這七種礦石，會跟「七片碎片」起共鳴。','打開角色面板的「🌌 星圖」看看吧！'],()=>{M.q=2;P.coins+=150;floatText(P.x,P.y-80,'🪙 +150　十字鎬是你的了！','#ffcf3a',true);sfx('lvl');showCard('⛏️ 支線完成','可以在各地礦場挖礦了，星圖也打開了');saveGame();});return;}
+    window.__pickMenu('⛏️ 老礦工','<div style="text-align:center">要做什麼？</div>',[{t:'💰 賣礦石',bg:'#ffe08a',fn:sellMenu},{t:'🗺️ 礦場在哪？',bg:'#d8ecff',fn:()=>say('⛏️ 老礦工',['火晶石在熔岩鍛冶村、寒冰礦在雪原驛站和冰の都、雷鳴石在雷の都，','蒼風玉在妖精の村、日輪石在空の都、大地岩在綠洲鎮，','隕鐵嘛……就在我們礦工鎮！挖完的礦脈，過兩三分鐘會再長出來。'])},{t:'沒事',bg:'#eee',fn:()=>{}}]);}
+  // 鍛冶屋也收礦石
+  const _ft=facTalk;facTalk=function(n){if(n&&n.fac==='smith'&&Object.values(L().stones).some(v=>v>0)){window.__pickMenu(n.name,'<div style="text-align:center">要打鐵，還是賣礦石？</div>',[{t:'🔨 鍛冶',bg:'#ffe08a',fn:()=>_ft.call(this,n)},{t:'💰 賣礦石',bg:'#d8f0c8',fn:sellMenu}]);return;}return _ft.apply(this,arguments);};
+  // ---------- 村民提點 ----------
+  let hinted=false;function addHints(){if(hinted)return;let any=false;for(const n of NPCS){if(!n.id||!String(n.id).startsWith('amb_')||!Array.isArray(n.lines))continue;any=true;const tid=n.amb&&n.amb.id||String(n.id).slice(4,-1);
+      const q=QUARRY.find(q=>q[0]===tid);
+      if(String(n.id).endsWith('0'))n.lines.push(['你知道嗎？礦工鎮的老礦工最近在找幫手。','聽說他會教人挖礦喔！']);
+      if(q&&String(n.id).endsWith('1'))n.lines.push(['我們鎮上有一座小礦場，','可以挖到「'+LK[q[1]].ore+'」。不過要有十字鎬才挖得動。']);
+      if(String(n.id).endsWith('2'))n.lines.push(['老人家說，七種礦石會跟傳說中的「七片碎片」起共鳴……','是真的嗎？']);}
+    hinted=any;}
+  // ---------- 主迴圈 ----------
+  const _u=update;update=function(dt){
+    if(state==='play'&&P&&TOWNS&&townDeco&&VEINS.length){addMiner();addHints();
+      if(!dlg&&!scene&&(pressed.e||pressed.enter||tTalk)){const v=nearVein();if(v){let nn=false;for(const n of NPCS){if(!n._hid&&Math.hypot(n.x-P.x,n.y-P.y)<Math.hypot(v.x-P.x,v.y-P.y))nn=true;}if(!nn){pressed.e=pressed.enter=false;tTalk=false;mine(v);}}}}
+    _u.apply(this,arguments);if(state==='play'&&P&&!VEINS.length&&(window.__vf=(window.__vf||0)+1)>8)placeVeins();
+    for(const v of VEINS){if(v.shake>0)v.shake-=dt;if(v.hp<=0&&time>v.regrow){v.hp=3;}}
+    if(isTouch&&state==='play'&&!dlg){const v=nearVein(),bT=document.getElementById('bT');if(v&&bT&&bT.classList.contains('hide')){bT.classList.remove('hide');try{tbSet('bT','挖礦',0,1,false);}catch(_){}}}};
+  // ---------- 星圖介面 ----------
+  const css=document.createElement('style');css.textContent=`#starOv .card{background:#17151f;color:#eee;max-width:640px;width:96vw;max-height:94vh;overflow:auto;border:2px solid #4a4060;border-radius:18px;padding:12px 14px}
+  #starOv h3{margin:2px 0 4px;text-align:center;font-size:19px}#starOv .sub{text-align:center;color:#a99fc0;font-size:12px;margin-bottom:4px}
+  #starOv svg{width:100%;height:auto;display:block;max-height:58vh}#starOv .nd{cursor:pointer}#starOv .info{background:#221f2e;border-radius:12px;padding:10px 12px;margin-top:6px;font-size:14px;line-height:1.55}
+  #starOv .ores{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-top:8px;font-size:12px}#starOv .ores span{background:#2a2638;border-radius:999px;padding:3px 9px}
+  #starOv .row{display:flex;gap:8px;margin-top:8px}#starOv .row button{flex:1}`;document.head.appendChild(css);
+  const ov=document.createElement('div');ov.id='starOv';ov.className='ov hide';ov.innerHTML='<div class="card"></div>';document.body.appendChild(ov);
+  ov.addEventListener('click',e=>{if(e.target===ov)closeStar();});
+  let sel=null,from=null;
+  function closeStar(){ov.classList.add('hide');state='play';saveGame();if(from==='inv'){try{openInv();}catch(_){}}}
+  window.__openStar=src=>{from=src||null;state='shop';ov.classList.remove('hide');draw();};
+  function draw(){const S=L().stars,O=L().ores,cx=300,cy=300,R0=60,STEP=40;let svg=`<svg viewBox="-70 -45 740 680" xmlns="http://www.w3.org/2000/svg">`;
+    svg+=`<defs><radialGradient id="sg"><stop offset="0" stop-color="#5a5070"/><stop offset="1" stop-color="#2a2438"/></radialGradient></defs>`;
+    for(let i=0;i<40;i++){const a=(i*137.5)%360*Math.PI/180,r=(i*53)%290;svg+=`<circle cx="${cx+Math.cos(a)*r}" cy="${cy+Math.sin(a)*r}" r="${i%5?0.8:1.4}" fill="#fff" opacity="${.15+(i%4)*.1}"/>`;}
+    LN.forEach((l,i)=>{const a=(-90+i*360/7)*Math.PI/180,op=open(l),n=S[l.k]||0,ca=Math.cos(a),sa=Math.sin(a);
+      const P0=j=>[cx+ca*(R0+STEP*j),cy+sa*(R0+STEP*j)];const end=P0(5);
+      svg+=`<line x1="${cx+ca*R0}" y1="${cy+sa*R0}" x2="${end[0]}" y2="${end[1]}" stroke="${op?'#6a6280':'#444'}" stroke-width="2" ${op?'':'stroke-dasharray="5 6"'}/>`;
+      if(n)svg+=`<line x1="${cx+ca*R0}" y1="${cy+sa*R0}" x2="${P0(n)[0]}" y2="${P0(n)[1]}" stroke="${l.c}" stroke-width="4" opacity=".85"/>`;
+      for(let j=1;j<=5;j++){const [x,y]=P0(j),big=j===5,r=big?17:11,lit=j<=n,next=op&&j===n+1;
+        svg+=`<g class="nd" data-k="${l.k}"><circle cx="${x}" cy="${y}" r="${r}" fill="${lit?l.c:'#1e1b28'}" stroke="${lit?'#fff':next?l.c:op?'#8a83a0':'#555'}" stroke-width="${next?3:1.6}" ${op?'':'stroke-dasharray="3 4"'}/>`;
+        if(lit&&big)svg+=`<circle cx="${x}" cy="${y}" r="24" fill="none" stroke="${l.c}" opacity=".5" stroke-width="2"/>`;
+        if(next)svg+=`<circle cx="${x}" cy="${y}" r="${r+5}" fill="none" stroke="${l.c}" opacity=".6"><animate attributeName="r" values="${r+3};${r+9};${r+3}" dur="1.6s" repeatCount="indefinite"/><animate attributeName="opacity" values=".7;.1;.7" dur="1.6s" repeatCount="indefinite"/></circle>`;
+        svg+=`</g>`;}
+      const RL=R0+STEP*5+46,lx=cx+ca*RL,ly=cy+sa*RL+(sa<-.9?-6:sa>.3?14:6);
+      svg+=`<g class="nd" data-k="${l.k}"><text x="${lx}" y="${ly-4}" text-anchor="middle" font-size="17" font-weight="800" fill="${sel===l.k?l.c:'#fff'}">${l.sh}之星脈</text><text x="${lx}" y="${ly+15}" text-anchor="middle" font-size="12" fill="#b0a8c4">${op?l.at+'・'+n+'/5':'需取得碎片'}</text></g>`;});
+    svg+=`<circle cx="${cx}" cy="${cy}" r="${R0-6}" fill="url(#sg)" stroke="#8a80a8" stroke-width="2"/><text x="${cx}" y="${cy-2}" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">七碎片</text><text x="${cx}" y="${cy+20}" text-anchor="middle" font-size="13" fill="#c8c0dc">星圖</text></svg>`;
+    let info='';if(sel){const l=LK[sel],n=S[sel]||0,op=open(l),own2=CLASSES[HCLS[l.hid]];
+      info=`<div class="info"><b style="color:${l.c};font-size:16px">${l.sh}之星脈</b>　<small style="color:#a99fc0">${l.at}屬性・碎片持有者：${(COMP[l.hid]&&COMP[l.hid].name)||({dilo:'迪洛',chisei:'千鳴',sisi:'茜茜',kosu:'江家'})[l.hid]||''}（${own2?own2.name:''}本人效果 ×1.5）</small><br>
+        每格：${DESC[sel][0]}<br>${DESC[sel][1]}<br>目前：<b>${n}/5</b>　${l.oi} ${l.ore}：<b>${O[sel]||0}</b>　🪙 ${P.coins}`;
+      if(!op)info+=`<br><span style="color:#ff9a8a">還沒取得「${l.sh}」之碎片，星脈還沒有連起來。</span>`;
+      else if(n>=5)info+=`<br><span style="color:#9fffc0">✨ 這條星脈已經全部點亮了！</span>`;
+      else{const co=COST_O[n],cc=COST_C[n],ok=(O[sel]||0)>=co&&P.coins>=cc;info+=`<div class="row"><button class="sbtn" id="stLit" ${ok?'':'disabled'} style="background:${ok?l.c:'#555'};color:#fff;border-color:#fff">點亮第 ${n+1} 格：${l.oi}×${co}　🪙${cc}</button></div>`;
+        if(!ok)info+=`<small style="color:#a99fc0">${l.ore}可以在「${TOWNS.find(t=>t.id===l.town).name}」的礦場挖到${L().mine.q<1?'（要先跟礦工鎮的老礦工學挖礦）':''}，在那一帶打怪、開寶箱也有機會拿到。</small>`;}
+      info+='</div>';}
+    else info=`<div class="info" style="text-align:center;color:#c8c0dc">點一條星脈看看。<br><small>用礦石和金幣點亮星脈，全隊都會變強；碎片持有者本人效果 ×1.5。</small></div>`;
+    const ores=LN.map(l=>`<span>${l.oi} ${l.ore} ${O[l.k]||0}</span>`).join('')+Object.keys(STONE).map(k=>`<span>${STONE[k][0]} ${STONE[k][1]} ${L().stones[k]||0}</span>`).join('');
+    ov.querySelector('.card').innerHTML=`<h3>🌌 七碎片星圖</h3><div class="sub">碎片的力量，靠礦石連成星脈</div>${svg}${info}<div class="ores">${ores}</div><div class="row"><button class="sbtn" id="stClose" style="background:#3a3450;color:#fff;border-color:#6a6280">關閉</button></div>`;
+    ov.querySelectorAll('.nd').forEach(g=>g.onclick=e=>{e.stopPropagation();sel=g.dataset.k;draw();});
+    ov.querySelector('#stClose').onclick=e=>{e.stopPropagation();closeStar();};
+    const b=ov.querySelector('#stLit');if(b)b.onclick=e=>{e.stopPropagation();const n=S[sel]||0;const co=COST_O[n],cc=COST_C[n];if((O[sel]||0)<co||P.coins<cc)return;O[sel]-=co;P.coins-=cc;S[sel]=n+1;sfx('lvl');saveGame();draw();};}
+  // 角色面板加一顆「星圖」按鈕
+  const _ri=renderInv;renderInv=function(){const r=_ri.apply(this,arguments);try{const list=document.getElementById('invList');const sk=list&&list.querySelector('#invSk');
+      if(sk&&!list.querySelector('#invStar')){sk.insertAdjacentHTML('afterend',`<button class="sbtn" id="invStar" style="flex:1;min-width:0;padding:6px 4px;background:#2a2340;color:#f3e8ff;box-shadow:none;border-color:#7a6aa8">🌌 星圖 ›</button>`);
+        list.querySelector('#invStar').onclick=e=>{e.stopPropagation();e.preventDefault();closeInv();window.__openStar('inv');};}}catch(_){}return r;};
+  document.addEventListener('keydown',e=>{if(!ov.classList.contains('hide')&&(e.key==='Escape'||e.key==='i'||e.key==='I')){e.preventDefault();e.stopPropagation();from=null;closeStar();}},true);
+})();
+CHANGELOG.unshift(['v3.6.6','2026.11.20',[
+  '🌌 七碎片星圖：角色面板多了「🌌 星圖」——炎、蒼、雷、冰、地、空、刃七條星脈，每條 5 格，用礦石＋金幣點亮，全隊變強（碎片持有者本人 ×1.5）；故事中拿到哪片碎片，那條星脈才會連起來',
+  '各星脈：炎／冰／雷＝該屬性攻擊、蒼（風）＝遠距攻擊和擊退、地（土）＝近距攻擊和破防、刃（斬）＝刀劍類攻擊、空（光）＝對黑暗系敵人；第 5 格都有特殊效果（燒傷、凍緩、連鎖電擊、暈眩、雙斬、淨化光爆……）',
+  '⛏️ 挖礦：支線「老礦工的十字鎬」（礦工鎮），學會後可以在各城鎮裡的礦場挖礦——礦場都在城鎮柵欄內，挖礦時不會被怪打擾；礦脈挖完過一陣子會再長出來',
+  '挖礦會挖到七種星脈礦石，也會挖到石頭、煤炭、銅礦、寶石（可以賣給老礦工或鍛冶屋），偶爾還有精鐵；野外打怪、開寶箱也有機會拿到礦石',
+  '鎮上的居民會提醒你：礦工鎮的老礦工在找幫手、自己鎮上的礦場挖得到什麼'
+]]);
+{const t=document.getElementById('verTag');if(t&&t.firstChild&&t.firstChild.nodeType===3)t.firstChild.nodeValue='v3.6.6　2026.11.20　';}
+
+// ================= 🎣 釣魚（釣點都在城鎮裡或阿伯的小島，安全） =================
+(()=>{
+  const FISH={
+    crucian:['鯽魚','🐟',0,8],loach:['泥鰍','🐟',0,8],carp:['鯉魚','🐟',1,22],goldcarp:['金鯉','🐠',2,70],
+    sardine:['沙丁魚','🐟',0,8],aji:['竹莢魚','🐟',0,10],bass:['鱸魚','🐟',1,24],seabream:['鯛魚','🐠',1,30],octopus:['章魚','🐙',2,65],
+    shrimp:['溪蝦','🦐',0,8],trout:['鱒魚','🐟',0,10],medaka:['青鱂','🐟',1,20],fairyfish:['妖精燈籠魚','🐠',2,80],
+    catfish:['沙漠鯰魚','🐟',0,10],crab:['綠洲螃蟹','🦀',1,24],goldsand:['金沙魚','🐠',2,75],
+    icefish:['冰魚','🐟',0,10],salmon:['鮭魚','🐟',1,26],cod:['鱈魚','🐟',1,24],aurora:['極光魚','🐠',2,85],
+    mackerel:['鯖魚','🐟',0,10],tuna:['鮪魚','🐟',1,35],puffer:['河豚','🐡',1,30],babyshark:['鯊魚寶寶','🦈',2,90],
+    rainbow:['七色碎片魚','🌈',3,250],boot:['舊靴子','👢',-1,1],weed:['水草','🌿',-1,1],box:['沉在水底的寶箱','📦',-2,0]};
+  const POOL={
+    village:['crucian','loach','carp','goldcarp'],water:['sardine','aji','bass','seabream','octopus'],forest:['shrimp','trout','medaka','fairyfish'],
+    desert:['catfish','crab','goldsand'],snow:['icefish','salmon','cod','aurora'],islet:['mackerel','tuna','puffer','babyshark']};
+  const PLACE={village:'古夢碎村的池塘',water:'水の都的碼頭',forest:'妖精の村的池塘',desert:'綠洲鎮的綠洲',snow:'雪原驛站的冰洞',islet:'釣魚阿伯的小島'};
+  const W=[0.62,0.27,0.08,0.008];const WIN=[.95,.75,.55,.42];
+  const FL=()=>{life.fish=life.fish||{q:0,n:0,bag:{},dex:{}};return life.fish;};
+  const SPOTS=[];window.__fishSpots=SPOTS;
+  function pond(t){const cand=[];
+    for(let y=t.y+2;y<t.y+t.h-4;y++)for(let x=t.x+2;x<t.x+t.w-5;x++){let ok=true;
+      for(let j=-1;j<=3&&ok;j++)for(let i=-1;i<=3&&ok;i++){const tt=getT(x+i,y+j);if(tt!==G&&tt!==FLOWER)ok=false;}
+      if(!ok)continue;const px=(x+1.5)*T,py=(y+1)*T;
+      if(houses.some(h=>px>(h.x-2.5)*T&&px<(h.x+h.w+2.5)*T&&py>(h.y-2)*T&&py<(h.y+h.h+3)*T))continue;
+      if(NPCS.some(n=>Math.hypot(n.x-px,n.y-py)<110))continue;if(townDeco.some(d=>Math.hypot(d.x-px,d.y-py)<70))continue;
+      cand.push({x,y,s:Math.hypot(x+1.5-(t.x+t.w/2),y+1-(t.y+t.h/2))});}
+    cand.sort((a,b)=>b.s-a.s);return cand[Math.floor(cand.length*.25)]||cand[0];}
+  function placeSpots(){if(SPOTS.length)return;
+    for(const tid of ['village','water','forest','desert','snow']){const t=TOWNS.find(t=>t.id===tid);if(!t)continue;const p=pond(t);if(!p)continue;
+      for(let j=0;j<2;j++)for(let i=0;i<3;i++)setT(p.x+i,p.y+j,WATER);
+      for(let i=townDeco.length-1;i>=0;i--){const d=townDeco[i];if(d.x>(p.x-.5)*T&&d.x<(p.x+3.5)*T&&d.y>(p.y-.5)*T&&d.y<(p.y+2.8)*T&&d.kind!=='vein')townDeco.splice(i,1);}
+      const s={town:tid,x:(p.x+1.5)*T,y:(p.y+2.6)*T,bx:(p.x+1.5)*T,by:(p.y+1)*T,px:p.x,py:p.y,ice:tid==='snow'};SPOTS.push(s);townDeco.push({kind:'fspot',s,x:s.x,y:(p.y+2.05)*T});}
+    const f=NPCS.find(n=>n.id==='fisher');if(f){const fx=Math.floor(f.x/T),fy=Math.floor(f.y/T);let best=null;
+      for(let dy=-3;dy<=3;dy++)for(let dx=-4;dx<=4;dx++){const x=fx+dx,y=fy+dy;if(getT(x,y)===WATER||solidAt((x+.5)*T,(y+.5)*T))continue;
+        for(const [ax,ay] of [[1,0],[-1,0],[0,1],[0,-1]])if(getT(x+ax,y+ay)===WATER&&getT(x+ax*2,y+ay*2)===WATER){const d=Math.hypot(dx-2,dy);if(!best||d<best.d)best={x,y,ax,ay,d};}}
+      if(best){const s={town:'islet',x:(best.x+.5)*T,y:(best.y+.6)*T,bx:(best.x+best.ax*2+.5)*T,by:(best.y+best.ay*2+.5)*T};SPOTS.push(s);townDeco.push({kind:'fspot',s,x:s.x,y:s.y-4,isle:1});}}}
+  window.__fishList=()=>SPOTS.map(s=>PLACE[s.town]+' @'+Math.round(s.x/T)+','+Math.round(s.y/T));
+  // ---------- 畫 ----------
+  let F=null;
+  const _dd=drawTownDeco;drawTownDeco=function(d){if(d.kind!=='fspot')return _dd.apply(this,arguments);const s=d.s;
+    if(!d.isle){const x0=s.px*T,y0=s.py*T;
+      ctx.strokeStyle=s.ice?'#e8f4ff':'#7a5a3a';ctx.lineWidth=s.ice?7:5;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x0-3,y0-3,3*T+6,2*T+6,14);else ctx.rect(x0-3,y0-3,3*T+6,2*T+6);ctx.stroke();
+      if(!s.ice){ctx.fillStyle='#3f8a3a';for(const [a,b] of [[-4,8],[3*T+2,14],[10,2*T+3],[3*T-8,-4]]){ctx.beginPath();ctx.ellipse(x0+a,y0+b,7,4,0,0,6.283);ctx.fill();}
+        ctx.fillStyle='#8fd47a';ctx.beginPath();ctx.ellipse(x0+28,y0+30,9,5,.3,0,6.283);ctx.fill();ctx.fillStyle='#ffb3cf';ctx.beginPath();ctx.arc(x0+30,y0+29,3,0,6.283);ctx.fill();}
+      else{ctx.fillStyle='rgba(255,255,255,.75)';for(let i=0;i<6;i++){ctx.beginPath();ctx.arc(x0+i*T*.6,y0-2+(i%2)*3,5,0,6.283);ctx.fill();ctx.beginPath();ctx.arc(x0+i*T*.6,y0+2*T+2,5,0,6.283);ctx.fill();}}
+      ctx.fillStyle='#a87a48';ctx.strokeStyle='#3a2a1a';ctx.lineWidth=2;ctx.fillRect(s.x-18,d.y-6,36,14);ctx.strokeRect(s.x-18,d.y-6,36,14);
+      ctx.strokeStyle='#6a4a2a';ctx.lineWidth=1.5;for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(s.x+i*12,d.y-6);ctx.lineTo(s.x+i*12,d.y+8);ctx.stroke();}}
+    const sx=s.x+30,sy=d.y+(d.isle?-10:4);ctx.strokeStyle='#3a2a1a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(sx,sy+14);ctx.lineTo(sx,sy-6);ctx.stroke();ctx.fillStyle='#a87a48';ctx.lineWidth=2;ctx.fillRect(sx-24,sy-24,48,18);ctx.strokeRect(sx-24,sy-24,48,18);
+    ctx.font='bold 11px sans-serif';ctx.textAlign='center';ctx.fillStyle='#fff6e0';ctx.fillText('🎣 釣點',sx,sy-11);
+    if(F&&F.s===s){ctx.save();
+    const s=F.s,bob=F.phase==='bite'?6+Math.sin(time*40)*3:Math.sin(time*3)*2,bx=s.bx+(F.dx||0),by=s.by+bob,hx=P.x+(Math.sign(bx-P.x)||1)*16,hy=P.y-62;
+    ctx.strokeStyle='#5a3a1a';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(P.x+(Math.sign(bx-P.x)||1)*4,P.y-28);ctx.lineTo(hx,hy);ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,.75)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(hx,hy);ctx.quadraticCurveTo((hx+bx)/2,Math.max(hy,by)+20,bx,by-4);ctx.stroke();
+    ctx.strokeStyle='rgba(255,255,255,.5)';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(bx,by+2,8+Math.sin(time*4)*2,3,0,0,6.283);ctx.stroke();
+    ctx.fillStyle='#fff';ctx.beginPath();ctx.arc(bx,by-4,5,Math.PI,0);ctx.fill();ctx.fillStyle='#e8402a';ctx.beginPath();ctx.arc(bx,by-4,5,0,Math.PI);ctx.fill();
+    if(F.phase==='bite'){ctx.font='900 34px sans-serif';ctx.textAlign='center';ctx.lineWidth=6;ctx.strokeStyle='#3a1a00';ctx.strokeText('！',P.x,P.y-92);ctx.fillStyle='#ffd23a';ctx.fillText('！',P.x,P.y-92);
+      ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=2;for(let i=1;i<=2;i++){ctx.beginPath();ctx.ellipse(bx,by+2,8+i*9*((time*3)%1),3+i*3*((time*3)%1),0,0,6.283);ctx.stroke();}}
+    ctx.restore();}
+    if(!F&&Math.hypot(P.x-s.x,P.y-s.y)<60){ctx.font='bold 13px sans-serif';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=FL().q>=1?'🎣 按「對話」拋竿':'🔒 需要釣竿';ctx.strokeText(t,s.x,s.y-56);ctx.fillStyle='#fff';ctx.fillText(t,s.x,s.y-56);}};
+  const _rn=render;render=function(){_rn.apply(this,arguments);if(!F||state!=='play')return;try{const dpr=ctx.canvas.width/VW;
+    const msg=F.phase==='wait'?'🎣 等魚上鉤……（移動就收竿）':F.phase==='bite'?'❗ 上鉤了！快按'+(isTouch?'「攻擊」':' J 或 E')+'！':'';if(msg){ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.font='800 16px sans-serif';ctx.textAlign='center';const w=ctx.measureText(msg).width+28,y=VH*.24;
+      ctx.fillStyle=F.phase==='bite'?'rgba(120,40,0,.85)':'rgba(10,30,50,.75)';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(VW/2-w/2,y-18,w,32,16);else ctx.rect(VW/2-w/2,y-18,w,32);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(msg,VW/2,y+4);ctx.restore();}
+  }catch(_){}};
+  // ---------- 玩法 ----------
+  function pick(tid){const r=Math.random();if(r<.035)return 'rainbow';if(r<.08)return 'box';if(r<.13)return Math.random()<.5?'boot':'weed';
+    const pool=POOL[tid]||POOL.village;let q=Math.random(),tier=q<.66?0:q<.93?1:2;const c=pool.filter(k=>FISH[k][2]===tier);return c.length?c[Math.floor(Math.random()*c.length)]:pool[0];}
+  function cast(s){const L=FL();if(L.q<1){floatText(P.x,P.y-70,'需要釣竿……','#ffcf3a');if(!L.hint){L.hint=1;say('💭',['（這裡好像可以釣魚，可是沒有釣竿……）','（聽說海上的小島住著一個釣魚阿伯。）']);}return;}
+    F={s,phase:'wait',t:0,biteAt:1.4+Math.random()*2.6,fish:pick(s.town),dx:(Math.random()-.5)*20};P.fx=Math.sign(s.bx-P.x)||P.fx;sfx('swing');floatText(P.x,P.y-80,'🎣 拋竿！','#bfe9ff');}
+  window.__fstate=()=>F?F.phase:'';
+  function stop(t,c){if(t)floatText(P.x,P.y-80,t,c||'#ccc');F=null;}
+  function land(){const k=F.fish,f=FISH[k],L=FL();F=null;
+    if(k==='box'){const r=Math.random();if(r<.4){const ks=['fire','wind','thunder','ice','earth','light','blade'],o=ks[Math.floor(Math.random()*7)];life.ores=life.ores||{};life.ores[o]=(life.ores[o]||0)+2;floatText(P.x,P.y-90,'📦 撈到寶箱！裡面有礦石 ×2','#ffd23a',true);}
+      else if(r<.6){P.items.ore=(P.items.ore||0)+1;floatText(P.x,P.y-90,'📦 撈到寶箱！🔩 精鐵 +1','#ffd23a',true);}else{const n=40+Math.floor(Math.random()*80);P.coins+=n;floatText(P.x,P.y-90,'📦 撈到寶箱！🪙 +'+n,'#ffd23a',true);}sfx('lvl');saveGame();return;}
+    L.bag[k]=(L.bag[k]||0)+1;if(f[2]>=0){L.n=(L.n||0)+1;}const isNew=!L.dex[k];L.dex[k]=(L.dex[k]||0)+1;
+    const cm=f[2]>=3?'#ff7ad8':f[2]===2?'#ffd23a':f[2]===1?'#7fd8ff':f[2]<0?'#aaa':'#fff';floatText(P.x,P.y-90,f[1]+' 釣到了'+f[0]+'！'+(isNew&&f[2]>=0?'（新）':''),cm,f[2]>=1);
+    for(let i=0;i<10;i++)parts.push({x:F?0:P.x+(Math.random()-.5)*30,y:P.y-40,vx:(Math.random()-.5)*120,vy:-120-Math.random()*80,t:0,life:.6,c:'#bfe9ff'});
+    if(k==='rainbow'){const ks=['fire','wind','thunder','ice','earth','light','blade'];life.ores=life.ores||{};for(const o of ks)life.ores[o]=(life.ores[o]||0)+1;floatText(P.x,P.y-120,'🌈 七種礦石各 +1！','#ff7ad8',true);flashT=.15;}
+    sfx(f[2]>=2?'lvl':'coin');if(L.q===1&&L.n>=3&&!L.toldDone){L.toldDone=1;floatText(P.x,P.y-130,'回去找釣魚阿伯吧！','#ffe58a',true);}saveGame();}
+  // ---------- 釣魚阿伯 ----------
+  const sellAll=()=>{const L=FL();let tot=0,n=0;for(const k in L.bag){const c=L.bag[k]||0;if(c&&FISH[k]){tot+=c*FISH[k][3];n+=c;}}if(!n){say('🎣 釣魚阿伯',['你的魚簍是空的喔。']);return;}
+    window.__pickMenu('🎣 收購漁獲','<div style="text-align:center">'+Object.keys(L.bag).filter(k=>L.bag[k]>0).map(k=>FISH[k][1]+FISH[k][0]+'×'+L.bag[k]).join('　')+'<br>全部賣掉：<b>🪙'+tot+'</b></div>',[{t:'全部賣掉　🪙'+tot,bg:'#ffe08a',fn:()=>{L.bag={};P.coins+=tot;sfx('coin');floatText(P.x,P.y-70,'🪙 +'+tot,'#ffcf3a',true);saveGame();}},{t:'先留著',bg:'#eee',fn:()=>{}}]);};
+  const grill=()=>{const L=FL();const k=Object.keys(L.bag).filter(k=>L.bag[k]>0&&FISH[k][2]>=0).sort((a,b)=>FISH[a][3]-FISH[b][3])[0];if(!k){say('🎣 釣魚阿伯',['沒有魚可以烤啊……先去釣一條吧！']);return;}
+    L.bag[k]--;const h=Math.max(1,Math.ceil(P.maxHp*.5));P.hp=Math.min(P.maxHp,P.hp+h);P.sta=P.maxSta;sfx('lvl');floatText(P.x,P.y-80,'🍢 烤'+FISH[k][0]+'！血量 +'+h+'、精力全滿','#ffb36a',true);saveGame();};
+  const dex=()=>{const L=FL(),all=Object.keys(FISH).filter(k=>FISH[k][2]>=0),got=all.filter(k=>L.dex[k]);
+    window.__pickMenu('📖 魚類圖鑑　'+got.length+'/'+all.length,'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;font-size:13px">'+all.map(k=>L.dex[k]?`<div style="background:#eef6ff;border-radius:8px;padding:3px">${FISH[k][1]} ${FISH[k][0]}<br><small>×${L.dex[k]}</small></div>`:`<div style="background:#ddd;border-radius:8px;padding:3px;color:#888">❓ ？？？</div>`).join('')+'</div>',[{t:'關閉',bg:'#eee',fn:()=>{}}]);};
+  const _tk=talk;talk=function(n){if(!n||n.id!=='fisher')return _tk.apply(this,arguments);const L=FL();
+    if(L.q===0){say('🎣 釣魚阿伯',['喔？居然有人划船來到這座小島。','我在這裡釣了一整天，一條都沒釣到……','年輕人，這支舊釣竿借你，幫我釣 3 條魚來看看！','就在旁邊的水邊，按「對話」拋竿，','浮標往下沉、出現「！」的時候，馬上收竿！'],()=>{L.q=1;L.n=0;floatText(P.x,P.y-80,'🎣 得到了釣竿！','#7fd8ff',true);sfx('lvl');showCard('🎣 支線：釣魚阿伯的釣竿','釣 3 條魚（0/3）');saveGame();});return;}
+    if(L.q===1){if((L.n||0)<3){say('🎣 釣魚阿伯',['現在釣到 '+(L.n||0)+' 條了，再加油！','浮標一沉就要收竿，太早太晚魚都會跑掉喔。']);return;}
+      say('🎣 釣魚阿伯',['哇哈哈！你比我還會釣！','這支釣竿就送你吧。','其實啊，各地的城鎮裡都有釣點——','古夢碎村和妖精の村的池塘、水の都的碼頭、綠洲鎮的綠洲、雪原驛站的冰洞。','每個地方的魚都不一樣，聽說還有一種會發出七色光的魚……','釣到的魚可以拿來賣我，也可以烤來吃！'],()=>{L.q=2;P.coins+=120;floatText(P.x,P.y-80,'🪙 +120　釣竿是你的了！','#ffcf3a',true);sfx('lvl');showCard('🎣 支線完成','各地的釣點都可以釣魚了');saveGame();});return;}
+    window.__pickMenu('🎣 釣魚阿伯','<div style="text-align:center">今天也來釣魚嗎？</div>',[{t:'💰 賣魚',bg:'#ffe08a',fn:sellAll},{t:'🍢 烤一條來吃（回血、回精力）',bg:'#ffd8b0',fn:grill},{t:'📖 魚類圖鑑',bg:'#d8ecff',fn:dex},{t:'🗺️ 哪裡可以釣魚？',bg:'#e0f0d8',fn:()=>say('🎣 釣魚阿伯',['古夢碎村和妖精の村的池塘、水の都的碼頭、','綠洲鎮的綠洲、雪原驛站的冰洞，還有我這座小島。'])},{t:'沒事',bg:'#eee',fn:()=>{}}]);};
+  // 道具店和酒館也收魚
+  const _ft=facTalk;facTalk=function(n){const L=FL();if(n&&(n.fac==='tavern'||n.fac==='inn')&&Object.values(L.bag||{}).some(v=>v>0)){window.__pickMenu(n.name,'<div style="text-align:center">要做什麼？</div>',[{t:n.fac==='inn'?'🛏️ 住宿':'🍺 酒館',bg:'#ffe08a',fn:()=>_ft.call(this,n)},{t:'🐟 把魚賣給廚房',bg:'#d8ecff',fn:sellAll}]);return;}return _ft.apply(this,arguments);};
+  // ---------- 村民提點 ----------
+  let hinted=false;function addHints(){if(hinted)return;let any=false;for(const n of NPCS){if(!n.id||!String(n.id).startsWith('amb_')||!Array.isArray(n.lines))continue;any=true;const tid=String(n.id).slice(4,-1);
+      if(String(n.id).endsWith('1'))n.lines.push(['水の都外海的小島上，住著一個釣魚阿伯。','聽說他一條魚都釣不到，正在找幫手呢。']);
+      if(SPOTS.some(s=>s.town===tid)&&String(n.id).endsWith('2'))n.lines.push(['鎮上的'+(tid==='snow'?'冰洞':tid==='water'?'碼頭':tid==='desert'?'綠洲':'池塘')+'可以釣魚喔！','有釣竿的話，記得去試試看。']);}
+    hinted=any;}
+  // ---------- 主迴圈 ----------
+  const anyMove=()=>keys.w||keys.a||keys.s||keys.d||keys.arrowup||keys.arrowdown||keys.arrowleft||keys.arrowright||(typeof joy!=='undefined'&&joy&&joy.active&&Math.hypot(joy.dx||0,joy.dy||0)>.3);
+  const _u=update;update=function(dt){
+    if(F){if(state!=='play'||dlg||scene||P.hp<=0)F=null;
+      else{const reel=pressed.j||pressed.e||pressed.enter||tAtk||tTalk;pressed.j=pressed.e=pressed.enter=false;tAtk=false;tTalk=false;
+        if(F.phase==='bite'&&reel)land();else if(reel&&F.phase==='wait')stop('太早收竿了……魚跑掉了','#ccc');else if(anyMove())stop('收竿。','#ccc');}}
+    else if(state==='play'&&P&&SPOTS.length&&!dlg&&!scene&&(pressed.e||pressed.enter||tTalk)){let s=null,sd=60;for(const q of SPOTS){const d=Math.hypot(q.x-P.x,q.y-P.y);if(d<sd){sd=d;s=q;}}
+      if(s&&!NPCS.some(n=>!n._hid&&Math.hypot(n.x-P.x,n.y-P.y)<sd)){pressed.e=pressed.enter=false;tTalk=false;cast(s);}}
+    _u.apply(this,arguments);
+    if(state==='play'&&P&&!SPOTS.length&&(window.__ff=(window.__ff||0)+1)>10)placeSpots();if(SPOTS.length)addHints();
+    if(F&&state==='play'){P.vx=0;P.vy=0;F.t+=dt;if(F.phase==='wait'&&F.t>=F.biteAt){F.phase='bite';F.t=0;sfx('clang');}
+      else if(F.phase==='bite'&&F.t>WIN[Math.max(0,FISH[F.fish][2])]){stop('魚跑掉了……','#9ab');}}
+    if(isTouch&&state==='play'&&!dlg&&!F){let near=false;for(const q of SPOTS)if(Math.hypot(q.x-P.x,q.y-P.y)<60)near=true;const bT=document.getElementById('bT');if(near&&bT&&bT.classList.contains('hide')){bT.classList.remove('hide');try{tbSet('bT','釣魚',0,1,false);}catch(_){}}}};
+})();
+CHANGELOG.unshift(['v3.6.8','2026.11.21',['🔫 軍人連發時畫面不會一直抖了：一般射擊的畫面震動降到很輕，只有「穩穩一槍」（瞄準 0.6 秒以上）和散彈槍才會比較明顯地震一下']]);
+CHANGELOG.unshift(['v3.6.7','2026.11.20',[
+  '🎣 釣魚：支線「釣魚阿伯的釣竿」（水の都外海的小島），學會後可以在各地釣點釣魚——古夢碎村和妖精の村的池塘、水の都的碼頭、綠洲鎮的綠洲、雪原驛站的冰洞、阿伯的小島',
+  '玩法：站在釣點按「對話」拋竿，浮標一沉、出現「！」就按攻擊或對話收竿；越稀有的魚，收竿的時間越短。每個釣點的魚都不一樣，一共 24 種，還有魚類圖鑑',
+  '釣到的魚可以賣給釣魚阿伯、旅館或酒館的廚房，也可以請阿伯烤來吃（回一半血、精力全滿）；偶爾會撈到沉在水底的寶箱（礦石、精鐵、金幣），運氣好還會釣到「七色碎片魚」（七種星脈礦石各 +1）',
+  '鎮上的居民會提醒你：小島上的釣魚阿伯在找幫手、自己鎮上哪裡可以釣魚'
+]]);
+{const t=document.getElementById('verTag');if(t&&t.firstChild&&t.firstChild.nodeType===3)t.firstChild.nodeValue='v3.6.8　2026.11.21　';}
+
+// ================= 🛡️ 魔王霸體＋🕳️ 洞窟守衛大改（造型、招式） =================
+(()=>{
+  // ---------- 霸體 ----------
+  const isBig=e=>e&&!e.isGate&&(e.boss||e.king||e.sjPh);
+  window.__poise=e=>isBig(e)?{p:e.poise,max:e.poiseMax,broken:(e.brokeT||0)>time}:null;
+  const _he=hitEnemy;hitEnemy=function(e,dmg,ang,kbm,pure){
+    if(!isBig(e)||e.dead||pure==='poison'||pure==='burn'||typeof dmg!=='number')return _he.apply(this,arguments);
+    const k=kbm==null?1:kbm,broken=(e.brokeT||0)>time,heavy=k>=1.8;
+    if(!e.poiseMax){e.poiseMax=Math.max(14,Math.round(e.maxHp*(e.sjPh?.1:.16)));e.poise=e.poiseMax;}
+    // 霸體中：一般攻擊不會擊退、不會打斷衝刺；重擊只推一點點
+    if(!broken)arguments[3]=heavy?.35:0;
+    const m=e.mode,swap=!broken&&!heavy&&(m==='dash'||m==='wind_dash');if(swap)e.mode='_'+m;
+    const st0=e.stun||0;let r;try{r=_he.apply(this,arguments);}finally{if(swap&&e.mode==='_'+m)e.mode=m;}
+    if(!broken&&!heavy&&(e.stun||0)>st0&&(e.stun||0)<1.4&&!e.sjTrans)e.stun=st0;
+    if(e.dead||e.sjTrans)return r;
+    e.poise-=dmg*(heavy?1.7:1);e.poiseT=time;
+    if(e.poise<=0&&!broken&&(e.poiseCD||0)<time){e.brokeT=time+1.8;e.poiseCD=time+9;e.poise=e.poiseMax;e.stun=Math.max(e.stun||0,1.8);e.mode='chase';e.atkTimer=Math.max(e.atkTimer||0,2.2);
+      floatText(e.x,e.y-110*(e.scale||1)/1.8,'💥 霸體破了！','#ffcf3a',true);shake=Math.max(shake,10);sfx('clang');burst(e.x,e.y-40,'#ffe14a',26,260);}
+    else if(e.poise<=0)e.poise=1;
+    return r;};
+  const _u=update;update=function(dt){_u(dt);for(const e of enemies)if(isBig(e)&&e.poiseMax&&!e.dead){if(time-(e.poiseT||0)>2.5)e.poise=Math.min(e.poiseMax,e.poise+e.poiseMax*.25*dt);}};
+  // 魔王血條下方的霸體條
+  const _rn=render;render=function(){_rn.apply(this,arguments);try{if(state!=='play')return;let b=null,bd=1e9;for(const e of enemies)if(isBig(e)&&e.awake&&!e.dead&&e.poiseMax){const d=Math.hypot(e.x-P.x,e.y-P.y);if(d<bd&&d<900){bd=d;b=e;}}if(!b)return;
+    const dpr=ctx.canvas.width/VW,by=VH-(isTouch?(VW<VH?250:150):56)+12,w=Math.min(420,VW*.6),x=VW/2-w/2,br=(b.brokeT||0)>time;ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(x,by,w,5);ctx.fillStyle=br?'#ff6a3a':'#ffd23a';ctx.fillRect(x,by,w*(br?1:Math.max(0,b.poise/b.poiseMax)),5);
+    ctx.font='bold 10px sans-serif';ctx.textAlign='left';ctx.fillStyle=br?'#ffb08a':'#ffe58a';ctx.fillText(br?'💥 霸體破了！':'🛡️ 霸體',x,by-2);ctx.restore();}catch(_){}};
+
+  // ---------- 洞窟守衛 ----------
+  BLOOK.story_cv_g=BLOOK.story_cv_g||{};
+  const O='#1a1210';
+  const poly=(pts,fill,st,lw)=>{ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let i=1;i<pts.length;i++)ctx.lineTo(pts[i][0],pts[i][1]);ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}if(st!==null){ctx.strokeStyle=st||O;ctx.lineWidth=lw||2.5;ctx.stroke();}};
+  const ell=(x,y,rx,ry,fill,st,lw,rot)=>{ctx.beginPath();ctx.ellipse(x,y,rx,ry,rot||0,0,6.283);if(fill){ctx.fillStyle=fill;ctx.fill();}if(st!==null){ctx.strokeStyle=st||O;ctx.lineWidth=lw||2.5;ctx.stroke();}};
+  const glow=(x,y,r,c)=>{const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,c);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(x,y,r,0,6.283);ctx.fill();};
+  const eye=(x,y,r,c)=>{glow(x,y,r*2.2,c+'99');ell(x,y,r,r*.8,c,'#000',1.2);ell(x+r*.25,y-r*.2,r*.3,r*.3,'#fff',null);};
+  const legsW=(ph,xs,len,c)=>{ctx.strokeStyle=O;ctx.lineCap='round';xs.forEach((x,i)=>{const s=Math.sin(ph+i*1.7)*5;ctx.lineWidth=9;ctx.beginPath();ctx.moveTo(x,-len);ctx.lineTo(x+s,0);ctx.stroke();ctx.strokeStyle=c;ctx.lineWidth=5.5;ctx.stroke();ctx.strokeStyle=O;});};
+  const C=(fl,c)=>fl?'#fff':c;
+  const DRAW={
+    grass(t,ph,fl){// 巨鼠王
+      ctx.strokeStyle=C(fl,'#c88a8a');ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-34,-20);ctx.quadraticCurveTo(-70,-10+Math.sin(t*4)*8,-62,-46);ctx.stroke();
+      legsW(ph,[-18,-4,12,24],16,C(fl,'#6a4a2a'));
+      ell(0,-34,40,26,C(fl,'#7a5a3a'));ell(4,-26,24,14,C(fl,'#b8986a'),null);
+      ell(36,-46,20,16,C(fl,'#7a5a3a'));ell(52,-42,8,6,C(fl,'#e8a0a0'),O,2);
+      ell(26,-62,9,11,C(fl,'#e8b0b0'),O,2);ell(40,-62,8,10,C(fl,'#e8b0b0'),O,2);
+      eye(40,-50,3.5,'#ff3030');ctx.strokeStyle='#ddd';ctx.lineWidth=1.2;for(const s of [-1,1]){ctx.beginPath();ctx.moveTo(52,-42);ctx.lineTo(70,-44+s*6);ctx.stroke();}
+      poly([[46,-38],[50,-30],[54,-38]],'#fff',O,1);
+      poly([[22,-66],[24,-80],[30,-72],[34,-84],[38,-72],[44,-80],[44,-66]],'#e8b830',O,2);ctx.fillStyle='#ff3a5a';ctx.beginPath();ctx.arc(33,-70,2.5,0,6.283);ctx.fill();
+      ctx.strokeStyle='#5a3a1a';ctx.lineWidth=2;for(let i=0;i<5;i++){ctx.beginPath();ctx.moveTo(-20+i*8,-58);ctx.lineTo(-24+i*8,-50);ctx.stroke();}},
+    forest(t,ph,fl){// 樹根魔
+      ctx.strokeStyle=O;ctx.lineCap='round';for(let i=0;i<5;i++){const x=-28+i*14,s=Math.sin(ph+i)*4;ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(x,-14);ctx.quadraticCurveTo(x+s*2,-4,x+s*3+(i-2)*6,2);ctx.stroke();ctx.strokeStyle=C(fl,'#5a3a1e');ctx.lineWidth=5;ctx.stroke();ctx.strokeStyle=O;}
+      poly([[-30,-12],[-34,-70],[-24,-100],[0,-110],[24,-100],[34,-70],[30,-12]],C(fl,'#6a4424'));
+      ctx.strokeStyle='rgba(40,20,5,.6)';ctx.lineWidth=2;for(const x of [-18,-4,12,22]){ctx.beginPath();ctx.moveTo(x,-16);ctx.lineTo(x+Math.sin(x)*4,-96);ctx.stroke();}
+      for(const s of [-1,1]){const a=Math.sin(t*2+s)*.3;ctx.save();ctx.translate(s*30,-70);ctx.rotate(s*(.6+a));ctx.strokeStyle=O;ctx.lineWidth=10;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(s*34,-10);ctx.stroke();ctx.strokeStyle=C(fl,'#6a4424');ctx.lineWidth=6;ctx.stroke();
+        ctx.lineWidth=3;for(let k=-1;k<=1;k++){ctx.beginPath();ctx.moveTo(s*34,-10);ctx.lineTo(s*48,-10+k*10);ctx.stroke();}ctx.restore();}
+      for(const [x,y,r] of [[-22,-112,18],[2,-122,22],[24,-110,17],[-6,-104,14]])ell(x,y,r,r*.8,C(fl,'#2e6a1c'),O,2);ctx.fillStyle='#4a9a2e';for(const [x,y] of [[-14,-120],[8,-128],[24,-114]]){ctx.beginPath();ctx.arc(x,y,4,0,6.283);ctx.fill();}
+      ell(-10,-72,7,9,'#120800',null);ell(12,-72,7,9,'#120800',null);eye(-10,-72,3,'#ffd23a');eye(12,-72,3,'#ffd23a');
+      poly([[-14,-48],[14,-48],[10,-40],[4,-46],[-2,-40],[-8,-46]],'#120800',null);},
+    desert(t,ph,fl){// 蠍后
+      ctx.strokeStyle=O;ctx.lineCap='round';for(let i=0;i<4;i++)for(const s of [-1,1]){const x=-14+i*10,sw=Math.sin(ph+i)*4;ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(x,-16);ctx.lineTo(x-6+sw,-4+s*0);ctx.lineTo(x-10+sw,2);ctx.stroke();ctx.strokeStyle=C(fl,'#6a3a7a');ctx.lineWidth=3;ctx.stroke();ctx.strokeStyle=O;}
+      const tl=Math.sin(t*3)*6;ctx.lineWidth=12;ctx.beginPath();ctx.moveTo(-26,-22);ctx.quadraticCurveTo(-62,-40,-52,-80+tl);ctx.quadraticCurveTo(-40,-104+tl,-10,-96+tl);ctx.stroke();ctx.strokeStyle=C(fl,'#7a4a8a');ctx.lineWidth=8;ctx.stroke();
+      for(let i=0;i<5;i++){const u=i/5;ell(-26-30*u+ (u>.6?(u-.6)*40:0),-22-60*u+tl*u,8,7,C(fl,'#8a5a9a'),O,1.5);}
+      poly([[-10,-96+tl],[6,-102+tl],[-2,-88+tl]],'#7fff4a',O,2);glow(0,-96+tl,12,'rgba(120,255,80,.6)');
+      ell(0,-24,32,15,C(fl,'#7a4a8a'));ell(-8,-28,16,7,C(fl,'#9a6aaa'),null);ell(30,-30,13,11,C(fl,'#7a4a8a'));
+      for(const s of [-1,1]){ctx.save();ctx.translate(36,-26+s*8);ctx.rotate(s*.3);ell(16,0,12,7,C(fl,'#8a5a9a'));poly([[24,-4],[38,-8],[30,0]],C(fl,'#e8b830'),O,1.5);poly([[24,4],[38,8],[30,0]],C(fl,'#e8b830'),O,1.5);ctx.restore();}
+      eye(36,-34,2.6,'#ff3aff');eye(28,-36,2.2,'#ff3aff');poly([[22,-40],[24,-52],[28,-44],[31,-54],[34,-44],[38,-52],[40,-40]],'#e8b830',O,1.5);},
+    mountain(t,ph,fl){// 岩石人
+      legsW(ph,[-14,14],22,C(fl,'#6a6058'));
+      poly([[-36,-20],[-42,-62],[-26,-92],[4,-100],[30,-88],[40,-56],[34,-20]],C(fl,'#7a7064'));
+      ctx.strokeStyle='rgba(30,25,20,.6)';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-20,-30);ctx.lineTo(-10,-60);ctx.lineTo(-22,-80);ctx.moveTo(18,-36);ctx.lineTo(10,-64);ctx.stroke();
+      for(const [x,y,s] of [[-26,-86,8],[26,-80,7],[-30,-50,6]])poly([[x,y-s*1.6],[x+s*.6,y],[x,y+s*.4],[x-s*.6,y]],'#6ad8ff','#fff',1);
+      for(const s of [-1,1]){const sw=Math.sin(t*2.2+s)*6;ell(s*50,-54+sw,16,22,C(fl,'#6a6058'));ell(s*52,-30+sw,18,15,C(fl,'#5a5048'));}
+      ell(0,-74,18,10,'#2a2420',null);eye(-7,-74,3.5,'#ff9a2a');eye(7,-74,3.5,'#ff9a2a');poly([[-10,-52],[10,-52],[6,-46],[-6,-46]],'#2a2420',null);
+      ell(-4,-104,10,6,'#5a8a3a',null);ell(8,-102,7,4,'#6a9a4a',null);},
+    snow(t,ph,fl){// 雪怪
+      legsW(ph,[-16,16],18,C(fl,'#dfe8f0'));
+      ell(0,-50,40,40,C(fl,'#eef4fa'));ctx.fillStyle='rgba(180,200,220,.5)';for(let i=0;i<8;i++){ctx.beginPath();ctx.arc(-30+i*9,-20-Math.abs(i-3.5)*3,6,0,6.283);ctx.fill();}
+      for(const s of [-1,1]){const sw=Math.sin(t*2+s)*8;ctx.strokeStyle=O;ctx.lineWidth=16;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(s*34,-62);ctx.lineTo(s*56,-36+sw);ctx.stroke();ctx.strokeStyle=C(fl,'#eef4fa');ctx.lineWidth=12;ctx.stroke();
+        for(let k=0;k<3;k++)poly([[s*(52+k*4),-30+sw],[s*(56+k*4),-18+sw],[s*(60+k*4),-30+sw]],'#bfe8ff',O,1);}
+      ell(0,-66,22,16,C(fl,'#7fb4d8'));eye(-8,-68,4,'#ff3a5a');eye(8,-68,4,'#ff3a5a');
+      ctx.fillStyle='#2a3a4a';ctx.beginPath();ctx.ellipse(0,-56,10,5,0,0,Math.PI);ctx.fill();ctx.fillStyle='#fff';for(const x of [-6,6])poly([[x-2,-56],[x+2,-56],[x,-50]],'#fff',null);
+      for(const s of [-1,1])poly([[s*18,-84],[s*30,-112],[s*26,-84]],'#bfe8ff',O,2);},
+    cave(t,ph,fl){// 暗影蝙蝠王
+      const fy=-50+Math.sin(t*4)*5,fa=Math.sin(t*9)*.35;
+      for(const s of [-1,1]){ctx.save();ctx.translate(s*14,fy-6);ctx.rotate(s*fa);ctx.fillStyle=C(fl,'#2a1238');ctx.strokeStyle='#000';ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(s*30,-36);ctx.lineTo(s*70,-30);ctx.lineTo(s*90,-6);
+        ctx.quadraticCurveTo(s*74,-4,s*70,12);ctx.quadraticCurveTo(s*56,2,s*48,16);ctx.quadraticCurveTo(s*34,6,s*26,18);ctx.quadraticCurveTo(s*14,8,0,12);ctx.closePath();ctx.fill();ctx.stroke();
+        ctx.strokeStyle='#5a2a7a';ctx.lineWidth=2;for(const [a,b] of [[70,12],[48,16],[26,18]]){ctx.beginPath();ctx.moveTo(s*30,-36);ctx.lineTo(s*a,b);ctx.stroke();}ctx.restore();}
+      ell(0,fy,20,26,C(fl,'#3a1a4a'),'#000');ell(0,fy+6,12,14,C(fl,'#5a3a6a'),null);
+      for(const s of [-1,1])poly([[s*8,fy-20],[s*18,fy-46],[s*16,fy-18]],C(fl,'#3a1a4a'),'#000',2);
+      eye(-7,fy-10,4,'#ff2a6a');eye(7,fy-10,4,'#ff2a6a');for(const s of [-1,1])poly([[s*4,fy+2],[s*6,fy+10],[s*8,fy+2]],'#fff','#000',1);
+      ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(0,0,30,8,0,0,6.283);ctx.fill();},
+    lava(t,ph,fl){// 熔岩蜥蜴
+      const tl=Math.sin(t*3)*8;ctx.strokeStyle=O;ctx.lineWidth=14;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-30,-22);ctx.quadraticCurveTo(-60,-16+tl,-80,-26-tl);ctx.stroke();ctx.strokeStyle=C(fl,'#8a2c00');ctx.lineWidth=10;ctx.stroke();
+      glow(-80,-26-tl,14,'rgba(255,140,30,.8)');
+      legsW(ph,[-22,-8,14,28],14,C(fl,'#6a2000'));
+      ell(0,-28,38,17,C(fl,'#8a2c00'));ctx.strokeStyle='#ff9a2a';ctx.lineWidth=2.5;for(const x of [-20,-4,12]){ctx.beginPath();ctx.moveTo(x,-40);ctx.lineTo(x+6,-30);ctx.lineTo(x,-20);ctx.stroke();}
+      for(let i=0;i<6;i++)poly([[-26+i*9,-42],[-22+i*9,-56-Math.sin(t*6+i)*3],[-18+i*9,-42]],'#ffb02a',O,1.5);
+      ell(42,-34,22,13,C(fl,'#9a3400'));ctx.fillStyle='#3a0a00';ctx.fillRect(48,-30,18,3);eye(44,-40,3.5,'#ffe14a');
+      if(Math.sin(t*5)>0){glow(66,-30,18,'rgba(255,120,20,.7)');}},
+    ice(t,ph,fl){// 冰晶騎士
+      legsW(ph,[-10,10],28,C(fl,'#5d8ab2'));
+      poly([[-24,-28],[-28,-74],[0,-86],[28,-74],[24,-28]],C(fl,'#7ab8e0'));poly([[-12,-30],[-14,-70],[14,-70],[12,-30]],C(fl,'#a8dcf8'),null);
+      for(const s of [-1,1])poly([[s*24,-82],[s*44,-90],[s*40,-70],[s*26,-66]],C(fl,'#bfe8ff'));
+      poly([[0,-80],[6,-60],[0,-40],[-6,-60]],'#e8faff','#5a9ac8',1.5);glow(0,-60,14,'rgba(160,230,255,.7)');
+      ctx.fillStyle=C(fl,'#5d8ab2');ctx.strokeStyle=O;ctx.lineWidth=2.5;ctx.beginPath();ctx.moveTo(-14,-86);ctx.lineTo(-16,-108);ctx.quadraticCurveTo(0,-122,16,-108);ctx.lineTo(14,-86);ctx.closePath();ctx.fill();ctx.stroke();
+      ctx.fillStyle='#0a1a2a';ctx.fillRect(-11,-102,22,5);glow(-4,-100,5,'rgba(120,220,255,.9)');glow(5,-100,5,'rgba(120,220,255,.9)');
+      for(let i=0;i<4;i++)poly([[-10+i*7,-114],[-6+i*7,-128-(i%2)*6],[-3+i*7,-114]],'#e8faff','#5a9ac8',1);
+      const sw=Math.sin(t*2)*.1;ctx.save();ctx.translate(30,-56);ctx.rotate(-.6+sw);poly([[-3,0],[3,0],[4,-70],[0,-86],[-4,-70]],'#d8f4ff','#3a7ab8',2);ctx.fillStyle='#3a5a7a';ctx.fillRect(-12,-3,24,6);ctx.fillRect(-3,0,6,16);ctx.restore();
+      poly([[-26,-58],[-48,-64],[-50,-30],[-30,-20]],C(fl,'#4a7aa8'));ctx.strokeStyle='#bfe8ff';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(-38,-56);ctx.lineTo(-40,-30);ctx.stroke();},
+    thunder(t,ph,fl){// 雷獸
+      const tl=Math.sin(t*4)*6;ctx.strokeStyle=O;ctx.lineWidth=8;ctx.lineCap='round';ctx.beginPath();ctx.moveTo(-34,-38);ctx.lineTo(-52,-54+tl);ctx.lineTo(-46,-62+tl);ctx.lineTo(-64,-78+tl);ctx.stroke();ctx.strokeStyle='#ffe14a';ctx.lineWidth=4;ctx.stroke();
+      legsW(ph,[-24,-12,14,26],22,C(fl,'#3a2f7a'));
+      ell(0,-40,38,18,C(fl,'#4b3f8f'));ctx.strokeStyle='#ffe14a';ctx.lineWidth=2.5;for(const x of [-18,0,16]){ctx.beginPath();ctx.moveTo(x-4,-54);ctx.lineTo(x+4,-46);ctx.lineTo(x-2,-40);ctx.lineTo(x+6,-30);ctx.stroke();}
+      for(let i=0;i<7;i++){const a=-2.2+i*.35,r=26+Math.sin(t*12+i)*4;poly([[30,-50],[30+Math.cos(a)*r,-50+Math.sin(a)*r],[30+Math.cos(a+.18)*r*.6,-50+Math.sin(a+.18)*r*.6]],'#ffe14a','#8a6a00',1);}
+      ell(36,-52,18,14,C(fl,'#4b3f8f'));poly([[44,-46],[62,-44],[58,-36],[44,-38]],C(fl,'#3a2f7a'));poly([[50,-40],[52,-34],[55,-40]],'#fff',O,1);
+      for(const s of [0,1])poly([[30+s*10,-64],[28+s*12,-80],[38+s*10,-66]],'#ffe14a',O,1.5);eye(42,-56,3.5,'#7ff0ff');
+      if(Math.random()<.3){ctx.strokeStyle='#fff8a0';ctx.lineWidth=1.5;ctx.beginPath();let x=-30+Math.random()*60,y=-70;ctx.moveTo(x,y);for(let k=0;k<4;k++){x+=(Math.random()-.5)*16;y+=10;ctx.lineTo(x,y);}ctx.stroke();}}};
+  const SIZE={grass:1.05,forest:1.0,desert:1.05,mountain:1.0,snow:1.0,cave:1.05,lava:1.0,ice:1.0,thunder:1.0};
+  const _db=drawBLook;drawBLook=function(e){if(e.bossId!=='story_cv_g'||!DRAW[e.reg])return _db.apply(this,arguments);
+    if(e.hideT>0)return;const f=(e.fx||((P.x>e.x)?1:-1))<0?-1:1,fl=e.flash>0,tele=e.awake&&e.mode&&e.mode.startsWith('wind_'),k=SIZE[e.reg]||1;
+    ctx.save();ctx.translate(e.x,e.y);ctx.fillStyle='rgba(0,0,0,.3)';ctx.beginPath();ctx.ellipse(0,0,40,11,0,0,6.283);ctx.fill();
+    if(tele){ctx.fillStyle=`rgba(255,40,60,${.14+.12*Math.sin(time*40)})`;ctx.beginPath();ctx.arc(0,-50,70,0,6.283);ctx.fill();}
+    if((e.brokeT||0)>time){ctx.font='bold 18px sans-serif';ctx.textAlign='center';ctx.fillText('💫',Math.sin(time*6)*14,-118);}
+    ctx.scale(k*f,k);ctx.lineJoin='round';ctx.lineCap='round';DRAW[e.reg](time,e.walk||time*6,fl);ctx.restore();};
+  // ---------- 招式 ----------
+  const SIG={grass:['cg_rats','cg_tail'],forest:['cg_roots','cg_spores'],desert:['cg_venom','cg_sting'],mountain:['cg_roll','cg_quake'],snow:['cg_snowball','cg_icicle'],
+    cave:['cg_screech','cg_bats'],lava:['cg_breath','cg_pool'],ice:['cg_wave','cg_crystal'],thunder:['cg_pounce','cg_chain']};
+  const _sb=storyBoss;storyBoss=function(tag,name){const b=_sb.apply(this,arguments);if(tag==='cv_g'&&b&&SIG[b.reg]){b.pats=SIG[b.reg].concat(b.pats.slice(0,2));b.maxHp=b.hp=Math.round(b.maxHp*1.35);b.r=26;}return b;};
+  const Q=(e,t,f)=>{(e.cgQ=e.cgQ||[]).push({t,f});};
+  const pr=(x,y,a,sp,o)=>projs.push(Object.assign({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,r:9,dmg:1,t:0,life:2.5,c:'#fff',orb:true},o||{}));
+  const _bx=bossExtra;bossExtra=function(e,p,dx,dy,d,rage,pc,pd){if(!p||!p.startsWith('cg_'))return _bx.apply(this,arguments);const a0=Math.atan2(dy,dx),hy=e.y-40,say2=(t,c)=>floatText(e.x,e.y-120,t,c||'#ffcf3a',true);
+    switch(p){
+      case 'cg_rats':say2('鼠群衝鋒！','#e0b080');for(let w=0;w<3;w++)Q(e,w*.3,()=>{const a=Math.atan2(P.y-e.y,P.x-e.x);for(let i=-2;i<=2;i++)pr(e.x,e.y-10,a+i*.16,240,{r:10,c:'#8a6a4a',dmg:pd,life:2.2});});break;
+      case 'cg_tail':say2('甩尾！');e.stun=Math.max(e.stun||0,.5);Q(e,.5,()=>{rings.push({x:e.x,y:e.y,r:10,max:150,spd:420,dmg:pd,c:'#c88a8a'});shake=8;});break;
+      case 'cg_roots':say2('樹根穿刺！','#8acc5a');for(let k=1;k<=10;k++)strikes.push({x:e.x+Math.cos(a0)*k*55,y:e.y+Math.sin(a0)*k*55,t:0,warn:.45+k*.07,r:36,dmg:pd,el:null,kind:'rock'});break;
+      case 'cg_spores':say2('毒孢子','#8aff6a');for(let i=0;i<10;i++)pr(e.x,hy,i/10*6.283,90+Math.random()*40,{r:12,c:'#7fd36f',el:'poison',dmg:pd,life:3.5});break;
+      case 'cg_venom':say2('毒雨！','#b06aff');for(let i=0;i<8;i++){const a=Math.random()*6.283,r=i?40+Math.random()*170:0;strikes.push({x:P.x+Math.cos(a)*r,y:P.y+Math.sin(a)*r,t:0,warn:.8+i*.08,r:40,dmg:pd,el:'poison',kind:'dark'});}break;
+      case 'cg_sting':say2('毒針突刺！','#7fff4a');e.stun=Math.max(e.stun||0,.45);Q(e,.45,()=>{const a=Math.atan2(P.y-e.y,P.x-e.x);for(let i=0;i<3;i++)pr(e.x,hy,a+(i-1)*.08,520,{r:8,c:'#7fff4a',el:'poison',dmg:pd+1,life:1.2});sfx('shoot');});break;
+      case 'cg_roll':say2('岩石滾滾！','#c8b090');e.mode='wind_dash';e.modeT=0;e.dashA=a0;break;
+      case 'cg_quake':say2('震地！','#c8b090');e.stun=Math.max(e.stun||0,.7);for(let w=0;w<3;w++)Q(e,.5+w*.35,()=>{rings.push({x:e.x,y:e.y,r:10,max:200+w*60,spd:360,dmg:pd,c:'#a89880'});shake=10;burst(e.x,e.y,'#8d8270',16,200);});break;
+      case 'cg_snowball':say2('巨大雪球！','#dff4ff');for(let i=0;i<3;i++)Q(e,i*.4,()=>{const a=Math.atan2(P.y-e.y,P.x-e.x)+(Math.random()-.5)*.3;pr(e.x,hy,a,210,{r:20,c:'#f4faff',el:'ice',dmg:pd+1,life:3});});break;
+      case 'cg_icicle':say2('冰柱落下！','#bfefff');for(let i=0;i<9;i++){const a=Math.random()*6.283,r=i?50+Math.random()*180:0;strikes.push({x:P.x+Math.cos(a)*r,y:P.y+Math.sin(a)*r,t:0,warn:.7+i*.07,r:34,dmg:pd,el:'ice',kind:'icicle'});}break;
+      case 'cg_screech':say2('超音波！','#d08aff');for(let w=0;w<3;w++)Q(e,w*.28,()=>rings.push({x:e.x,y:e.y-30,r:10,max:320,spd:300,dmg:pd,c:'#b06aff'}));break;
+      case 'cg_bats':say2('蝙蝠群！','#b06aff');for(let i=0;i<8;i++)pr(e.x,hy,i/8*6.283,170,{r:9,c:'#3a1a4a',dmg:pd,life:3,cgHome:true});break;
+      case 'cg_breath':say2('火焰吐息！','#ff8a3a');for(let i=0;i<12;i++)Q(e,i*.08,()=>{const a=Math.atan2(P.y-e.y,P.x-e.x)+(Math.random()-.5)*.6;pr(e.x+Math.cos(a)*40,hy,a,330,{r:11,c:'#ff7a2a',el:'fire',dmg:pd,life:1.1});});break;
+      case 'cg_pool':say2('熔岩噴發！','#ff7a2a');for(let i=0;i<6;i++){const a=Math.random()*6.283,r=i?60+Math.random()*160:0;strikes.push({x:P.x+Math.cos(a)*r,y:P.y+Math.sin(a)*r,t:0,warn:.9+i*.08,r:46,dmg:pd+1,el:'fire',kind:'meteor'});}break;
+      case 'cg_wave':say2('冰晶劍氣！','#bfefff');e.stun=Math.max(e.stun||0,.5);Q(e,.5,()=>{const a=Math.atan2(P.y-e.y,P.x-e.x);for(let i=-3;i<=3;i++)pr(e.x+Math.cos(a)*30,hy+i*6,a+i*.05,420,{r:12,c:'#d8f4ff',el:'ice',dmg:pd+1,life:1.3});sfx('swing');});break;
+      case 'cg_crystal':say2('冰晶綻放','#bfefff');for(let w=0;w<2;w++)Q(e,w*.4,()=>{for(let i=0;i<12;i++)pr(e.x,hy,i/12*6.283+w*.26,230,{r:9,c:'#9fe3ff',el:'ice',dmg:pd,life:2});});break;
+      case 'cg_pounce':{say2('雷霆飛撲！','#ffe14a');const tx=P.x,ty=P.y;strikes.push({x:tx,y:ty,t:0,warn:.8,r:60,dmg:pd+1,el:'shock',kind:'bolt'});e.hideT=0;Q(e,.75,()=>{teleport(e,tx,ty+4);rings.push({x:e.x,y:e.y,r:10,max:180,spd:420,dmg:pd,c:'#ffe14a'});shake=12;});break;}
+      case 'cg_chain':say2('連鎖落雷！','#ffe14a');for(let k=0;k<7;k++)Q(e,k*.18,()=>strikes.push({x:P.x+(Math.random()-.5)*60,y:P.y+(Math.random()-.5)*60,t:0,warn:.55,r:40,dmg:pd,el:'shock',kind:'bolt'}));break;}
+    return true;};
+  const _bt=bossTick;bossTick=function(e,dt){_bt(e,dt);if(e.cgQ&&e.cgQ.length&&!e.dead){for(let i=e.cgQ.length-1;i>=0;i--){const q=e.cgQ[i];q.t-=dt;if(q.t<=0){e.cgQ.splice(i,1);q.f();}}}
+    if(e.bossId==='story_cv_g')for(const p of projs)if(p.cgHome&&p.t<1.8){const a=Math.atan2(P.y-24-p.y,P.x-p.x),sp=Math.hypot(p.vx,p.vy),c=Math.atan2(p.vy,p.vx);let da=a-c;while(da>Math.PI)da-=6.283;while(da<-Math.PI)da+=6.283;const na=c+Math.max(-2*dt,Math.min(2*dt,da));p.vx=Math.cos(na)*sp;p.vy=Math.sin(na)*sp;}};
+})();
+CHANGELOG.unshift(['v3.6.9','2026.11.21',[
+  '🛡️ 魔王霸體：所有魔王（野外魔王、洞窟守衛、四天王、最終戰）被一般攻擊打到不會再被擊退、不會被打斷衝刺；畫面下方多了一條「霸體」條，累積夠多傷害（重擊算 1.7 倍）才會「霸體破了！」暈 1.8 秒，之後 9 秒內不會再破——不能再用槍一直點到死了',
+  '🔪 軍用小刀改成只有兩位軍人（時雨、軍軍）能帶，而且只能當副武器；忍宇不會再看到它',
+  '🕳️ 洞窟守衛全部重新設計，不再是火柴人：巨鼠王（戴王冠的大老鼠）、樹根魔（會走路的老樹）、蠍后、岩石人、雪怪、暗影蝙蝠王、熔岩蜥蜴、冰晶騎士（冰甲大劍）、雷獸（閃電鬃毛的猛獸）',
+  '每隻洞窟守衛都有兩招專屬招式：鼠群衝鋒／甩尾、樹根穿刺／毒孢子、毒雨／毒針突刺、岩石滾滾／震地、巨大雪球／冰柱落下、超音波／蝙蝠群、火焰吐息／熔岩噴發、冰晶劍氣／冰晶綻放、雷霆飛撲／連鎖落雷；血量 ×1.35'
+]]);
+{const t=document.getElementById('verTag');if(t&&t.firstChild&&t.firstChild.nodeType===3)t.firstChild.nodeValue='v3.6.9　2026.11.21　';}
+
+// 軍用小刀只給兩位軍人（時雨、軍軍），而且只能當副武器
+(()=>{const _ri=renderInv;renderInv=function(){const r=_ri.apply(this,arguments);try{const L=document.getElementById('invList');if(L)L.querySelectorAll('[data-im="cknife"],[data-eq="cknife"]').forEach(b=>{const row=b.closest('.srow')||b.parentElement;if(row)row.remove();});}catch(_){}return r;};})();
+
+// ================= 🏹 弓要拉、弩能連射（有彈匣）；箭和子彈看起來不一樣 =================
+(()=>{
+  WEAPONS.xbow={cls:'archer',name:'連弩',price:260,dmg:0,cd:.15,shots:1,aspd:880,color:'#6a4a2a',ranged:true,xbow:true,mag:10,rel:1.8,desc:'不用拉弓，按住就能連射；一匣 10 支弩箭，射完要花 1.8 秒裝填'};
+  WEAPONS.hxbow={cls:'archer',name:'重弩',price:340,dmg:3,cd:.55,shots:1,aspd:1000,pierce:true,color:'#3a3a44',ranged:true,xbow:true,mag:4,rel:2.2,kbm:2,desc:'威力大、會貫穿、擊退強；一匣 4 支，裝填 2.2 秒'};
+  for(const k of ['desert','mountain','thunder'])if(SHOPS[k]&&SHOPS[k].weapons&&!SHOPS[k].weapons.includes('xbow'))SHOPS[k].weapons.push('xbow');
+  for(const k of ['ice','thunder','lava'])if(SHOPS[k]&&SHOPS[k].weapons&&!SHOPS[k].weapons.includes('hxbow'))SHOPS[k].weapons.push('hxbow');
+  const isBow=()=>P&&P.cls==='archer'&&W().cls==='archer'&&W().ranged&&!W().xbow&&!W().bolt&&!W().sonic&&!W().ball;
+  const isXb=()=>P&&P.cls==='archer'&&W().xbow;
+  const DRAW_MIN=.22,DRAW_FULL=.75;let B=null,mul=null;
+  const ammo=()=>{P.xbAmmo=P.xbAmmo||{};const id=P.weapon;if(P.xbAmmo[id]==null)P.xbAmmo[id]=W().mag||10;return P.xbAmmo;};
+  // 射箭時套用拉弓倍率；弩箭扣彈匣
+  const _fa=fireArrow;fireArrow=function(a,w,extra){const n0=projs.length;const r=_fa.apply(this,arguments);
+    for(let i=n0;i<projs.length;i++){const p=projs[i];if(!p.friendly)continue;
+      if(w&&w.xbow){p.xb=true;p.heavyB=!!(w===WEAPONS.hxbow);}
+      else if(P&&P.cls==='archer'&&!p.snipe){p.bowArrow=true;p.life0=p.life;}
+      if(mul&&!p.snipe){p.dmg=Math.max(1,Math.round(p.dmg*mul.d));p.vx*=mul.v;p.vy*=mul.v;if(mul.full){p.hitSet=p.hitSet||new Set();p.c='#ffcf3a';p.full=true;}}}
+    if(w&&w.xbow&&P&&!(extra&&extra.snipe)){const A=ammo();A[P.weapon]=Math.max(0,(A[P.weapon]||0)-1);if(A[P.weapon]<=0&&!P.xbRel){P.xbRel=w.rel||1.8;floatText(P.x,P.y-64,'🔄 裝填弩箭…','#ffe58a');}}
+    return r;};
+  const _u=update;update=function(dt){
+    if(!P||state!=='play'||dlg||scene){B=null;return _u.apply(this,arguments);}
+    // 弩：沒箭就不能射
+    if(isXb()){const A=ammo();if(P.xbRel>0){P.xbRel-=dt;if(P.xbRel<=0){P.xbRel=0;A[P.weapon]=W().mag;floatText(P.x,P.y-64,'✔️ 裝填完成','#9fffc0');sfx('coin');}}
+      if((A[P.weapon]||0)<=0||P.xbRel>0)P.atkCD=Math.max(P.atkCD,.05);}
+    else if(isBow()&&!P.mount&&!P.aiming&&P.ultT<=0){
+      const press=pressed.j||pressed.z||tAtk||!!mouseAtk,held=atkHeld();
+      if(!B&&(press||held)&&P.atkCD<=0&&P.shockT<=0&&P.dizzyT<=0){B={t:0,a:mouseAtk?Math.atan2(mouseAtk.y-VH/2,mouseAtk.x-VW/2):null,ma:mouseAtk};sfx('swing');}
+      if(B){pressed.j=pressed.z=false;tAtk=false;const ma=mouseAtk;mouseAtk=null;B.t+=dt;P.atkCD=Math.max(P.atkCD,.05);P.cur={ranged:true,pose:'bowdraw'};P.atkT=Math.max(P.atkT||0,.06);P.atkDur=.16;
+        if(B.t>=DRAW_FULL&&!B.full){B.full=true;floatText(P.x,P.y-66,'🏹 拉滿！','#ffcf3a');sfx('coin');}
+        if((B.t>=DRAW_MIN&&!held)||B.t>=1.6){const k=Math.min(1,(B.t-DRAW_MIN)/(DRAW_FULL-DRAW_MIN));mul={d:B.full?1.8:1+.35*k,v:B.full?1.3:1+.1*k,full:B.full};
+          P.atkCD=0;pressed.j=true;if(B.ma)mouseAtk=B.ma;B=null;const r=_u.apply(this,arguments);mul=null;P.atkCD=Math.max(P.atkCD,(W().cd||.3)+.08);if(P.cur)P.cur.pose='bowdraw';return r;}}}
+    return _u.apply(this,arguments);};
+  // 箭的樣子：有箭羽、會飛成一點弧線；弩箭粗短筆直；子彈不變
+  window.__drawArrow=p=>{if(p.bullet||p.snipe&&!p.bowArrow)return false;const a=Math.atan2(p.vy,p.vx);
+    if(p.xb){const L=p.heavyB?20:14;ctx.strokeStyle='#2a2a30';ctx.lineWidth=p.heavyB?5:3.5;line(p.x-Math.cos(a)*L,p.y-Math.sin(a)*L,p.x,p.y);ctx.fillStyle='#c8ccd4';ctx.beginPath();ctx.moveTo(p.x+Math.cos(a)*7,p.y+Math.sin(a)*7);ctx.lineTo(p.x+Math.cos(a+2.4)*5,p.y+Math.sin(a+2.4)*5);ctx.lineTo(p.x+Math.cos(a-2.4)*5,p.y+Math.sin(a-2.4)*5);ctx.closePath();ctx.fill();
+      ctx.fillStyle='#8a2a2a';ctx.fillRect(p.x-Math.cos(a)*L-2,p.y-Math.sin(a)*L-2,4,4);return true;}
+    if(!p.bowArrow)return false;const life=p.life0||p.life||.9,u=Math.min(1,p.t/life),h=Math.sin(u*Math.PI)*(p.full?10:18),x=p.x,y=p.y-h,va=Math.atan2(p.vy-Math.cos(u*Math.PI)*h*3,p.vx);
+    ctx.fillStyle='rgba(0,0,0,.18)';ctx.beginPath();ctx.ellipse(p.x,p.y+4,6,2,0,0,6.283);ctx.fill();
+    if(p.full){ctx.strokeStyle='rgba(255,207,58,.35)';ctx.lineWidth=6;line(x-Math.cos(va)*34,y-Math.sin(va)*34,x,y);}
+    const c=Math.cos(va),s=Math.sin(va),L=22;ctx.strokeStyle=p.fire?'#8a3a1a':'#7a5230';ctx.lineWidth=2.2;line(x-c*L,y-s*L,x+c*4,y+s*4);
+    ctx.fillStyle=p.fire?'#ff7a2a':'#cfd6de';ctx.beginPath();ctx.moveTo(x+c*10,y+s*10);ctx.lineTo(x+c*2-s*4,y+s*2+c*4);ctx.lineTo(x+c*2+s*4,y+s*2-c*4);ctx.closePath();ctx.fill();
+    ctx.fillStyle=p.full?'#ffcf3a':'#e8e0d0';for(const k of [1,-1]){ctx.beginPath();ctx.moveTo(x-c*(L-2),y-s*(L-2));ctx.lineTo(x-c*(L+5)-s*k*5,y-s*(L+5)+c*k*5);ctx.lineTo(x-c*(L-8),y-s*(L-8));ctx.closePath();ctx.fill();}
+    if(p.fire&&Math.random()<.5)parts.push({x:x-c*L,y:y-s*L,vx:0,vy:-20,t:0,life:.3,c:'#ff9a3a'});return true;};
+  // 拉弓蓄力圈＋弩的彈匣
+  const _rn=render;render=function(){_rn.apply(this,arguments);if(!P||state!=='play')return;try{const dpr=ctx.canvas.width/VW,z=RZ||1,sx=(P.x-cam.x)*z,sy=(P.y-cam.y)*z;ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
+    if(B){const k=Math.min(1,B.t/DRAW_FULL);ctx.strokeStyle='rgba(0,0,0,.35)';ctx.lineWidth=5;ctx.beginPath();ctx.arc(sx,sy-30*z,26*z,0,6.283);ctx.stroke();ctx.strokeStyle=B.full?'#ffcf3a':B.t>=DRAW_MIN?'#9fe36a':'#ddd';ctx.lineWidth=3.5;ctx.beginPath();ctx.arc(sx,sy-30*z,26*z,-Math.PI/2,-Math.PI/2+k*6.283);ctx.stroke();}
+    if(isXb()){const A=ammo(),n=A[P.weapon]||0,m=W().mag||10;ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.6)';const t=P.xbRel>0?'🔄 裝填中…':'🏹 '+n+'/'+m;ctx.strokeText(t,sx,sy-72*z);ctx.fillStyle=P.xbRel>0?'#ffe58a':n<=2?'#ff8a6a':'#fff';ctx.fillText(t,sx,sy-72*z);}
+    ctx.restore();}catch(_){}};
+})();
+CHANGELOG.unshift(['v3.6.12','2026.11.21',[
+  '🏹 江家的箭袋：長按 Q（手機長按「換武器」）換箭——普通箭（無限）、🔥火焰箭（燒傷；拉滿弓命中會爆炸）、❄️冰霜箭（凍緩；拉滿弓會把敵人凍住 1 秒）、⚡雷電箭（麻痺；拉滿弓會電到旁邊 2 隻）；短按 Q 還是換副武器',
+  '屬性箭在鍛冶屋「🏹 做屬性箭」：1 顆火晶石／寒冰礦／雷鳴石 → 20 支；頭上會顯示剩幾支，用完自動換回普通箭；火焰弓射火焰箭傷害 ×1.3；弩不能用屬性箭',
+  '屬性箭也吃星圖加成（炎、冰、雷之星脈）'
+]]);
+CHANGELOG.unshift(['v3.6.11','2026.11.21',[
+  '🎯 軍軍的絕招改成「呼叫轟炸」：拿出無線電，一架轟炸機從後面飛過來，沿著瞄準方向丟下一整排 9 顆炸彈（紅圈預警）',
+  '🪖 時雨的絕招維持「加特林機槍」，小刀模式放絕招也會自動換回主武器',
+  '🌿 軍軍的迷彩狙擊：隱身 6 秒 → 7 秒，冷卻 8 秒 → 10 秒',
+  '🎯 狙擊槍改成「栓動」：每開一槍要拉一次槍栓（軍用狙擊槍 1.25 秒、精準步槍 0.6 秒），不能再連射；一般射擊畫面不再抖，只有「穩穩一槍」才會震',
+  '🎯 軍軍拿狙擊槍時走路明顯變慢（72%，瞄準時 55%），換成小刀就很輕快（108%）',
+  '💣 時雨的手榴彈、⚡ 軍軍的閃光彈都改成「用丟的」：會飛成拋物線、落地會彈跳滾動，撞到牆壁或房子會反彈，引信時間到才爆（手榴彈 1.3 秒、閃光彈 1.05 秒，快爆時紅燈閃得更快）；忍宇和時雨小刀模式的煙霧彈不變',
+  '🎯 軍軍的趴下姿勢重畫：真的趴在地上、手肘撐地、狙擊槍架著腳架，匍匐前進時腳會一前一後爬，速度也放慢到原本的 30%（以前是 50%）'
+]]);
+CHANGELOG.unshift(['v3.6.10','2026.11.21',[
+  '🏹 江家的弓要「拉」才射得出去：按攻擊會先拉弓 0.22 秒再放箭，按住越久越痛；拉滿（0.75 秒，頭上的圈變金色）傷害 ×1.8、箭更快還會貫穿——不能再像機關槍一樣一直點',
+  '🏹 新武器「連弩」（綠洲鎮、空の都、雷の都）：不用拉弓、按住就能連射，一匣 10 支，射完裝填 1.8 秒；「重弩」（冰の都、雷の都、熔岩村）：一匣 4 支、威力大會貫穿，裝填 2.2 秒；頭上會顯示剩幾支',
+  '🏹 箭和子彈看起來不一樣了：弓箭有箭羽、會飛成一點弧線、地上有影子；弩箭粗短、筆直；子彈維持原樣'
+]]);
+{const t=document.getElementById('verTag');if(t&&t.firstChild&&t.firstChild.nodeType===3)t.firstChild.nodeValue='v3.6.12　2026.11.21　';}
+
+
+// ================= 🎯 狙擊槍：拉槍栓、不亂抖、拿長槍走得慢 =================
+(()=>{
+  const _fg=fireGun;fireGun=function(w){const q=P&&P.hammerT>0;const r=_fg.apply(this,arguments);if(P&&!q){P._shotAt=time;P._stable=(P.aimT||0)>=.6;if(P.cls==='sniper'&&W().gun){floatText(P.x,P.y-58,'🔩 拉槍栓…','#c9d6a0');}}return r;};
+  const _u=update;update=function(dt){
+    if(P&&state==='play'&&!dlg&&(hit2())&&P.cls==='gunner'&&W()===WEAPONS.cknife&&(P.ultCD||0)<=0){const L=getLoad();if(L.main&&WEAPONS[L.main]){P.weapon=L.main;floatText(P.x,P.y-60,'🔫 換回 '+WEAPONS[L.main].name,'#ffe58a');}}
+    const x0=P?P.x:0,y0=P?P.y:0;_u.apply(this,arguments);if(!P||state!=='play')return;
+    // 連射時不讓畫面一直抖：只有「穩穩一槍」才震
+    if((P.cls==='sniper'||P.cls==='gunner')&&time-(P._shotAt||-9)<.4&&!P._stable)shake=Math.min(shake,.6);
+    // 拿狙擊槍走得明顯比較慢；換成小刀就輕快
+    if(P.cls==='sniper'&&!P.prone&&!(P.dashT>0)&&!(P.rollT>0)&&!P.mount&&!P.boat){const k=W().gun?(P.aiming?.55:.72):1.08;if(k!==1){P.x=x0+(P.x-x0)*k;P.y=y0+(P.y-y0)*k;if(k>1&&solidAt(P.x,P.y)){P.x=x0;P.y=y0;}}}};
+  function hit2(){return !!(pressed.u||tUlt);}
+})();
+
+
+// ================= 💣 手榴彈、閃光彈：用丟的，撞牆會反彈 =================
+(()=>{
+  const NADES=[];window.__nades=NADES;const G=980;
+  function target(maxD,def){let tx,ty;if(P.aiming&&P.aimX!=null){tx=P.aimX;ty=P.aimY+20;}else{const t=gunTarget(maxD);if(t){tx=t.x;ty=t.y;}else{tx=P.x+P.fx*def;ty=P.y+P.fy*def;}}return [tx,ty];}
+  function toss(kind){const [tx,ty]=target(kind==='flash'?280:260,kind==='flash'?190:220),Tm=.55;
+    NADES.push({kind,x:P.x+P.fx*10,y:P.y,z:26,vx:(tx-P.x)/Tm,vy:(ty-P.y)/Tm,vz:G*Tm/2-26/Tm,t:0,fuse:kind==='flash'?1.05:1.3,bounce:0,spin:0});
+    P.atkT=.18;P.atkDur=.18;P.cur={pose:'punch',range:0,arc:0,mul:0};sfx('swing');}
+  function boom(n){if(n.kind==='he'){bombs.push({sx:n.x,sy:n.y,tx:n.x,ty:n.y,t:0,fl:0,fuse:0,r:90,dmg:Math.round(atkPower()*4),friendly:true,grenade:true});return;}
+    let c=0;for(const e of enemies){if(e.dead||e.isGate||Math.hypot(e.x-n.x,e.y-n.y)>125)continue;e.stun=Math.max(e.stun||0,e.boss||e.king?.5:1.8);e.blindT=Math.max(e.blindT||0,e.boss?.5:2);c++;floatText(e.x,e.y-58,'暈！','#fff');}
+    fxRings.push({x:n.x,y:n.y,r:6,max:125,c:'rgba(255,255,255,.8)',t:0});burst(n.x,n.y-10,'#ffffff',26,260);flashT=Math.max(flashT||0,.1);sfx('clang');if(c)floatText(n.x,n.y-80,'⚡ 閃光！（'+c+'）','#fff',true);}
+  const _cs=classSpecial;classSpecial=function(press,holding,dt,w,ix,iy){
+    const knife=window.__soldier&&window.__soldier.knifeMode&&window.__soldier.knifeMode();
+    if(P.shockT<=0&&press&&P.specCD<=0&&!P.flying){
+      if(P.cls==='gunner'&&!knife&&useSta(SC().sp)){P.specCD=3.5;toss('he');floatText(P.x,P.y-62,'💣 手榴彈！','#ffcf3a');return;}
+      if(P.cls==='sniper'&&useSta(STA.sniper.sp)){P.specCD=6;toss('flash');floatText(P.x,P.y-62,'⚡ 閃光彈！','#fff');return;}}
+    if(P.cls==='sniper'&&!(P.shockT>0))return;
+    return _cs.apply(this,arguments);};
+  const _u=update;update=function(dt){const t0=time;_u.apply(this,arguments);const g=time-t0;if(g<=0||!NADES.length)return;
+    for(let i=NADES.length-1;i>=0;i--){const n=NADES[i];n.t+=g;n.spin+=g*(Math.hypot(n.vx,n.vy)/14);
+      const nx=n.x+n.vx*g,ny=n.y+n.vy*g;let hit=false;
+      if(solidAt(nx,n.y)){n.vx=-n.vx*.6;hit=true;}else n.x=nx;
+      if(solidAt(n.x,ny)){n.vy=-n.vy*.6;hit=true;}else n.y=ny;
+      if(hit){n.bounce++;sfx('clang');burst(n.x,n.y-n.z,'#bbb',5,80);}
+      n.vz-=G*g;n.z+=n.vz*g;if(n.z<=0){n.z=0;if(Math.abs(n.vz)>90){n.vz=-n.vz*.38;n.vx*=.6;n.vy*=.6;}else{n.vz=0;n.vx*=Math.pow(.05,g);n.vy*=Math.pow(.05,g);}}
+      if(n.t>=n.fuse){NADES.splice(i,1);boom(n);}}};
+  const _dO=drawOrbs;drawOrbs=function(){_dO.apply(this,arguments);
+    for(const n of NADES){const left=n.fuse-n.t,blink=left<.5?Math.sin(time*40)>0:Math.sin(time*14)>0;
+      ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(n.x,n.y,6,2.5,0,0,6.283);ctx.fill();
+      if(n.kind==='he'){ctx.save();ctx.globalAlpha=.10+.12*(1-left/n.fuse);ctx.fillStyle='#ff3a2a';ctx.beginPath();ctx.ellipse(n.x,n.y,90,54,0,0,6.283);ctx.fill();ctx.restore();}
+      ctx.save();ctx.translate(n.x,n.y-6-n.z);ctx.rotate(n.spin);
+      if(n.kind==='he'){ctx.fillStyle='#4a5a2a';ctx.strokeStyle='#1a1a1a';ctx.lineWidth=1.5;ctx.beginPath();ctx.ellipse(0,0,6,7,0,0,6.283);ctx.fill();ctx.stroke();
+        ctx.strokeStyle='#2a3418';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(-6,0);ctx.lineTo(6,0);ctx.moveTo(0,-7);ctx.lineTo(0,7);ctx.stroke();ctx.fillStyle='#888';ctx.fillRect(-2,-10,4,3);
+        ctx.fillStyle=blink?'#ff3a2a':'#6a1a10';ctx.beginPath();ctx.arc(0,-11,1.8,0,6.283);ctx.fill();}
+      else{ctx.fillStyle='#c8ccd4';ctx.strokeStyle='#1a1a1a';ctx.lineWidth=1.5;ctx.fillRect(-4,-7,8,14);ctx.strokeRect(-4,-7,8,14);ctx.fillStyle='#2a2a2a';ctx.fillRect(-4,-3,8,2);ctx.fillRect(-4,2,8,2);
+        ctx.fillStyle=blink?'#fff':'#999';ctx.beginPath();ctx.arc(0,-9,2,0,6.283);ctx.fill();}
+      ctx.restore();}};
+})();
+
+
+// ================= 🏹 箭袋：火焰箭／冰霜箭／雷電箭（長按 Q 換箭） =================
+(()=>{
+  const AK=[['normal','🏹','普通箭','#e8e0d0'],['fire','🔥','火焰箭','#ff7a2a'],['ice','❄️','冰霜箭','#9fe3ff'],['thunder','⚡','雷電箭','#ffe14a']];
+  const AKM={};AK.forEach(a=>AKM[a[0]]=a);
+  const Q=()=>{P.items=P.items||{};return P.items;};
+  const cnt=k=>k==='normal'?Infinity:(Q()['arw_'+k]||0);
+  const kind=()=>{life.arrowKind=life.arrowKind||'normal';if(life.arrowKind!=='normal'&&cnt(life.arrowKind)<=0)life.arrowKind='normal';return life.arrowKind;};
+  const usingBow=()=>P&&P.cls==='archer'&&W().cls==='archer'&&W().ranged&&!W().xbow&&!W().bolt&&!W().sonic&&!W().ball;
+  function nextKind(){const order=AK.map(a=>a[0]);let i=order.indexOf(kind());for(let n=0;n<4;n++){i=(i+1)%4;if(cnt(order[i])>0)break;}life.arrowKind=order[i];const a=AKM[order[i]];
+    floatText(P.x,P.y-74,a[1]+' '+a[2]+(order[i]==='normal'?'':'（'+cnt(order[i])+'）'),a[3],true);sfx('coin');
+    if(order[i]==='normal'&&!['fire','ice','thunder'].some(k=>cnt(k)>0)&&!life.arwHint){life.arwHint=1;floatText(P.x,P.y-100,'屬性箭可以在鍛冶屋用礦石做','#ccc');}}
+  window.__arrowKind=kind;
+  // 長按 Q（手機：長按「換武器」）換箭；短按還是換副武器
+  let qT=0,qDown=false,tQ=false;try{const b=document.getElementById('bW');if(b){b.addEventListener('pointerdown',()=>{tQ=true;},true);addEventListener('pointerup',()=>{tQ=false;},true);addEventListener('pointercancel',()=>{tQ=false;},true);}}catch(_){}
+  const _u=update;update=function(dt){
+    if(P&&state==='play'&&!dlg&&P.cls==='archer'){const held=!!(keys.q||tQ);
+      if(pressed.q||tSwap){pressed.q=false;tSwap=false;qDown=true;qT=0;}
+      if(qDown){if(held){qT+=dt;if(qT>=.35&&qT-dt<.35)nextKind();}else{qDown=false;if(qT<.35){try{cycleWeapon();}catch(_){}}qT=0;}}}
+    const t0=time;_u.apply(this,arguments);if(!P||time===t0)return;
+    for(const p of projs)if(p.elArrow&&!p.dead&&Math.random()<.5)parts.push({x:p.x-p.vx*.02,y:p.y-12,vx:0,vy:-15,t:0,life:.25,c:AKM[p.elArrow][3]});};
+  // 射出時套上箭種
+  const _fa=fireArrow;fireArrow=function(a,w,extra){const n0=projs.length,r=_fa.apply(this,arguments);
+    if(P&&P.cls==='archer'&&w&&!w.xbow){const k=kind();if(k!=='normal'){for(let i=n0;i<projs.length;i++){const p=projs[i];if(!p.friendly)continue;p.elArrow=k;p.elem=k;p.c=AKM[k][3];if(k==='fire'&&w===WEAPONS.firebow)p.dmg=Math.round(p.dmg*1.3);}
+        Q()['arw_'+k]=Math.max(0,cnt(k)-1);if(cnt(k)<=0){life.arrowKind='normal';floatText(P.x,P.y-74,AKM[k][2]+'用完了','#ccc');}}}
+    return r;};
+  // 命中效果
+  const _he=hitEnemy;hitEnemy=function(e,dmg,ang,kbm,pure){const src=_hitSrc,k=src&&src.elArrow;const r=_he.apply(this,arguments);
+    if(!k||!e||e.dead||e.isGate||src._elDone&&src._elDone.has(e))return r;(src._elDone=src._elDone||new Set()).add(e);const big=e.boss||e.king,full=!!src.full;
+    if(k==='fire'){e.burn=Math.max(e.burn||0,3);if(full){bombs.push({sx:e.x,sy:e.y,tx:e.x,ty:e.y,t:0,fl:0,fuse:0,r:70,dmg:Math.max(1,Math.round(atkPower()*1.5)),friendly:true});floatText(e.x,e.y-70,'🔥 爆炸箭！','#ff8a3a',true);}}
+    else if(k==='ice'){e.slowT=Math.max(e.slowT||0,2.5);if(full){e.stun=Math.max(e.stun||0,big?.4:1);e.frozeT=time+(big?.4:1);floatText(e.x,e.y-70,'❄️ 結冰！','#bfefff',true);burst(e.x,e.y-20,'#dff6ff',14,120);}else floatText(e.x,e.y-60,'凍緩','#9fe3ff');}
+    else if(k==='thunder'){e.stun=Math.max(e.stun||0,big?.15:.4);floatText(e.x,e.y-60,'麻痺','#ffe14a');
+      if(full){const o=enemies.filter(q=>q!==e&&!q.dead&&!q.isGate&&Math.hypot(q.x-e.x,q.y-e.y)<150).sort((a,b)=>Math.hypot(a.x-e.x,a.y-e.y)-Math.hypot(b.x-e.x,b.y-e.y)).slice(0,2);
+        for(const q of o){const h=_hitSrc;_hitSrc=null;_he(q,Math.max(1,Math.round(dmg*.6)),Math.atan2(q.y-e.y,q.x-e.x),.3,true);_hitSrc=h;q.stun=Math.max(q.stun||0,q.boss?.15:.5);
+          for(let i=0;i<8;i++){const u=i/8;parts.push({x:e.x+(q.x-e.x)*u+(Math.random()-.5)*8,y:e.y-20+(q.y-e.y)*u,vx:0,vy:0,t:0,life:.2,c:'#fff8a0'});}}
+        if(o.length)floatText(e.x,e.y-80,'⚡ 連鎖電擊！','#ffe14a',true);}}
+    return r;};
+  // 冰凍的敵人畫一層冰
+  const _dO=drawOrbs;drawOrbs=function(){_dO.apply(this,arguments);for(const e of enemies)if(!e.dead&&e.frozeT>time){ctx.save();ctx.globalAlpha=.45;ctx.fillStyle='#bfefff';ctx.strokeStyle='#fff';ctx.lineWidth=2;const h=46*(e.scale||1),w=22*(e.scale||1);
+      ctx.beginPath();ctx.moveTo(e.x-w,e.y);ctx.lineTo(e.x-w*.8,e.y-h);ctx.lineTo(e.x,e.y-h*1.15);ctx.lineTo(e.x+w*.8,e.y-h);ctx.lineTo(e.x+w,e.y);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();}};
+  // 頭上顯示目前的箭
+  const _rn=render;render=function(){_rn.apply(this,arguments);if(!P||state!=='play'||!usingBow())return;const k=kind();if(k==='normal')return;try{const dpr=ctx.canvas.width/VW,z=RZ||1,sx=(P.x-cam.x)*z,sy=(P.y-cam.y)*z;ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);
+    const a=AKM[k],t=a[1]+' '+cnt(k);ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.6)';ctx.strokeText(t,sx,sy-72*z);ctx.fillStyle=a[3];ctx.fillText(t,sx,sy-72*z);ctx.restore();}catch(_){}};
+  // 鍛冶屋：用礦石做屬性箭（1 顆礦 → 20 支）
+  const MAT={fire:['火晶石','🔥'],ice:['寒冰礦','❄️'],thunder:['雷鳴石','⚡']};
+  function craftMenu(n){const O=life.ores||{};window.__pickMenu('🏹 做屬性箭','<div style="text-align:center">1 顆礦石可以做 20 支箭<br><small>（江家用的：長按 Q 換箭，拉滿弓效果更強）</small></div>',
+      ['fire','ice','thunder'].map(k=>({t:`${AKM[k][1]} ${AKM[k][2]} ×20　（${MAT[k][1]}${MAT[k][0]} 1／你有 ${O[k]||0}）　身上 ${cnt(k)} 支`,bg:(O[k]||0)>0?'#ffe8c8':'#ddd',fn:()=>{if((O[k]||0)<1){floatText(P.x,P.y-70,'缺少'+MAT[k][0],'#ff8a8a');return;}O[k]--;Q()['arw_'+k]=cnt(k)+20;sfx('clang');floatText(P.x,P.y-70,AKM[k][1]+' '+AKM[k][2]+' +20','#ffcf3a',true);saveGame();setTimeout(()=>craftMenu(n),30);}}))
+      .concat([{t:'不用了',bg:'#eee',fn:()=>{}}]));}
+  const _ft=facTalk;facTalk=function(n){if(n&&n.fac==='smith'){window.__pickMenu(n.name,'<div style="text-align:center">要做什麼？</div>',[{t:'🔨 鍛冶／賣礦石',bg:'#ffe08a',fn:()=>_ft.call(this,n)},{t:'🏹 做屬性箭',bg:'#ffd8b0',fn:()=>craftMenu(n)},{t:'沒事',bg:'#eee',fn:()=>{}}]);return;}return _ft.apply(this,arguments);};
+  try{CLASSES.archer.desc=(CLASSES.archer.desc||'')+'　長按 Q（手機：長按「換武器」）換箭：普通箭、🔥火焰箭（燒傷，拉滿會爆炸）、❄️冰霜箭（凍緩，拉滿會結冰）、⚡雷電箭（麻痺，拉滿會電到旁邊 2 隻）；屬性箭在鍛冶屋用礦石做。';}catch(_){}
+})();
 
 requestAnimationFrame(loop);
 })();
