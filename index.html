@@ -4260,7 +4260,7 @@ function drawHeart(x,y,s,full){
 function render(){
   guardPlayerSafari();
   if(scene){drawScene();return;}
-  {const tg=(P.aiming&&(P.aimT||0)>.3)?1:0;aimK+=(tg-aimK)*Math.min(1,1/60*(tg?6:2.5));}
+  {const zc=P.cls!=='gunner';if(zc&&P.aiming&&(P.aimT||0)>.5)window.__zoomHold=time;const tg=zc&&time-(window.__zoomHold||-9)<1.4?1:0;aimK+=(tg-aimK)*Math.min(1,1/60*(tg?5:1.8));}
   RZ=Z*(1-.25*aimK);
   if(P.aiming){P.camOX=(P.aimX-P.x)*.55*aimK;P.camOY=(P.aimY-P.y)*.55*aimK;}
   const vw=VW/RZ,vh=VH/RZ,WW=MW*T,WH=MH*T,ox=(P.camOX||0)*aimK,oy=(P.camOY||0)*aimK;
@@ -11772,6 +11772,7 @@ CHANGELOG.unshift(['v3.6.9','2026.11.21',[
     ctx.restore();}catch(_){}};
 })();
 CHANGELOG.unshift(['v3.6.13','2026.11.21',[
+  '🔭 開槍不再一直縮放畫面：時雨（手槍、散彈槍）瞄準時鏡頭不縮放；軍軍和江家要按住 0.5 秒以上才拉遠，而且射完後會維持 1.4 秒，連續瞄準射擊時鏡頭不會一縮一放',
   '🏹 江家的操作簡化：按住攻擊＝拉弓，按住 0.3 秒以上會開瞄準鏡（鏡頭拉遠、可以用方向鍵或滑鼠移動準星），放開就朝準星射出，拉越久越痛；以前 L 的「狙擊鏡」併進攻擊鍵了',
   '🏹 L 改成「換箭」：按一下就換下一種箭（普通→火焰→冰霜→雷電），手機上的 L 鈕也改名「換箭」；Q 回到單純換副武器（不用再長按）；拿弩的時候 L 還是瞄準'
 ]]);
