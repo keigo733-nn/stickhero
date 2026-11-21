@@ -238,7 +238,7 @@ addEventListener('resize',resize);resize();
 const isTouch=('ontouchstart' in window)||navigator.maxTouchPoints>0;
 addEventListener('DOMContentLoaded',()=>{if(isTouch){const a=document.getElementById('keyHelp'),b=document.getElementById('keyHelpT');if(a&&b){a.style.display='none';b.style.display='';}}});
 // ===== 手機版：把鍵盤提示換成按鈕說明 =====
-const SPLN={thief:'煙霧',gunner:(window.__gunL?window.__gunL():'手榴彈'),archer:'瞄準',umbrella:'開傘',warrior:'舉盾',elemental:'魔法球',tamer:'吹哨',bard:'彈唱',reaper:'勾鎖',baseball:'投球',basketball:'運球',fighter:'招架',chisei:'雷擊',lancer:'掃槍',kagerou:'火掌'};
+const SPLN={thief:'煙霧',gunner:(window.__gunL?window.__gunL():'手榴彈'),archer:(window.__archL?window.__archL():'換箭'),umbrella:'開傘',warrior:'舉盾',elemental:'魔法球',tamer:'吹哨',bard:'彈唱',reaper:'勾鎖',baseball:'投球',basketball:'運球',fighter:'招架',chisei:'雷擊',lancer:'掃槍',kagerou:'火掌'};
 function spBtn(cls){if(cls)return SPLN[cls]||'特技';try{return (typeof subShield==='function'&&subShield()&&P.cls!=='elemental')?'舉盾':SPLN[P&&P.cls]||'特技';}catch(e){return '特技';}}
 function tk(s,cls){if(!isTouch||typeof s!=='string')return s;
   const NM={J:'「攻擊」鈕',L:`「${spBtn(cls)}」鈕`,O:'「武技」鈕',U:'「絕招」鈕',R:'「🧪」鈕',I:'右上「☰」選單的「裝備」',Q:'「換武器」鈕',V:'「騎乘」鈕',M:'右上角的小地圖',N:'裝備畫面裡的音樂鈕',E:'「對話」鈕',H:'右上的小龜鈕'};
@@ -1153,8 +1153,8 @@ function gunTick(dt,ix,iy){const w=W();if(P.ammoW!==P.weapon){P.ammoW=P.weapon;P
 }
   else{P.aiming=false;fireGun(w);}}
 function fireGun(w){const a=Math.atan2(P.aimY-(P.y-20),P.aimX-P.x),sx=P.x+Math.cos(a)*22,sy=P.y-22+Math.sin(a)*22;P.ammo=Math.max(0,(P.ammo||0)-1);if(P.ammoMap)P.ammoMap[P.weapon]=P.ammo;P.atkT=.16;P.atkDur=.16;P.cur={ranged:true,pose:'bowdraw'};P.atkAng=a;
-  if(w.shotgun){for(let i=0;i<6;i++){const b=a+(i-2.5)*(P.aimT>=.6?.06:.1);projs.push({x:sx,y:sy,vx:Math.cos(b)*950,vy:Math.sin(b)*950,r:5,dmg:Math.max(1,Math.round(atkPower()*1.1)),t:0,life:w.range/950,c:'#ffe58a',friendly:true,arrow:true,bullet:true});}shake=Math.max(shake,P.aimT>=.6?5:1.5);moveE(P,-Math.cos(a)*14,-Math.sin(a)*14);}
-  else{projs.push({x:sx,y:sy,vx:Math.cos(a)*1400,vy:Math.sin(a)*1400,r:5,dmg:Math.round(atkPower()*(w.power||3)*(P.aimT>=.6?1.5:1)),t:0,life:w.range/1400+.04,c:P.aimT>=.6?'#ff9a9a':'#fff3a0',friendly:true,arrow:true,bullet:true,hitSet:w.pierceN?new Set():null,pierceN:w.pierceN});shake=Math.max(shake,P.aimT>=.6?3.5:.8);moveE(P,-Math.cos(a)*6,-Math.sin(a)*6);}
+  if(w.shotgun){for(let i=0;i<6;i++){const b=a+(i-2.5)*(P.aimT>=.6?.06:.1);projs.push({x:sx,y:sy,vx:Math.cos(b)*950,vy:Math.sin(b)*950,r:5,dmg:Math.max(1,Math.round(atkPower()*1.1)),t:0,life:w.range/950,c:'#ffe58a',friendly:true,arrow:true,bullet:true});}shake=Math.max(shake,P.aimT>=.6?5:1.5);if(P.aimT>=.6)moveE(P,-Math.cos(a)*10,-Math.sin(a)*10);}
+  else{projs.push({x:sx,y:sy,vx:Math.cos(a)*1400,vy:Math.sin(a)*1400,r:5,dmg:Math.round(atkPower()*(w.power||3)*(P.aimT>=.6?1.5:1)),t:0,life:w.range/1400+.04,c:P.aimT>=.6?'#ff9a9a':'#fff3a0',friendly:true,arrow:true,bullet:true,hitSet:w.pierceN?new Set():null,pierceN:w.pierceN});shake=Math.max(shake,P.aimT>=.6?3.5:.8);if(P.aimT>=.6)moveE(P,-Math.cos(a)*4,-Math.sin(a)*4);}
   burst(sx,sy,'#ffe14a',8,160);sfx('shoot');sfx('clang');if(P.aimT>=.6)floatText(P.x,P.y-70,'🎯 穩穩一槍！','#ff6a6a');P.aimT=0;if(P.ammo<=0){P.forceMap=P.forceMap||{};P.forceMap[P.weapon]=true;P.reloading=true;P.relT=0;floatText(P.x,P.y-62,'🔄 子彈打完，自動裝彈中…','#ff9a6a');}}
 function drawGunUI(){const w=W();if(!P||!w||!w.gun)return;const n=P.ammo??w.mag,bx=P.x-(w.mag*7)/2,by=P.y-92-(P.flyH||0);
   for(let i=0;i<w.mag;i++){ctx.fillStyle=i<n?'#e8b923':'rgba(0,0,0,.35)';ctx.strokeStyle='#222';ctx.lineWidth=1;ctx.beginPath();ctx.roundRect(bx+i*7,by,5,9,2);ctx.fill();ctx.stroke();}
@@ -1521,7 +1521,7 @@ function skillState(){const C=CL(),S=SC(),it=P.items||{},pot=(it.potion||0)+(it.
 function updateTouchCD(){if(!isTouch||!P)return;const k=skillState();
   tbSet('bA',null,0,1,k.atk.off);tbSet('bD',null,k.roll.cd,k.roll.max,k.roll.off,k.roll.badge);tbSet('bO',null,k.ws.cd,k.ws.max,k.ws.off);
   tbSet('bU','絕招',k.ult.cd,k.ult.max,k.ult.off);tbSet('bP',null,0,1,k.pot.off,k.pot.badge);{const bh=document.getElementById('bH'),t=isFem()?'📖':'👗';if(bh.textContent!==t)bh.textContent=t;}}
-function drawSkillBar(){if(isTouch||!P||state!=='play'||dlg||scene||window.__deskBtns)return;const k=skillState(),SPN={thief:'煙霧',gunner:(window.__gunL?window.__gunL():'手榴彈'),archer:'瞄準',umbrella:'開傘',warrior:'舉盾',elemental:'魔法球',tamer:'吹哨',bard:'彈唱',reaper:'勾鎖',baseball:'投球',basketball:'運球',fighter:'招架',chisei:'雷擊',lancer:'掃槍',kagerou:'火掌',sniper:'閃光'};
+function drawSkillBar(){if(isTouch||!P||state!=='play'||dlg||scene||window.__deskBtns)return;const k=skillState(),SPN={thief:'煙霧',gunner:(window.__gunL?window.__gunL():'手榴彈'),archer:(window.__archL?window.__archL():'換箭'),umbrella:'開傘',warrior:'舉盾',elemental:'魔法球',tamer:'吹哨',bard:'彈唱',reaper:'勾鎖',baseball:'投球',basketball:'運球',fighter:'招架',chisei:'雷擊',lancer:'掃槍',kagerou:'火掌',sniper:'閃光'};
   const sl=[['J','攻擊',k.atk],['K','翻滾',k.roll],['L',subShield()&&P.cls!=='elemental'?'舉盾':SPN[P.cls]||'—',k.spec],['O','武技',k.ws],['U','絕招',k.ult],['R','藥水',k.pot],['I','裝備',{}],['Q','換武器',{}],['C',isFem()?'手帳':'外觀',{}]];
   const POS={C:[.3,1],Q:[0,0],R:[1,0],U:[2.6,0],I:[3.6,0],O:[4.6,0],J:[2.9,1],K:[3.9,1],L:[4.9,1]};
   const W=48,G=6,x0=VW-6.9*(W+G)-10,y0=VH-2*(W+G)-8;ctx.save();
@@ -3736,7 +3736,7 @@ function update(dt){
   if(winTimer>0){winTimer-=dt;if(winTimer<=0){state='win';document.getElementById('winStat').textContent=`${CL().name} Lv.${P.lv}・打倒 ${kills} 個敵人・${P.coins} 金幣`;document.getElementById('win').classList.remove('hide');}}
   const bT=document.getElementById('bT');bT.classList.toggle('hide',!nearNPC);if(nearNPC){const lb=nearNPC.petE?'餵食':nearNPC.chest?'打開':'對話';tbSet('bT',lb,0,1,false);}
   document.getElementById('bW').classList.toggle('hide',!getLoad().sub);try{tbSet('bW',P.cls==='umbrella'?(P._tenMode==='umb'?'切劍':'切傘'):String(getLoad().sub||'').startsWith('sh:')?(P._noShield?'持盾':'收盾'):'換武器',0,1,false);}catch(e){}{const bM=document.getElementById('bM');bM.classList.toggle('hide',!(P.mounts&&P.mounts.length));if(bM.querySelector('.lb'))tbSet('bM',P.mount?'下來':'騎乘',0,1,!P.mount&&!canMountHere());}
-  const SPL={thief:'煙霧',gunner:(window.__gunL?window.__gunL():'手榴彈'),archer:'瞄準',umbrella:'開傘',warrior:'舉盾',elemental:'魔法球',tamer:'吹哨',bard:'彈唱',reaper:'勾鎖',baseball:'投球',basketball:'運球',fighter:'招架',chisei:'雷擊',lancer:'掃槍',kagerou:'火掌',sniper:'閃光'};
+  const SPL={thief:'煙霧',gunner:(window.__gunL?window.__gunL():'手榴彈'),archer:(window.__archL?window.__archL():'換箭'),umbrella:'開傘',warrior:'舉盾',elemental:'魔法球',tamer:'吹哨',bard:'彈唱',reaper:'勾鎖',baseball:'投球',basketball:'運球',fighter:'招架',chisei:'雷擊',lancer:'掃槍',kagerou:'火掌',sniper:'閃光'};
   const bS=document.getElementById('bS'),shS=subShield()&&P.cls!=='elemental';bS.classList.toggle('hide',!SPL[P.cls]&&!shS);const sl=shS?'舉盾':(SPL[P.cls]||'');{const st=skillState().spec;tbSet('bS',sl,shS?0:st.cd,st.max,shS?false:st.off);}
   updateTouchCD();
 }
@@ -4260,9 +4260,9 @@ function drawHeart(x,y,s,full){
 function render(){
   guardPlayerSafari();
   if(scene){drawScene();return;}
-  aimK+=((P.aiming?1:0)-aimK)*Math.min(1,1/60*8);
+  {const tg=(P.aiming&&(P.aimT||0)>.3)?1:0;aimK+=(tg-aimK)*Math.min(1,1/60*(tg?6:2.5));}
   RZ=Z*(1-.25*aimK);
-  if(P.aiming){P.camOX=(P.aimX-P.x)*.55;P.camOY=(P.aimY-P.y)*.55;}
+  if(P.aiming){P.camOX=(P.aimX-P.x)*.55*aimK;P.camOY=(P.aimY-P.y)*.55*aimK;}
   const vw=VW/RZ,vh=VH/RZ,WW=MW*T,WH=MH*T,ox=(P.camOX||0)*aimK,oy=(P.camOY||0)*aimK;
   cam.x=vw>=WW?(WW-vw)/2:Math.max(0,Math.min(WW-vw,P.x+ox-vw/2));
   cam.y=vh>=WH?(WH-vh)/2:Math.max(0,Math.min(WH-vh,P.y+oy-20-vh/2));
@@ -8735,7 +8735,7 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
   // ---- 影子的 AI：用跟本人一模一樣的武器、普攻、蓄力重擊、絕招 ----
   const MEL={fighter:1,kagerou:1,lancer:1,warrior:1,thief:1,umbrella:1,chisei:1,reaper:1,baseball:1,tamer:1};
   const HVN={warrior:'迴旋大斬',thief:'影步連刺',umbrella:'落傘擊',fighter:'昇龍拳',tamer:'長鞭直擊',bard:'強音和弦',reaper:'死神迴鐮',baseball:'強襲揮棒',basketball:'切入突破',chisei:'水平突',lancer:'旋槍突',kagerou:'爆炎拳',elemental:'蓄力彈',archer:'蓄力射擊',gunner:'穩穩一槍',sniper:'穩穩一槍'};
-  const LN={warrior:'舉盾',lancer:'掃槍',thief:'煙霧彈',fighter:'招架',umbrella:'轉傘',elemental:'魔法球',archer:'瞄準',tamer:'吹哨',bard:'彈唱',reaper:'勾鎖',baseball:'投球',basketball:'運球',chisei:'雷擊',kagerou:'火掌',gunner:'手榴彈',sniper:'閃光彈'};
+  const LN={warrior:'舉盾',lancer:'掃槍',thief:'煙霧彈',fighter:'招架',umbrella:'轉傘',elemental:'魔法球',archer:(window.__archL?window.__archL():'換箭'),tamer:'吹哨',bard:'彈唱',reaper:'勾鎖',baseball:'投球',basketball:'運球',chisei:'雷擊',kagerou:'火掌',gunner:'手榴彈',sniper:'閃光彈'};
   const PC={gunner:['#ffe14a',5,false],sniper:['#ffe14a',5,false],archer:['#c9a06a',8,true],elemental:['#7fd8ff',8,false],basketball:['#ff8a1a',10,false],bard:['#ff9cf0',8,false]};
   const D=()=>Math.max(1,Math.round(1+(P.lv||1)/25));
   const inArc=(e,R,a,w)=>{const dx=P.x-e.x,dy=P.y-e.y,d=Math.hypot(dx,dy);return d<R&&(w>=3.1||Math.abs(Math.atan2(Math.sin(Math.atan2(dy,dx)-a),Math.cos(Math.atan2(dy,dx)-a)))<w);};
@@ -11771,7 +11771,13 @@ CHANGELOG.unshift(['v3.6.9','2026.11.21',[
     if(isXb()){const A=ammo(),n=A[P.weapon]||0,m=W().mag||10;ctx.font='bold 12px sans-serif';ctx.textAlign='center';ctx.lineWidth=3;ctx.strokeStyle='rgba(0,0,0,.6)';const t=P.xbRel>0?'🔄 裝填中…':'🏹 '+n+'/'+m;ctx.strokeText(t,sx,sy-72*z);ctx.fillStyle=P.xbRel>0?'#ffe58a':n<=2?'#ff8a6a':'#fff';ctx.fillText(t,sx,sy-72*z);}
     ctx.restore();}catch(_){}};
 })();
+CHANGELOG.unshift(['v3.6.13','2026.11.21',[
+  '🏹 江家的操作簡化：按住攻擊＝拉弓，按住 0.3 秒以上會開瞄準鏡（鏡頭拉遠、可以用方向鍵或滑鼠移動準星），放開就朝準星射出，拉越久越痛；以前 L 的「狙擊鏡」併進攻擊鍵了',
+  '🏹 L 改成「換箭」：按一下就換下一種箭（普通→火焰→冰霜→雷電），手機上的 L 鈕也改名「換箭」；Q 回到單純換副武器（不用再長按）；拿弩的時候 L 還是瞄準'
+]]);
 CHANGELOG.unshift(['v3.6.12','2026.11.21',[
+  '🔫 軍軍、時雨連射不再抖：一般射擊不再把人往後推（之前每槍退 6～14 像素，鏡頭跟著晃），命中時的震動也壓到很小；只有「穩穩一槍」才有後座力和震動',
+  '🔭 快速點射不會再一直開瞄準鏡：按住攻擊 0.3 秒以上才會慢慢拉遠鏡頭、往準星方向看；放開後鏡頭也慢慢回來，不會一彈一彈的（軍軍、時雨、江家的狙擊鏡都一樣）',
   '🏹 江家的箭袋：長按 Q（手機長按「換武器」）換箭——普通箭（無限）、🔥火焰箭（燒傷；拉滿弓命中會爆炸）、❄️冰霜箭（凍緩；拉滿弓會把敵人凍住 1 秒）、⚡雷電箭（麻痺；拉滿弓會電到旁邊 2 隻）；短按 Q 還是換副武器',
   '屬性箭在鍛冶屋「🏹 做屬性箭」：1 顆火晶石／寒冰礦／雷鳴石 → 20 支；頭上會顯示剩幾支，用完自動換回普通箭；火焰弓射火焰箭傷害 ×1.3；弩不能用屬性箭',
   '屬性箭也吃星圖加成（炎、冰、雷之星脈）'
@@ -11790,7 +11796,7 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
   '🏹 新武器「連弩」（綠洲鎮、空の都、雷の都）：不用拉弓、按住就能連射，一匣 10 支，射完裝填 1.8 秒；「重弩」（冰の都、雷の都、熔岩村）：一匣 4 支、威力大會貫穿，裝填 2.2 秒；頭上會顯示剩幾支',
   '🏹 箭和子彈看起來不一樣了：弓箭有箭羽、會飛成一點弧線、地上有影子；弩箭粗短、筆直；子彈維持原樣'
 ]]);
-{const t=document.getElementById('verTag');if(t&&t.firstChild&&t.firstChild.nodeType===3)t.firstChild.nodeValue='v3.6.12　2026.11.21　';}
+{const t=document.getElementById('verTag');if(t&&t.firstChild&&t.firstChild.nodeType===3)t.firstChild.nodeValue='v3.6.13　2026.11.21　';}
 
 
 // ================= 🎯 狙擊槍：拉槍栓、不亂抖、拿長槍走得慢 =================
@@ -11800,7 +11806,7 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
     if(P&&state==='play'&&!dlg&&(hit2())&&P.cls==='gunner'&&W()===WEAPONS.cknife&&(P.ultCD||0)<=0){const L=getLoad();if(L.main&&WEAPONS[L.main]){P.weapon=L.main;floatText(P.x,P.y-60,'🔫 換回 '+WEAPONS[L.main].name,'#ffe58a');}}
     const x0=P?P.x:0,y0=P?P.y:0;_u.apply(this,arguments);if(!P||state!=='play')return;
     // 連射時不讓畫面一直抖：只有「穩穩一槍」才震
-    if((P.cls==='sniper'||P.cls==='gunner')&&time-(P._shotAt||-9)<.4&&!P._stable)shake=Math.min(shake,.6);
+    if((P.cls==='sniper'||P.cls==='gunner')&&time-(P._shotAt||-9)<.75&&!P._stable&&P.ultT<=0)shake=Math.min(shake,.3);
     // 拿狙擊槍走得明顯比較慢；換成小刀就輕快
     if(P.cls==='sniper'&&!P.prone&&!(P.dashT>0)&&!(P.rollT>0)&&!P.mount&&!P.boat){const k=W().gun?(P.aiming?.55:.72):1.08;if(k!==1){P.x=x0+(P.x-x0)*k;P.y=y0+(P.y-y0)*k;if(k>1&&solidAt(P.x,P.y)){P.x=x0;P.y=y0;}}}};
   function hit2(){return !!(pressed.u||tUlt);}
@@ -11857,13 +11863,10 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
   function nextKind(){const order=AK.map(a=>a[0]);let i=order.indexOf(kind());for(let n=0;n<4;n++){i=(i+1)%4;if(cnt(order[i])>0)break;}life.arrowKind=order[i];const a=AKM[order[i]];
     floatText(P.x,P.y-74,a[1]+' '+a[2]+(order[i]==='normal'?'':'（'+cnt(order[i])+'）'),a[3],true);sfx('coin');
     if(order[i]==='normal'&&!['fire','ice','thunder'].some(k=>cnt(k)>0)&&!life.arwHint){life.arwHint=1;floatText(P.x,P.y-100,'屬性箭可以在鍛冶屋用礦石做','#ccc');}}
-  window.__arrowKind=kind;
+  window.__arrowKind=kind;window.__nextArrow=nextKind;
   // 長按 Q（手機：長按「換武器」）換箭；短按還是換副武器
   let qT=0,qDown=false,tQ=false;try{const b=document.getElementById('bW');if(b){b.addEventListener('pointerdown',()=>{tQ=true;},true);addEventListener('pointerup',()=>{tQ=false;},true);addEventListener('pointercancel',()=>{tQ=false;},true);}}catch(_){}
   const _u=update;update=function(dt){
-    if(P&&state==='play'&&!dlg&&P.cls==='archer'){const held=!!(keys.q||tQ);
-      if(pressed.q||tSwap){pressed.q=false;tSwap=false;qDown=true;qT=0;}
-      if(qDown){if(held){qT+=dt;if(qT>=.35&&qT-dt<.35)nextKind();}else{qDown=false;if(qT<.35){try{cycleWeapon();}catch(_){}}qT=0;}}}
     const t0=time;_u.apply(this,arguments);if(!P||time===t0)return;
     for(const p of projs)if(p.elArrow&&!p.dead&&Math.random()<.5)parts.push({x:p.x-p.vx*.02,y:p.y-12,vx:0,vy:-15,t:0,life:.25,c:AKM[p.elArrow][3]});};
   // 射出時套上箭種
@@ -11894,7 +11897,38 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
       ['fire','ice','thunder'].map(k=>({t:`${AKM[k][1]} ${AKM[k][2]} ×20　（${MAT[k][1]}${MAT[k][0]} 1／你有 ${O[k]||0}）　身上 ${cnt(k)} 支`,bg:(O[k]||0)>0?'#ffe8c8':'#ddd',fn:()=>{if((O[k]||0)<1){floatText(P.x,P.y-70,'缺少'+MAT[k][0],'#ff8a8a');return;}O[k]--;Q()['arw_'+k]=cnt(k)+20;sfx('clang');floatText(P.x,P.y-70,AKM[k][1]+' '+AKM[k][2]+' +20','#ffcf3a',true);saveGame();setTimeout(()=>craftMenu(n),30);}}))
       .concat([{t:'不用了',bg:'#eee',fn:()=>{}}]));}
   const _ft=facTalk;facTalk=function(n){if(n&&n.fac==='smith'){window.__pickMenu(n.name,'<div style="text-align:center">要做什麼？</div>',[{t:'🔨 鍛冶／賣礦石',bg:'#ffe08a',fn:()=>_ft.call(this,n)},{t:'🏹 做屬性箭',bg:'#ffd8b0',fn:()=>craftMenu(n)},{t:'沒事',bg:'#eee',fn:()=>{}}]);return;}return _ft.apply(this,arguments);};
-  try{CLASSES.archer.desc=(CLASSES.archer.desc||'')+'　長按 Q（手機：長按「換武器」）換箭：普通箭、🔥火焰箭（燒傷，拉滿會爆炸）、❄️冰霜箭（凍緩，拉滿會結冰）、⚡雷電箭（麻痺，拉滿會電到旁邊 2 隻）；屬性箭在鍛冶屋用礦石做。';}catch(_){}
+  try{CLASSES.archer.desc=(CLASSES.archer.desc||'')+'　按 L 換箭：普通箭、🔥火焰箭（燒傷，拉滿會爆炸）、❄️冰霜箭（凍緩，拉滿會結冰）、⚡雷電箭（麻痺，拉滿會電到旁邊 2 隻）；屬性箭在鍛冶屋用礦石做。';}catch(_){}
+})();
+
+
+// ================= 🏹 江家：按住攻擊＝拉弓＋瞄準（像槍一樣），L＝換箭 =================
+(()=>{
+  const isBow=()=>P&&P.cls==='archer'&&W().cls==='archer'&&W().ranged&&!W().xbow&&!W().bolt&&!W().sonic&&!W().ball;
+  window.__archL=()=>P&&P.cls==='archer'&&W().xbow?'瞄準':'換箭';
+  let A=null,lPrev=false,forceA=null,lockX=0,lockY=0;
+  const _aa=autoAim;autoAim=function(a,m){if(forceA!=null)return forceA;return _aa.apply(this,arguments);};
+  const _u=update;update=function(dt){
+    if(!P||state!=='play'||dlg||scene||!isBow()){A=null;return _u.apply(this,arguments);}
+    // L：換箭（不再開狙擊鏡）
+    const lNow=!!(keys.l||keys.c||tShield||mouseShield);if(lNow&&!lPrev&&window.__nextArrow)window.__nextArrow();lPrev=lNow;keys.l=keys.c=false;tShield=false;mouseShield=false;
+    const drawing=atkHeld()&&P.atkCD<=.06&&P.ultT<=0;const x0=P.x,y0=P.y;
+    if(drawing){if(!A){A={t:0,x:0,y:0,on:false};}A.t+=dt;
+      if(A.t>.3){if(!A.on){A.on=true;const t=gunTarget?gunTarget(420):null;A.x=t?t.x:P.x+P.fx*260;A.y=t?t.y-10:P.y-20+P.fy*260;A.lmx=mouseX;A.lmy=mouseY;}
+        let ix=(keys.d||keys.arrowright?1:0)-(keys.a||keys.arrowleft?1:0),iy=(keys.s||keys.arrowdown?1:0)-(keys.w||keys.arrowup?1:0);try{if(typeof joy!=='undefined'&&joy&&joy.active){ix=joy.dx||ix;iy=joy.dy||iy;}}catch(_){}
+        if(hasMouse&&!isTouch&&(mouseX!==A.lmx||mouseY!==A.lmy)){A.x=mouseX/RZ+cam.x;A.y=mouseY/RZ+cam.y;A.lmx=mouseX;A.lmy=mouseY;}
+        A.x+=ix*480*dt;A.y+=iy*480*dt;let dx=A.x-P.x,dy=A.y-(P.y-20),d=Math.hypot(dx,dy)||1;if(d>620){A.x=P.x+dx/d*620;A.y=P.y-20+dy/d*620;}if(d<50){A.x=P.x+dx/d*50;A.y=P.y-20+dy/d*50;}
+        const a=Math.atan2(A.y-(P.y-20),A.x-P.x);P.fx=Math.cos(a);P.fy=Math.sin(a);}}
+    else if(A&&!atkHeld()){if(A.on){forceA=Math.atan2(A.y-(P.y-20),A.x-P.x);}const r=_u.apply(this,arguments);forceA=null;A=null;return r;}
+    else A=null;
+    const r=_u.apply(this,arguments);
+    if(A&&A.on){P.x=x0;P.y=y0;}
+    return r;};
+  // 瞄準時：鏡頭慢慢拉遠、看向準星（借用狙擊鏡的鏡頭）
+  const _rn=render;render=function(){if(A&&A.on&&P&&!P.aiming){const s1=P.aiming,s2=P.aimT,s3=P.aimX,s4=P.aimY;P.aiming=true;P.aimT=A.t;P.aimX=A.x;P.aimY=A.y;try{_rn.apply(this,arguments);}finally{P.aiming=s1;P.aimT=s2;P.aimX=s3;P.aimY=s4;}
+      try{const dpr=ctx.canvas.width/VW,z=RZ||1,sx=(A.x-cam.x)*z,sy=(A.y-cam.y)*z,full=A.t>=.75;ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.strokeStyle=full?'#ffcf3a':'rgba(255,255,255,.85)';ctx.lineWidth=2;
+        ctx.beginPath();ctx.arc(sx,sy,14,0,6.283);ctx.moveTo(sx-22,sy);ctx.lineTo(sx-8,sy);ctx.moveTo(sx+8,sy);ctx.lineTo(sx+22,sy);ctx.moveTo(sx,sy-22);ctx.lineTo(sx,sy-8);ctx.moveTo(sx,sy+8);ctx.lineTo(sx,sy+22);ctx.stroke();ctx.restore();}catch(_){}
+      return;}return _rn.apply(this,arguments);};
+  try{TUT.cls_archer&&(TUT.cls_archer[1]='按住攻擊拉弓，放開射出；按住 0.3 秒以上會開瞄準鏡（方向鍵／滑鼠移動準星），拉滿 0.75 秒威力 ×1.8。按 L 換箭：普通箭、火焰箭、冰霜箭、雷電箭。');}catch(_){}
 })();
 
 requestAnimationFrame(loop);
