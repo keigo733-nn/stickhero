@@ -169,7 +169,7 @@ canvas{display:block}html,body{overscroll-behavior:none;-webkit-tap-highlight-co
 </div></div>
 
 <div id="life" class="ov hide"><div class="card shopcard"><h1 id="lifeTitle" style="font-size:24px;margin:0 0 6px">📖 冒險手帳</h1><div id="lifeTabs"></div><div id="lifeBody" style="text-align:left"></div><button class="btn" id="lifeClose" style="margin-top:10px">關閉</button></div></div>
-<div id="chlog" class="ov hide" style="z-index:70"><div class="card shopcard"><h1 style="font-size:24px;margin:0 0 6px">📋 更新紀錄</h1><div id="chlogBody"></div><button class="btn" id="chlogClose" style="margin-top:8px">關閉</button></div></div>
+<div id="chlog" class="ov hide" style="z-index:70"><div class="card shopcard" style="position:relative"><button id="chlogX" aria-label="關閉" style="position:sticky;top:0;float:right;margin:-6px -6px 0 0;width:38px;height:38px;border-radius:50%;border:2px solid #222;background:#fff;font:800 20px sans-serif;line-height:1;cursor:pointer;z-index:2">✕</button><h1 style="font-size:24px;margin:0 0 6px">📋 更新紀錄</h1><div id="chlogBody"></div><button class="btn" id="chlogClose" style="margin-top:8px">關閉</button></div></div>
 <button id="turtleBtn" class="hide" data-nozy>🐢 問小龜</button>
 <button id="swapBtn" class="hide" data-nozy>🔄 換人</button>
 <div id="dlg" class="hide"><div id="dlgName"></div><div id="dlgText"></div><div id="dlgNext">點一下／按 E 繼續 ▼</div></div>
@@ -11389,7 +11389,7 @@ CHANGELOG.unshift(['v3.6.5','2026.11.20',[
     if(state==='play'&&P&&TOWNS&&townDeco&&VEINS.length){addMiner();addHints();
       if(!dlg&&!scene&&(pressed.e||pressed.enter||tTalk)){const v=nearVein();if(v){let nn=false;for(const n of NPCS){if(!n._hid&&Math.hypot(n.x-P.x,n.y-P.y)<Math.hypot(v.x-P.x,v.y-P.y))nn=true;}if(!nn){pressed.e=pressed.enter=false;tTalk=false;mine(v);}}}}
     _u.apply(this,arguments);if(state==='play'&&P&&!VEINS.length&&(window.__vf=(window.__vf||0)+1)>8)placeVeins();
-    for(const v of VEINS){if(v.shake>0)v.shake-=dt;}
+    {const VS=L().mine.vh||{};for(const v of VEINS){if(v.shake>0)v.shake-=dt;const h=VS[v.id];v.hp=h!=null?h:6;}}
     if(isTouch&&state==='play'&&!dlg){const v=nearVein(),bT=document.getElementById('bT');if(v&&bT&&bT.classList.contains('hide')){bT.classList.remove('hide');try{tbSet('bT','挖礦',0,1,false);}catch(_){}}}};
   // ---------- 星圖介面 ----------
   const css=document.createElement('style');css.textContent=`#starOv .card{background:#17151f;color:#eee;max-width:640px;width:96vw;max-height:94vh;overflow:auto;border:2px solid #4a4060;border-radius:18px;padding:12px 14px}
@@ -11564,7 +11564,7 @@ CHANGELOG.unshift(['v3.6.6','2026.11.20',[
     else if(state==='play'&&P&&SPOTS.length&&!dlg&&!scene&&(pressed.e||pressed.enter||tTalk)){let s=null,sd=60;for(const q of SPOTS){const d=Math.hypot(q.x-P.x,q.y-P.y);if(d<sd){sd=d;s=q;}}
       if(s&&!NPCS.some(n=>!n._hid&&Math.hypot(n.x-P.x,n.y-P.y)<sd)){pressed.e=pressed.enter=false;tTalk=false;cast(s);}}
     _u.apply(this,arguments);
-    if(state==='play'&&P&&!SPOTS.length&&(window.__ff=(window.__ff||0)+1)>10)placeSpots();if(SPOTS.length)addHints();
+    if(state==='play'&&P&&!SPOTS.length&&(window.__ff=(window.__ff||0)+1)>10){placeSpots();try{chunkCache.clear();}catch(_){}}if(SPOTS.length)addHints();
     if(F&&state==='play'){P.vx=0;P.vy=0;F.t+=dt;if(F.phase==='wait'&&F.t>=F.biteAt){F.phase='bite';F.t=0;sfx('clang');}
       else if(F.phase==='bite'&&F.t>WIN[Math.max(0,FISH[F.fish][2])]){stop('魚跑掉了……','#9ab');}}
     if(isTouch&&state==='play'&&!dlg&&!F){let near=false;for(const q of SPOTS)if(Math.hypot(q.x-P.x,q.y-P.y)<60)near=true;const bT=document.getElementById('bT');if(near&&bT&&bT.classList.contains('hide')){bT.classList.remove('hide');try{tbSet('bT','釣魚',0,1,false);}catch(_){}}}};
@@ -11955,7 +11955,7 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
 
 // ================= 📜 更新紀錄：整理成精簡版（依版本由新到舊） =================
 CHANGELOG.length=0;CHANGELOG.push(
-  ['v3.6.13','2026.11.21',['🌙 晚上路人會回家睡覺，天亮再出來；商店、旅館、傳送石、任務 NPC 和守夜衛兵照常在','⛏️ 礦脈挖光就沒了（存檔會記住）：每座可以敲 6 下、每下都可能掉東西，挖完再送 1 顆礦；全部礦場大約只夠點亮星脈的一半，剩下要靠打那一帶的怪（掉率 5%→7%）、開寶箱、釣魚','⛏️🎣 站在礦脈、釣點旁邊時，畫面下方會固定出現「按 E 挖礦／拋竿」的提示','🐛 修正：回標題重開或讀檔後，技能冷卻可能變成好幾百秒','✨ 技能等級更有感：升級更快（Lv.5 要用 60 次，以前 90 次），每級威力 +15%、冷卻 -6%，而且 Lv.3、Lv.5 會解鎖新效果（旋風斬轉兩圈、火球變 3 顆、雷擊劈 7 隻……）；技能說明裡都有寫','🍳 身上有魚時，旅館、酒館多一個「借廚房做魚料理」，直接打開料理頁（或按 C 冒險手帳 → 🍳 料理）','💖 聖光、吸血斬改成按最大血量的百分比補血（聖光 15%～35%、吸血斬每隻 4%～6%），後期不會再只補幾滴','🐟 魚可以料理了：冒險手帳 →「料理」，在城鎮或傳送石旁邊做「鹽烤魚」「鮮魚蘑菇湯」「漁夫派」','💚 治療光環加強：馬上補 12% 血並解除異常，之後每秒再補 3%（總共約 30%，一瓶回復藥的量），冷卻 20 → 16 秒','⌨️ 挖礦、釣魚的提示改成「按 E」（手機顯示按哪顆鈕）','🐻‍❄️ 熊掌變順手：出手間隔 0.7 → 0.45 秒、推人的力道只剩四分之一、攻擊範圍稍大，連按可以一直打到','🐴 被敵人打下坐騎後，坐騎會受驚 5 秒，這段時間不能再騎上去','🛒 道具店開始賣⛏️十字鎬、🎣釣竿，不用專程跑去礦工鎮或小島；接了老礦工、釣魚阿伯的支線就會直接借你，不用自己買','🌌 星圖加上說明：第一次打開會教你怎麼用（右上 ❓ 可以再看），下面有「還差什麼」的進度清單','🔭 開槍不再一縮一放、畫面不抖（連射不推人、不震動）','🏹 江家：按住攻擊＝拉弓＋瞄準，拉滿威力 ×1.8；L 換箭；新武器連弩、重弩','🏹 屬性箭：火焰、冰霜、雷電，在鍛冶屋用礦石做（1 顆 → 20 支）','💨 煙霧彈回到忍宇專屬；修好軍用小刀的翻滾刺殺']],
+  ['v3.6.13','2026.11.21',['✨ 技能升級更快、更有感：Lv.3、Lv.5 解鎖新效果（寫在技能說明裡）','⛏️ 礦脈挖光就沒了；挖礦、釣魚會在畫面下方提示「按 E」','🐟 魚可以料理（旅館、酒館「借廚房」或冒險手帳）；道具店賣十字鎬、釣竿','💚 治療光環、聖光、吸血斬加強；🐻 熊掌變順手、被打下坐騎要等 5 秒','🏹 江家拉弓瞄準、屬性箭、連弩；🔭 開槍不再縮放抖動','🌙 晚上路人回家睡覺；🐛 修正讀檔後技能冷卻變很長、池塘沒有水']],
   ['v3.6.11','2026.11.21',['🎯 軍軍：絕招改成「呼叫轟炸」、迷彩 7 秒（冷卻 10 秒）、趴姿重畫、狙擊槍要拉槍栓、拿長槍走得慢','💣 手榴彈、閃光彈改成用丟的，撞牆會反彈','🔪 軍用小刀只給時雨、軍軍當副武器']],
   ['v3.6.9','2026.11.21',['🛡️ 魔王霸體：一般攻擊推不動、打不斷，打破霸體條才會暈','🕳️ 九隻洞窟守衛全部重新設計造型，各有兩招專屬招式']],
   ['v3.6.7','2026.11.20',['🌌 七碎片星圖（角色面板）：用礦石點亮星脈，全隊變強','⛏️ 挖礦、🎣 釣魚：由老礦工、釣魚阿伯的支線開始，礦場和釣點都在城鎮裡']],
@@ -12024,6 +12024,9 @@ CHANGELOG.length=0;CHANGELOG.push(
       if(n._home)n._hid=true;}
   }catch(_){}};
 })();
+
+// ===== 更新紀錄右上角 ✕ =====
+(function(){const x=document.getElementById('chlogX'),c=document.getElementById('chlogClose');if(x)x.onclick=()=>{if(c)c.click();else document.getElementById('chlog').classList.add('hide');};})();
 
 requestAnimationFrame(loop);
 })();
