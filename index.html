@@ -1133,7 +1133,7 @@ function drawBLook(e){const k=(e.scale||2)/2,f=(e.fx||1)<0?-1:1,fl=e.flash>0,id=
   if(!e.awake){ctx.fillStyle='#fff';ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.fillText('Zzz',e.x+30*k,e.y-110*k+Math.sin(time*2)*4);}}
 function drawAbyssDark(){if(!(abyssDark>0))return;const a=Math.min(1,abyssDark)*.93,sx=(P.x-cam.x)*RZ,sy=(P.y-20-cam.y)*RZ;ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);const g=ctx.createRadialGradient(sx,sy,60*RZ,sx,sy,170*RZ);g.addColorStop(0,'rgba(10,0,20,0)');g.addColorStop(1,`rgba(10,0,20,${a})`);ctx.fillStyle=g;ctx.fillRect(0,0,VW,VH);ctx.restore();}
 
-function knifeSub(){const L=getLoad(),w=WEAPONS[L.sub];return !!(w&&w.cls==='thief');}
+function knifeSub(){const L=getLoad(),w=WEAPONS[L.sub];return L.sub==='cknife'||!!(w&&w.cls==='thief');}
 function gunTarget(maxD){let best=null,bs=1e9;const a=Math.atan2(P.fy,P.fx);for(const e of enemies){if(e.dead||(e.boss&&!e.awake)||e.disguise||e.riseT>0||e.hideT>0||(e.jun&&!junSeen(e))||(e.animal&&e.hp>=e.maxHp)||eZone(e)!==_plZone||!inView(e.x,e.y,-10))continue;const dx=e.x-P.x,dy=e.y-P.y,d=Math.hypot(dx,dy);if(d>maxD)continue;const df=angDiff(Math.atan2(dy,dx),a);if(df>.9)continue;const sc=d+df*300;if(sc<bs){bs=sc;best=e;}}return best;}
 function gunTick(dt,ix,iy){const w=W();if(P.ammoW!==P.weapon){P.ammoW=P.weapon;P.ammo=P.ammo==null?w.mag:Math.min(P.ammo,w.mag);if(P.ammoMap&&P.ammoMap[P.weapon]!=null)P.ammo=P.ammoMap[P.weapon];}
   if(P.ammo==null)P.ammo=w.mag;P.ammo=Math.min(P.ammo,w.mag);P.ammoMap=P.ammoMap||{};P.ammoMap[P.weapon]=P.ammo;
@@ -1627,7 +1627,7 @@ function toggleMount(){if(P.mount){dismount();return;}const own=P.mounts||[];if(
   if(!canMountHere()){floatText(P.x,P.y-60,'這裡不能騎乘','#ccc');return;}const k=own.includes(P.mountSel)?P.mountSel:own[0];P.mount=k;sfx('dash');burst(P.x,P.y-6,'#e8dcc0',10,100);floatText(P.x,P.y-70,MOUNTS[k].icon+' 騎上'+MOUNTS[k].name+'！','#ffe58a');}
 function dismount(fall){if(!P.mount)return;P.mount=null;if(P.rideWolf){P.rideWolf.riding=false;P.rideWolf.x=P.x-20;P.rideWolf.y=P.y+10;P.rideWolf=null;P.wsT=0;}if(fall){P.shockT=Math.max(P.shockT,.45);floatText(P.x,P.y-64,'摔下來了！','#ff9a6a');burst(P.x,P.y,'#c8b89a',10,120);}}
 function mountAttack(){const k=P.mount,a=autoAim(Math.atan2(P.fy,P.fx)),atk=atkPower();P.fx=Math.cos(a);P.fy=Math.sin(a);
-  const cfg={horse:[78,1.1,1.4,2.1,.45],wolf:[60,.9,1.1,.8,.26],bear:[88,1.4,1.8,1.8,.7]}[k],[R,arc,mul,kb,cd]=cfg;P.atkCD=cd;sfx('swing');
+  const cfg={horse:[78,1.1,1.4,2.1,.45],wolf:[60,.9,1.1,.8,.26],bear:[96,1.4,1.8,.45,.45]}[k],[R,arc,mul,kb,cd]=cfg;P.atkCD=cd;sfx('swing');
   for(let i=0;i<8;i++){const b=a-arc+i*arc/3.5;parts.push({x:P.x+Math.cos(b)*R*.8,y:P.y-12+Math.sin(b)*R*.5,vx:Math.cos(b)*60,vy:Math.sin(b)*60,t:0,life:.25,c:k==='bear'?'#ffffff':k==='wolf'?'#d0d8e0':'#e8c890'});}
   floatText(P.x+P.fx*30,P.y-50,MOUNTS[k].atk+'！','#ffe58a');
   for(const e of enemies){if(e.dead)continue;const dx=e.x-P.x,dy=e.y-P.y;if(Math.hypot(dx,dy)<R+e.r&&angDiff(Math.atan2(dy,dx),a)<arc){hitEnemy(e,Math.round(atk*mul),a,kb,k==='bear');if(!e.dead){if(k==='bear')e.stun=Math.max(e.stun,e.boss?.2:.6);if(k==='wolf')e.poison=Math.max(e.poison||0,1.5);}}}}
@@ -10886,7 +10886,7 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
   WSK_DESC.camo=(WSK_DESC.camo||'')+'（冷卻 10 秒）';WSK_DESC.deadeye=(WSK_DESC.deadeye||'')+'（冷卻 8 秒）';
   // ---- 時雨・小刀模式 L：煙霧彈 ----
   const smokes=[];
-  const _cs=classSpecial;classSpecial=function(press,holding,dt,w,ix,iy){if(!knifeMode())return _cs.apply(this,arguments);if(P.shockT>0)return;
+  const _cs=classSpecial;classSpecial=function(press,holding,dt,w,ix,iy){return _cs.apply(this,arguments);if(P.shockT>0)return;
     if(press&&P.specCD<=0&&!P.flying&&useSta(25)){P.specCD=7;const a=Math.atan2(P.fy,P.fx),x=P.x+Math.cos(a)*40,y=P.y+Math.sin(a)*40;smokes.push({x,y,r:115,t:0,life:5});sfx('shoot');floatText(P.x,P.y-66,'💨 煙霧彈！','#ddd');for(let i=0;i<18;i++)parts.push({x:x+(Math.random()-.5)*60,y:y-10+(Math.random()-.5)*30,vx:(Math.random()-.5)*120,vy:-20-Math.random()*40,t:0,life:.8,c:'rgba(220,220,220,.8)'});}};
   // ---- 時雨・小刀模式 絕招：呼叫空襲 ----
   const bombs=[];
@@ -10963,11 +10963,11 @@ CHANGELOG.unshift(['v3.6.1','2026.11.18',[
       ctx.restore();}
     if(P&&P.radioT>0&&P.cls==='sniper'){P.radioT-=1/60;ctx.save();ctx.font='bold 16px sans-serif';ctx.textAlign='center';ctx.fillText('📻',P.x+(P.fx>=0?14:-14),P.y-52+Math.sin(time*20)*2);ctx.restore();}};
   // ---- 說明文字 ----
-  try{CLASSES.gunner.desc=(CLASSES.gunner.desc||'')+'　【小刀模式】副武器帶軍用小刀時按 Q 切換：戰技變 CQC 擒拿摔、L 變煙霧彈（敵人在煙裡看不到人）；絕招一樣是加特林機槍（會自動換回主武器）。';}catch(e){}
+  try{CLASSES.gunner.desc=(CLASSES.gunner.desc||'')+'　【小刀模式】副武器帶軍用小刀時按 Q 切換：戰技變 CQC 擒拿摔（L 一樣是手榴彈）；絕招一樣是加特林機槍（會自動換回主武器）。';}catch(e){}
   try{CLASSES.sniper.ult='呼叫轟炸';CLASSES.sniper.desc=(CLASSES.sniper.desc||'').replace('絕招「狙殺標記」：標記畫面上最多 6 個敵人，一口氣全部狙殺','絕招「呼叫轟炸」：用無線電叫轟炸機，紅圈預警後一整排炸彈落下')+'　按住 K（翻滾）可以趴下匍匐前進：移動變慢，但遠處的敵人發現不了你，趴著開槍傷害 ×1.5。';}catch(e){}
   try{if(TUT.cls_sniper)TUT.cls_sniper[1]+='按住 K 可以趴下匍匐前進：遠處敵人看不到你，趴著開槍更痛。';}catch(e){}
   window.__soldier={smokes,bombs,knifeMode};
-  window.__gunL=()=>knifeMode()?'煙霧彈':'手榴彈';
+  window.__gunL=()=>'手榴彈';
 })();
 
 // ================= v3.6.6：升級訊息整理（一次升好幾級只顯示一行），魔王經驗值下修 =================
@@ -11349,13 +11349,13 @@ CHANGELOG.unshift(['v3.6.5','2026.11.20',[
     ctx.fillStyle='#a8a296';ctx.beginPath();ctx.moveTo(x-16,y-14);ctx.lineTo(x-6,y-23);ctx.lineTo(x+6,y-21);ctx.lineTo(x-2,y-12);ctx.closePath();ctx.fill();
     ctx.fillStyle='#3a362e';for(const [a,b] of [[-12,-4],[6,-6],[14,-14]]){ctx.beginPath();ctx.arc(x+a,y+b,1.8,0,6.283);ctx.fill();}
     for(const [a,b,s] of [[-8,-10,6],[8,-15,7],[13,-3,5]]){const g=.6+.4*Math.sin(time*3+a);ctx.globalAlpha=g;ctx.fillStyle=l.c;ctx.beginPath();ctx.moveTo(x+a,y+b-s);ctx.lineTo(x+a+s*.6,y+b);ctx.lineTo(x+a,y+b+s*.7);ctx.lineTo(x+a-s*.6,y+b);ctx.closePath();ctx.fill();ctx.globalAlpha=1;ctx.strokeStyle='rgba(255,255,255,.7)';ctx.lineWidth=1;ctx.stroke();}_r();
-    if(Math.hypot(P.x-d.x,P.y-d.y)<70){ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=(L().mine.q>=1?'⛏️ ':'🔒 ')+l.ore+'礦脈';ctx.strokeText(t,x,y-44);ctx.fillStyle='#fff';ctx.fillText(t,x,y-44);}};
+    if(Math.hypot(P.x-d.x,P.y-d.y)<70){ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=(L().mine.q>=1||(P.items||{}).pick>0?'⛏️ ':'🔒 ')+l.ore+'礦脈';ctx.strokeText(t,x,y-44);ctx.fillStyle='#fff';ctx.fillText(t,x,y-44);}};
   function nearVein(){let b=null,bd=56;for(const v of VEINS){if(v.hp<=0)continue;const d=Math.hypot(v.x-P.x,v.y-P.y);if(d<bd){bd=d;b=v;}}return b;}
   function roll(v){const r=Math.random();if(r<.32)return giveOre(v.ore,1+(Math.random()<.25?1:0),v.x,v.y);
     if(r<.35){P.items.ore=(P.items.ore||0)+1;floatText(v.x,v.y-60,'🔩 精鐵 +1','#c9d6ff',true);return;}
     const k=r<.36?'gem':r<.46?'copper':r<.68?'coal':'stone';const s=STONE[k];L().stones[k]=(life.stones[k]||0)+1;floatText(v.x,v.y-60,s[0]+' '+s[1]+' +1',k==='gem'?'#7fe8ff':'#e0d8c8',k==='gem');}
   let swingT=0;
-  function mine(v){const M=L().mine;if(M.q<1){floatText(P.x,P.y-70,'需要十字鎬……','#ffcf3a');if(!M.hint){M.hint=1;say('💭',['（這是礦脈。沒有工具挖不動……）','（聽說礦工鎮的老礦工，在找願意幫忙的人。）']);}return;}
+  function mine(v){const M=L().mine;if(M.q<1&&!((P.items||{}).pick>0)){floatText(P.x,P.y-70,'需要十字鎬……（道具店有賣）','#ffcf3a');if(!M.hint){M.hint=1;say('💭',['（這是礦脈。沒有工具挖不動……）','（道具店有賣十字鎬。礦工鎮的老礦工好像也在找幫手，幫他忙會借你一把。）']);}return;}
     if(swingT>time)return;swingT=time+.32;v.hp--;v.shake=.2;P.atkT=Math.max(P.atkT||0,.18);sfx('clang');shake=Math.max(shake,3);burst(v.x,v.y-14,'#c8c0b0',8,140);burst(v.x,v.y-14,LK[v.ore].c,4,120);
     if(v.hp<=0){v.regrow=time+150;roll(v);roll(v);if(Math.random()<.35)roll(v);M.dug=(M.dug||0)+1;sfx('coin');saveGame();}}
   // ---------- 老礦工（支線：學會挖礦） ----------
@@ -11397,7 +11397,17 @@ CHANGELOG.unshift(['v3.6.5','2026.11.20',[
   ov.addEventListener('click',e=>{if(e.target===ov)closeStar();});
   let sel=null,from=null;
   function closeStar(){ov.classList.add('hide');state='play';saveGame();if(from==='inv'){try{openInv();}catch(_){}}}
-  window.__openStar=src=>{from=src||null;state='shop';ov.classList.remove('hide');draw();};
+  function guide(){const g=document.createElement('div');g.style.cssText='position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center';
+    g.innerHTML=`<div style="background:#221f2e;color:#eee;border:2px solid #8a80a8;border-radius:16px;max-width:420px;width:90vw;padding:16px 18px;font-size:14.5px;line-height:1.65">
+      <div style="font-size:18px;font-weight:800;text-align:center;margin-bottom:6px">🌌 星圖怎麼用？</div>
+      <div>① 七片碎片各有一條<b>星脈</b>。故事裡拿到哪片碎片，那條才會連起來（虛線＝還沒拿到）。</div>
+      <div>② <b>點一下星脈</b>，下面會顯示效果和下一格要多少<b>礦石＋金幣</b>，夠了就按「點亮」。</div>
+      <div>③ 會<b>發光的圓圈</b>＝下一格可以點的位置。每條 5 格，第 5 格有特殊效果。</div>
+      <div>④ 礦石要<b>挖礦</b>：在道具店買十字鎬（或接礦工鎮老礦工的支線，他會借你），再到各城鎮的「⛏️ 礦場」挖。</div>
+      <div style="color:#c8c0dc;font-size:13px;margin-top:4px">點亮後全隊都變強，碎片持有者本人效果 ×1.5。</div>
+      <button class="sbtn" style="width:100%;margin-top:10px;background:#7a6aa8;color:#fff;border-color:#fff">知道了</button></div>`;
+    g.querySelector('button').onclick=ev=>{ev.stopPropagation();g.remove();};g.onclick=ev=>{if(ev.target===g)g.remove();};document.body.appendChild(g);}
+  window.__openStar=src=>{from=src||null;state='shop';ov.classList.remove('hide');draw();if(!L().starGuide){life.starGuide=1;guide();}};
   function draw(){const S=L().stars,O=L().ores,cx=300,cy=300,R0=60,STEP=40;let svg=`<svg viewBox="-70 -45 740 680" xmlns="http://www.w3.org/2000/svg">`;
     svg+=`<defs><radialGradient id="sg"><stop offset="0" stop-color="#5a5070"/><stop offset="1" stop-color="#2a2438"/></radialGradient></defs>`;
     for(let i=0;i<40;i++){const a=(i*137.5)%360*Math.PI/180,r=(i*53)%290;svg+=`<circle cx="${cx+Math.cos(a)*r}" cy="${cy+Math.sin(a)*r}" r="${i%5?0.8:1.4}" fill="#fff" opacity="${.15+(i%4)*.1}"/>`;}
@@ -11421,11 +11431,15 @@ CHANGELOG.unshift(['v3.6.5','2026.11.20',[
       else{const co=COST_O[n],cc=COST_C[n],ok=(O[sel]||0)>=co&&P.coins>=cc;info+=`<div class="row"><button class="sbtn" id="stLit" ${ok?'':'disabled'} style="background:${ok?l.c:'#555'};color:#fff;border-color:#fff">點亮第 ${n+1} 格：${l.oi}×${co}　🪙${cc}</button></div>`;
         if(!ok)info+=`<small style="color:#a99fc0">${l.ore}可以在「${TOWNS.find(t=>t.id===l.town).name}」的礦場挖到${L().mine.q<1?'（要先跟礦工鎮的老礦工學挖礦）':''}，在那一帶打怪、開寶箱也有機會拿到。</small>`;}
       info+='</div>';}
-    else info=`<div class="info" style="text-align:center;color:#c8c0dc">點一條星脈看看。<br><small>用礦石和金幣點亮星脈，全隊都會變強；碎片持有者本人效果 ×1.5。</small></div>`;
+    else{const M=L().mine,openN=LN.filter(open).length,canAny=LN.some(l=>open(l)&&(S[l.k]||0)<5&&(O[l.k]||0)>=COST_O[S[l.k]||0]&&P.coins>=COST_C[S[l.k]||0]);
+      const step=(ok,t)=>`<div style="margin:3px 0;${ok?'color:#9fffc0':''}">${ok?'✅':'⬜'} ${t}</div>`;
+      info=`<div class="info"><b>👆 點一條星脈（名字或圓點），下面就會出現「點亮」按鈕</b>
+        <div style="font-size:13px;margin-top:6px">${step(openN>0,`取得碎片，星脈才會連起來（目前 ${openN}/7 條）`)}${step(M.q>=1||(P.items||{}).pick>0,M.q>=1||(P.items||{}).pick>0?'有十字鎬了，可以挖礦':'在道具店買十字鎬（或幫礦工鎮的老礦工，他會借你一把）')}${step(LN.some(l=>(O[l.k]||0)>0),'在各城鎮的「⛏️ 礦場」挖礦石（打怪、開寶箱也會掉）')}${step(canAny,canAny?'現在就有星脈可以點亮了！找會發光的圓圈':'礦石＋金幣夠了，就能點亮下一格')}</div>
+        <small style="color:#a99fc0">點亮後全隊都變強；碎片持有者本人效果 ×1.5。</small></div>`;}
     const ores=LN.map(l=>`<span>${l.oi} ${l.ore} ${O[l.k]||0}</span>`).join('')+Object.keys(STONE).map(k=>`<span>${STONE[k][0]} ${STONE[k][1]} ${L().stones[k]||0}</span>`).join('');
-    ov.querySelector('.card').innerHTML=`<h3>🌌 七碎片星圖</h3><div class="sub">碎片的力量，靠礦石連成星脈</div>${svg}${info}<div class="ores">${ores}</div><div class="row"><button class="sbtn" id="stClose" style="background:#3a3450;color:#fff;border-color:#6a6280">關閉</button></div>`;
+    ov.querySelector('.card').innerHTML=`<h3>🌌 七碎片星圖 <button class="sbtn" id="stHelp" style="padding:0 8px;min-width:0;width:auto;height:30px;line-height:26px;font-size:14px;background:#3a3450;color:#fff;border-color:#6a6280;vertical-align:middle">❓</button></h3><div class="sub">碎片的力量，靠礦石連成星脈</div>${svg}${info}<div class="ores">${ores}</div><div class="row"><button class="sbtn" id="stClose" style="background:#3a3450;color:#fff;border-color:#6a6280">關閉</button></div>`;
     ov.querySelectorAll('.nd').forEach(g=>g.onclick=e=>{e.stopPropagation();sel=g.dataset.k;draw();});
-    ov.querySelector('#stClose').onclick=e=>{e.stopPropagation();closeStar();};
+    ov.querySelector('#stClose').onclick=e=>{e.stopPropagation();closeStar();};ov.querySelector('#stHelp').onclick=e=>{e.stopPropagation();guide();};
     const b=ov.querySelector('#stLit');if(b)b.onclick=e=>{e.stopPropagation();const n=S[sel]||0;const co=COST_O[n],cc=COST_C[n];if((O[sel]||0)<co||P.coins<cc)return;O[sel]-=co;P.coins-=cc;S[sel]=n+1;sfx('lvl');saveGame();draw();};}
   // 角色面板加一顆「星圖」按鈕
   const _ri=renderInv;renderInv=function(){const r=_ri.apply(this,arguments);try{const list=document.getElementById('invList');const sk=list&&list.querySelector('#invSk');
@@ -11498,7 +11512,7 @@ CHANGELOG.unshift(['v3.6.6','2026.11.20',[
     if(F.phase==='bite'){ctx.font='900 34px sans-serif';ctx.textAlign='center';ctx.lineWidth=6;ctx.strokeStyle='#3a1a00';ctx.strokeText('！',P.x,P.y-92);ctx.fillStyle='#ffd23a';ctx.fillText('！',P.x,P.y-92);
       ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=2;for(let i=1;i<=2;i++){ctx.beginPath();ctx.ellipse(bx,by+2,8+i*9*((time*3)%1),3+i*3*((time*3)%1),0,0,6.283);ctx.stroke();}}
     ctx.restore();}
-    if(!F&&Math.hypot(P.x-s.x,P.y-s.y)<60){ctx.font='bold 13px sans-serif';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=FL().q>=1?'🎣 按「對話」拋竿':'🔒 需要釣竿';ctx.strokeText(t,s.x,s.y-56);ctx.fillStyle='#fff';ctx.fillText(t,s.x,s.y-56);}};
+    if(!F&&Math.hypot(P.x-s.x,P.y-s.y)<60){ctx.font='bold 13px sans-serif';ctx.lineWidth=4;ctx.strokeStyle='rgba(0,0,0,.6)';const t=FL().q>=1||(P.items||{}).rod>0?'🎣 按「對話」拋竿':'🔒 需要釣竿（道具店有賣）';ctx.strokeText(t,s.x,s.y-56);ctx.fillStyle='#fff';ctx.fillText(t,s.x,s.y-56);}};
   const _rn=render;render=function(){_rn.apply(this,arguments);if(!F||state!=='play')return;try{const dpr=ctx.canvas.width/VW;
     const msg=F.phase==='wait'?'🎣 等魚上鉤……（移動就收竿）':F.phase==='bite'?'❗ 上鉤了！快按'+(isTouch?'「攻擊」':' J 或 E')+'！':'';if(msg){ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.font='800 16px sans-serif';ctx.textAlign='center';const w=ctx.measureText(msg).width+28,y=VH*.24;
       ctx.fillStyle=F.phase==='bite'?'rgba(120,40,0,.85)':'rgba(10,30,50,.75)';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(VW/2-w/2,y-18,w,32,16);else ctx.rect(VW/2-w/2,y-18,w,32);ctx.fill();ctx.fillStyle='#fff';ctx.fillText(msg,VW/2,y+4);ctx.restore();}
@@ -11506,7 +11520,7 @@ CHANGELOG.unshift(['v3.6.6','2026.11.20',[
   // ---------- 玩法 ----------
   function pick(tid){const r=Math.random();if(r<.035)return 'rainbow';if(r<.08)return 'box';if(r<.13)return Math.random()<.5?'boot':'weed';
     const pool=POOL[tid]||POOL.village;let q=Math.random(),tier=q<.66?0:q<.93?1:2;const c=pool.filter(k=>FISH[k][2]===tier);return c.length?c[Math.floor(Math.random()*c.length)]:pool[0];}
-  function cast(s){const L=FL();if(L.q<1){floatText(P.x,P.y-70,'需要釣竿……','#ffcf3a');if(!L.hint){L.hint=1;say('💭',['（這裡好像可以釣魚，可是沒有釣竿……）','（聽說海上的小島住著一個釣魚阿伯。）']);}return;}
+  function cast(s){const L=FL();if(L.q<1&&!((P.items||{}).rod>0)){floatText(P.x,P.y-70,'需要釣竿……（道具店有賣）','#ffcf3a');if(!L.hint){L.hint=1;say('💭',['（這裡好像可以釣魚，可是沒有釣竿……）','（道具店有賣釣竿。海上小島的釣魚阿伯好像也在找幫手。）']);}return;}
     F={s,phase:'wait',t:0,biteAt:1.4+Math.random()*2.6,fish:pick(s.town),dx:(Math.random()-.5)*20};P.fx=Math.sign(s.bx-P.x)||P.fx;sfx('swing');floatText(P.x,P.y-80,'🎣 拋竿！','#bfe9ff');}
   window.__fstate=()=>F?F.phase:'';
   function stop(t,c){if(t)floatText(P.x,P.y-80,t,c||'#ccc');F=null;}
@@ -11773,6 +11787,8 @@ CHANGELOG.unshift(['v3.6.9','2026.11.21',[
 })();
 CHANGELOG.unshift(['v3.6.13','2026.11.21',[
   '🔭 開槍不再一直縮放畫面：時雨（手槍、散彈槍）瞄準時鏡頭不縮放；軍軍和江家要按住 0.5 秒以上才拉遠，而且射完後會維持 1.4 秒，連續瞄準射擊時鏡頭不會一縮一放',
+  '💨 煙霧彈改回忍宇專屬：時雨切到小刀模式時，L 一樣是丟手榴彈（軍軍的 L 是閃光彈）',
+  '🔪 修正：時雨、軍軍副武器帶軍用小刀時，翻滾經過敵人會「刺殺！」又能用了（上一版把小刀改成軍人專用時不小心弄壞了）',
   '🏹 江家的操作簡化：按住攻擊＝拉弓，按住 0.3 秒以上會開瞄準鏡（鏡頭拉遠、可以用方向鍵或滑鼠移動準星），放開就朝準星射出，拉越久越痛；以前 L 的「狙擊鏡」併進攻擊鍵了',
   '🏹 L 改成「換箭」：按一下就換下一種箭（普通→火焰→冰霜→雷電），手機上的 L 鈕也改名「換箭」；Q 回到單純換副武器（不用再長按）；拿弩的時候 L 還是瞄準'
 ]]);
@@ -11827,7 +11843,7 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
   const _cs=classSpecial;classSpecial=function(press,holding,dt,w,ix,iy){
     const knife=window.__soldier&&window.__soldier.knifeMode&&window.__soldier.knifeMode();
     if(P.shockT<=0&&press&&P.specCD<=0&&!P.flying){
-      if(P.cls==='gunner'&&!knife&&useSta(SC().sp)){P.specCD=3.5;toss('he');floatText(P.x,P.y-62,'💣 手榴彈！','#ffcf3a');return;}
+      if(P.cls==='gunner'&&useSta(SC().sp)){P.specCD=3.5;toss('he');floatText(P.x,P.y-62,'💣 手榴彈！','#ffcf3a');return;}
       if(P.cls==='sniper'&&useSta(STA.sniper.sp)){P.specCD=6;toss('flash');floatText(P.x,P.y-62,'⚡ 閃光彈！','#fff');return;}}
     if(P.cls==='sniper'&&!(P.shockT>0))return;
     return _cs.apply(this,arguments);};
@@ -11930,6 +11946,40 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
         ctx.beginPath();ctx.arc(sx,sy,14,0,6.283);ctx.moveTo(sx-22,sy);ctx.lineTo(sx-8,sy);ctx.moveTo(sx+8,sy);ctx.lineTo(sx+22,sy);ctx.moveTo(sx,sy-22);ctx.lineTo(sx,sy-8);ctx.moveTo(sx,sy+8);ctx.lineTo(sx,sy+22);ctx.stroke();ctx.restore();}catch(_){}
       return;}return _rn.apply(this,arguments);};
   try{TUT.cls_archer&&(TUT.cls_archer[1]='按住攻擊拉弓，放開射出；按住 0.3 秒以上會開瞄準鏡（方向鍵／滑鼠移動準星），拉滿 0.75 秒威力 ×1.8。按 L 換箭：普通箭、火焰箭、冰霜箭、雷電箭。');}catch(_){}
+})();
+
+
+// ================= 📜 更新紀錄：整理成精簡版（依版本由新到舊） =================
+CHANGELOG.length=0;CHANGELOG.push(
+  ['v3.6.13','2026.11.21',['🐻‍❄️ 熊掌變順手：出手間隔 0.7 → 0.45 秒、推人的力道只剩四分之一、攻擊範圍稍大，連按可以一直打到','🐴 被敵人打下坐騎後，坐騎會受驚 5 秒，這段時間不能再騎上去','🛒 道具店開始賣⛏️十字鎬、🎣釣竿，不用專程跑去礦工鎮或小島；接了老礦工、釣魚阿伯的支線就會直接借你，不用自己買','🌌 星圖加上說明：第一次打開會教你怎麼用（右上 ❓ 可以再看），下面有「還差什麼」的進度清單','🔭 開槍不再一縮一放、畫面不抖（連射不推人、不震動）','🏹 江家：按住攻擊＝拉弓＋瞄準，拉滿威力 ×1.8；L 換箭；新武器連弩、重弩','🏹 屬性箭：火焰、冰霜、雷電，在鍛冶屋用礦石做（1 顆 → 20 支）','💨 煙霧彈回到忍宇專屬；修好軍用小刀的翻滾刺殺']],
+  ['v3.6.11','2026.11.21',['🎯 軍軍：絕招改成「呼叫轟炸」、迷彩 7 秒（冷卻 10 秒）、趴姿重畫、狙擊槍要拉槍栓、拿長槍走得慢','💣 手榴彈、閃光彈改成用丟的，撞牆會反彈','🔪 軍用小刀只給時雨、軍軍當副武器']],
+  ['v3.6.9','2026.11.21',['🛡️ 魔王霸體：一般攻擊推不動、打不斷，打破霸體條才會暈','🕳️ 九隻洞窟守衛全部重新設計造型，各有兩招專屬招式']],
+  ['v3.6.7','2026.11.20',['🌌 七碎片星圖（角色面板）：用礦石點亮星脈，全隊變強','⛏️ 挖礦、🎣 釣魚：由老礦工、釣魚阿伯的支線開始，礦場和釣點都在城鎮裡']],
+  ['v3.6.5','2026.11.20',['👑 最終戰三階段：聖上 → 闇帝王 → 暗邪獸，半血時集結七碎片（攻擊 +20%）','🏰 皇宮攻城戰：敵人多 20%、城門更厚']],
+  ['v3.6.4','2026.11.18',['⚔️ 每個角色有自己的攻防個性；升級和強化節奏放慢','🐾 各地區有特色小兵；影子騎士全面改版，出招都有紅色預警','🗺️ 小地圖顯示方向和目的地星星；隨時換坐騎；道具店可以一次買多個','🐞 一輪試玩後的大量修正']],
+  ['v3.6.0～3.6.3','2026.11.18',['🎯 新角色「軍軍」；自由模式的角色要先在故事裡解鎖','🏘️ 各城鎮設施平均分配，新增妖精花草店、驛站商人、懸賞','☂️ 天地傘／劍模式、🔱 喬爾持盾模式；📱 手機按鍵調整']],
+  ['v3.5.x','2026.11.16～18',['🎨 全新介面、隊伍系統、三座城堡、九個洞窟、競技場','✨ 技能系統（Lv.20 開放）、武器限本職、傳說武器','🌑 隨機魔王「影之騎士」、角色解鎖、外傳擴寫','🏘️ 所有城鎮翻修，商店和民宅都能走進去；🐻‍❄️ 北極熊會游泳']],
+  ['v3.0～3.4','2026.11.16',['🏠 首頁三種模式、故事間章、20 格存檔、存檔搬家','⚙️ 遊戲設定、招式表、天氣、通關計時；魔王招式更多變化']],
+  ['v2.x','2026.11.16',['🔫 新角色「時雨」（未來槍手），左輪、手榴彈、加特林','👹 九大魔王重新設計；洞窟擴大；四大天王會閃避','🧸 新手模式、流暢模式；同時圍攻的小怪有上限']],
+  ['v1.x','2026.11.15～16',['🎉 正式版：四大天王、世界觀、外傳「茜茜的尋兄記」','📒 冒險手帳、換裝、寵物；傳送石紀錄；暫停選單；兒童模式']]
+);
+
+
+// ================= 🛒 道具店也賣十字鎬、釣竿（接了支線的話，阿伯們會直接給你，不用買） =================
+(()=>{
+  ITEMS.pick={name:'十字鎬',icon:'⛏️',price:120,desc:'可以在各城鎮的「⛏️ 礦場」挖礦（買一次就能一直用）。接了礦工鎮老礦工的支線，他會直接借你一把'};
+  ITEMS.rod={name:'釣竿',icon:'🎣',price:80,desc:'可以在各地的「🎣 釣點」釣魚（買一次就能一直用）。接了釣魚阿伯的支線，他會直接借你一支'};
+  for(const k in SHOPS){const S=SHOPS[k];if(S&&Array.isArray(S.items)){for(const id of ['pick','rod'])if(!S.items.includes(id))S.items.push(id);}}
+  const has=id=>id==='pick'?((life.mine&&life.mine.q>=1)||(P.items.pick||0)>0):((life.fish&&life.fish.q>=1)||(P.items.rod||0)>0);
+  const _rs=renderShop;renderShop=function(){const saved=[];try{for(const k in SHOPS){const S=SHOPS[k];if(S&&Array.isArray(S.items)){saved.push([S,S.items]);S.items=S.items.filter(id=>!((id==='pick'||id==='rod')&&has(id)));}}return _rs.apply(this,arguments);}finally{for(const [S,it] of saved)S.items=it;}};
+})();
+
+
+// ================= 🐴 被打下坐騎後，要等 5 秒才能再騎 =================
+(()=>{const CD=5;
+  const _dm=dismount;dismount=function(fall){const had=!!(P&&P.mount);const r=_dm.apply(this,arguments);if(had&&fall&&P&&!P.mount){P.remountT=time+CD;floatText(P.x,P.y-88,'坐騎受驚了！'+CD+' 秒後才能再騎','#ffb08a');}return r;};
+  const _tm=toggleMount;toggleMount=function(){if(P&&!P.mount&&(P.remountT||0)>time){floatText(P.x,P.y-60,'坐騎還在受驚…… '+Math.ceil(P.remountT-time)+' 秒','#ffb08a');return;}return _tm.apply(this,arguments);};
+  const _u=update;update=function(dt){_u.apply(this,arguments);try{if(isTouch&&P&&!P.mount&&(P.remountT||0)>time){const b=document.getElementById('bM');if(b&&b.querySelector('.lb'))tbSet('bM','受驚 '+Math.ceil(P.remountT-time),0,1,true);}}catch(_){}};
 })();
 
 requestAnimationFrame(loop);
