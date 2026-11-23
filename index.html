@@ -4404,7 +4404,7 @@ function render(){
     else if(P.rolling&&P.dashT>0&&P.cls!=='elemental'&&P.cls!=='umbrella'&&P.cls!=='warrior'){pose='tuck';rot=P.rollRot*(P.cls==='archer'?-1:1);}
     else if(P.rolling&&P.dashT>0&&P.cls==='warrior')pose='guard';
     else if(P.cls==='fighter'&&P.counterT>0)pose='guard';
-    else if(P.atkT>0&&c.pose){pose=c.pose;if(c.pose==='kick'&&c.fist)rot=(1-P.atkT/P.atkDur)*Math.PI*2*(P.fx<0?-1:1);}
+    else if(P.atkT>0&&c.pose){pose=c.pose;if(c.pose==='kick'&&c.fist){const pr=1-P.atkT/P.atkDur,dd=P.fx<0?-1:1;rot=c.spinKick?-pr*Math.PI*2*dd:(.55-1.2*Math.min(1,pr*1.4))*dd;}}
     else if(P.aiming)pose='bowdraw';
     if(!(P.cls==='thief'&&P.ultT>0&&Math.floor(time*30)%2)&&P.mount)drawMountBeast(P.x,P.y,P.fx<0?-1:1,P.mount,P.moving);
     if(!blink)drawStick(P.x,P.y-(P.mount?22:0),{gunA:W().gun?Math.atan2(P.fy,P.fx):null,alpha:P.camoT>0?.4:null,dilo:P.cls==='fighter',rot:P.dizzyT>0?Math.sin(time*6)*.3:rot,color:(HERO_LOOK[P.cls]||{}).color||'#1a1a1a',hat:(HERO_LOOK[P.cls]||{}).hat||'hero',cls:P.cls,outfit:lifeOutfit(P.cls),cos:cosOf(P.cls),scale:HERO_SCALE[P.cls],faceX:P.fx||1,moving:!P.boat&&(P.moving||P.dashT>0),walk:P.boat?0:P.walk,weapon:'hero',w:lifeW(w),attacking:P.atkT>0||P.ultT>0&&P.cls==='warrior',
@@ -4420,7 +4420,7 @@ function render(){
     if(P.exhT>0&&Math.random()<.2)parts.push({x:P.x+(Math.random()-.5)*16,y:P.y-50,vx:(Math.random()-.5)*30,vy:20,t:0,life:.5,c:'#7fd8ff'});
     // 半月斬
     if(P.rf&&P.rf.t>0){const a=P.rf.a,fx=P.x+Math.cos(a)*26,fy=P.y-24+Math.sin(a)*26;ctx.save();const gg=ctx.createRadialGradient(fx,fy,2,fx,fy,26);gg.addColorStop(0,'rgba(255,240,180,.95)');gg.addColorStop(.5,'rgba(255,122,42,.7)');gg.addColorStop(1,'rgba(255,60,20,0)');ctx.fillStyle=gg;ctx.beginPath();ctx.arc(fx,fy,26,0,Math.PI*2);ctx.fill();ctx.restore();}
-    if(P.atkT>0&&c.fist&&c.pose==='kick'&&c.range>60){const pr=1-P.atkT/P.atkDur,a=P.atkAng;ctx.strokeStyle=`rgba(255,207,58,${.85*(1-pr*.5)})`;ctx.lineWidth=10;ctx.beginPath();ctx.arc(P.x,P.y-20,c.range*.75,a-1.6,a-1.6+3.2*Math.min(1,pr*1.6));ctx.stroke();
+    if(P.atkT>0&&c.fist&&c.pose==='kick'&&c.range>60){const pr=1-P.atkT/P.atkDur,a=P.atkAng;ctx.strokeStyle=`rgba(255,207,58,${.85*(1-pr*.5)})`;ctx.lineWidth=10;ctx.beginPath();{const sw=3.2*Math.min(1,pr*1.6);if(Math.cos(a)>=0)ctx.arc(P.x,P.y-20,c.range*.75,a+1.6,a+1.6-sw,true);else ctx.arc(P.x,P.y-20,c.range*.75,a-1.6,a-1.6+sw);}ctx.stroke();
       ctx.strokeStyle='rgba(255,255,255,.8)';ctx.lineWidth=4;ctx.stroke();}
     if(P.atkT>0&&!c.ranged){
       const prog=1-P.atkT/P.atkDur,cx=P.x,cy=P.y-18,a=P.atkAng;
@@ -9473,7 +9473,7 @@ CSTYLE.cv_thunder={top:'#4a3a6a',topIn:'#5a4a7a',f1:'#3a2a5a',f2:'#20163a',edge:
     if(!was){floatText(e.x,e.y-70,'浮空！','#9fe8ff',true);burst(e.x,e.y,'#dff4ff',8,120);}}
   window.__launch=launch;
   const _dh=doHeavy;
-  doHeavy=function(){const L=!!P;if(P&&(P.cls==='fighter'||P.cls==='kagerou')){P._upT=.38;P._upF=(P.fx||1)<0?-1:1;}const before=L?new Map(enemies.filter(e=>!e.dead&&Math.hypot(e.x-P.x,e.y-P.y)<260).map(e=>[e,e.hp])):null;
+  doHeavy=function(){const L=!!P;if(P&&P.cls==='fighter'){P._upT=.38;P._upF=(P.fx||1)<0?-1:1;}const before=L?new Map(enemies.filter(e=>!e.dead&&Math.hypot(e.x-P.x,e.y-P.y)<260).map(e=>[e,e.hp])):null;
     const r=_dh.apply(this,arguments);if(before)for(const [e,h] of before)if(e.hp<h)launch(e,1);return r;};
   let tipT=0;const _he=hitEnemy;
   hitEnemy=function(e,dmg){const air=e&&!e.dead&&(e.airT>0||(e.umb&&e.umb.lift>4&&!e.umb.gone));
@@ -9489,13 +9489,7 @@ CSTYLE.cv_thunder={top:'#4a3a6a',topIn:'#5a4a7a',f1:'#3a2a5a',f2:'#20163a',edge:
   const _u9=update;update=function(dt){_u9(dt);if(P&&P._upT>0)P._upT-=dt;};
   const _do=drawOrbs;
   drawOrbs=function(){_do.apply(this,arguments);
-    if(P&&P._upT>0){const k=1-P._upT/.38,f=P._upF,fire=P.cls==='kagerou'||P.cls==='fighter',x=P.x+f*(16+6*k),y0=P.y-24,y=y0-90*Math.sin(k*Math.PI/2);
-      ctx.save();const g=ctx.createLinearGradient(0,y0,0,y);g.addColorStop(0,'rgba(255,120,30,0)');g.addColorStop(1,'rgba(255,200,80,.85)');ctx.fillStyle=g;
-      ctx.beginPath();ctx.moveTo(x-10,y0);ctx.quadraticCurveTo(x-18*f,(y0+y)/2,x-9,y);ctx.lineTo(x+9,y);ctx.quadraticCurveTo(x+6*f,(y0+y)/2,x+10,y0);ctx.closePath();ctx.fill();
-      for(let i=0;i<3;i++){const a=time*14+i*2.1,r=12+i*5;ctx.strokeStyle=`rgba(255,${160+i*30},60,${.7-i*.2})`;ctx.lineWidth=3;ctx.beginPath();ctx.ellipse(x,y+20+i*14,r,r*.35,0,a,a+3.5);ctx.stroke();}
-      ctx.fillStyle='#ffe28a';ctx.strokeStyle='#7a2a00';ctx.lineWidth=2.5;ctx.beginPath();ctx.arc(x,y,11,0,Math.PI*2);ctx.fill();ctx.stroke();
-      ctx.strokeStyle='#7a2a00';ctx.lineWidth=1.5;for(let i=-1;i<=1;i++){ctx.beginPath();ctx.moveTo(x-7,y-3+i*4);ctx.lineTo(x+7,y-3+i*4);ctx.stroke();}
-      ctx.restore();}for(const e of enemies){const h=lift(e);if(!(h>0)||e.dead)continue;const k=1-h/54*.5;
+    if(P&&P._upT>0){const k=1-P._upT/.38,f=P._upF,e2=Math.min(1,k*2.4),hx=P.x+f*(14-6*e2),hy=P.y-18-36*e2-(P._upLift||0),fire=P.cls==='kagerou'||P.cls==='fighter';ctx.save();ctx.globalCompositeOperation='lighter';const tl=26+40*e2,g=ctx.createLinearGradient(0,hy+tl,0,hy-6);g.addColorStop(0,'rgba(255,90,20,0)');g.addColorStop(.6,'rgba(255,150,40,'+(.55*(1-k*.6))+')');g.addColorStop(1,'rgba(255,230,140,'+(.8*(1-k*.5))+')');ctx.fillStyle=g;ctx.beginPath();ctx.moveTo(hx-5,hy+tl);ctx.quadraticCurveTo(hx-12,hy+tl*.4,hx-8,hy-4);ctx.quadraticCurveTo(hx,hy-14,hx+8,hy-4);ctx.quadraticCurveTo(hx+12,hy+tl*.4,hx+5,hy+tl);ctx.closePath();ctx.fill();const rg=ctx.createRadialGradient(hx,hy,0,hx,hy,14);rg.addColorStop(0,'rgba(255,245,200,.9)');rg.addColorStop(1,'rgba(255,120,30,0)');ctx.fillStyle=rg;ctx.beginPath();ctx.arc(hx,hy,14,0,Math.PI*2);ctx.fill();for(let i=0;i<4;i++){const ph=(time*5+i*.25)%1;ctx.fillStyle='rgba(255,'+(150+i*20)+',60,'+(.7*(1-ph))+')';ctx.beginPath();ctx.arc(hx+Math.sin(i*2.3+time*9)*6,hy-6-ph*26,3.5*(1-ph)+1,0,Math.PI*2);ctx.fill();}ctx.globalCompositeOperation='source-over';ctx.restore();}for(const e of enemies){const h=lift(e);if(!(h>0)||e.dead)continue;const k=1-h/54*.5;
     ctx.fillStyle='rgba(0,0,0,.25)';ctx.beginPath();ctx.ellipse(e.x,e.y+(e._ah||0),14*k,5*k,0,0,Math.PI*2);ctx.fill();}};
 })();
 
@@ -10110,7 +10104,7 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
   // ---- 蓄力重擊：放開那一下，依武器種類畫出清楚的攻擊範圍 ----
   const _dh=doHeavy;doHeavy=function(){const s0=P.sta;const r=_dh.apply(this,arguments);if(!(P.sta<s0)||P.cls==='umbrella')return r;const w=W()||{},a=P.atkAng!=null&&P.atkT>0?P.atkAng:ang(),c=P.cls;
     const kind=(c==='lancer'||c==='chisei'||w.spear)?'thrust':(w.fist||c==='fighter'||c==='kagerou')?'fist':c==='thief'?'cross':(w.ranged||w.ball||w.bolt||c==='bard')?'muzzle':'arc';
-    add({k:'hv_'+kind,x:P.x,y:P.y,a,dur:kind==='arc'?.32:.28,col:CC(c),R:Math.max(70,(w.range||70)+10)});return r;};
+    if(c!=='fighter')add({k:'hv_'+kind,x:P.x,y:P.y,a,dur:kind==='arc'?.32:.28,col:CC(c),R:Math.max(70,(w.range||70)+10)});return r;};
   const _u=update;update=function(dt){_u(dt);if(P&&state==='play'){if(P.cls===pcls&&P.ultCD>pcd+.5)onUlt(pn);pcd=P.ultCD||0;pn=strikes.length;pcls=P.cls;}if(cut){cut.t+=dt;if(cut.t>.9)cut=null;}for(const f of FX)f.t+=dt;for(let i=FX.length-1;i>=0;i--)if(FX[i].t>=FX[i].dur)FX.splice(i,1);
     for(const f of FX)if(f.k==='dunk'&&!f.landed&&f.t>.15&&!(P.ultT>0)){f.landed=1;add({k:'shock',x:P.x,y:P.y,dur:.6,col:'#ff8a1a'});shake=Math.max(shake,9);}};
   const jag=(x0,y0,x1,y1,n,amp)=>{ctx.beginPath();ctx.moveTo(x0,y0);for(let i=1;i<n;i++){const k=i/n;ctx.lineTo(x0+(x1-x0)*k+(Math.random()-.5)*amp,y0+(y1-y0)*k+(Math.random()-.5)*amp*.4);}ctx.lineTo(x1,y1);ctx.stroke();};
@@ -10163,15 +10157,16 @@ try{TUT.cls_umbrella=['天地的打法','點攻擊用傘打；副武器帶一把
     S('📣','戰吼',(P._warcry||0)-t,8,'#ffcf3a');S('😤','狂暴',(P._berserk||0)-t,8,'#ff6a5a');S('👟','加速',(P._haste||0)-t,8,'#9fffc0');S('🛡️','鐵壁',(P._iron||0)-t,6,'#bfe0ff');
     S('💚','治療光環',P._healT||0,6,'#7fe0a0');
     try{for(const z of zones2||[])if(z.k==='storm'&&z.follow)S('🌪️','風暴領域',z.life-z.t,z.life,'#c8f0ff');}catch(e){}
-    try{const F={spd:['🍽️','料理：加速'],regen:['🍵','料理：回精力'],def:['🍲','料理：減傷']};for(const k in F){const v=lifeBuff[k]||0;if(v>0){MAXF[k]=Math.max(MAXF[k]||0,v);S(F[k][0],F[k][1],v,MAXF[k],'#ffd9a0');}else MAXF[k]=0;}}catch(e){}
+    try{const F={spd:['👟','移動加快'],regen:['⚡','精力回復快'],def:['🛡️','減傷']};for(const k in F){const v=lifeBuff[k]||0;if(v>0){MAXF[k]=Math.max(MAXF[k]||0,v);S(F[k][0],F[k][1],v,MAXF[k],'#ffd9a0');}else MAXF[k]=0;}}catch(e){}
     return L;};
   window.__buffs=list;
   const _r=render;render=function(){_r();if(!P||state!=='play')return;const L=list();if(!L.length)return;ctx.save();ctx.setTransform(DPR,0,0,DPR,0,0);
-    const x0=12,y0=window.__hudBottom?window.__hudBottom()+((gate0())?54:0):172,W=118,H=28;L.forEach((b,i)=>{const x=x0,y=y0+i*(H+5),k=Math.max(0,Math.min(1,b.left/b.max)),warn=b.left<2&&Math.floor(time*6)%2===0;
+    const fmt=v=>v>=60?Math.floor(v/60)+':'+String(Math.floor(v%60)).padStart(2,'0'):Math.ceil(v)+'s';ctx.font='bold 12px sans-serif';let nmW=0;for(const b of L)nmW=Math.max(nmW,ctx.measureText(b.nm).width);ctx.font='bold 13px sans-serif';let tW=0;for(const b of L)tW=Math.max(tW,ctx.measureText(fmt(b.left)).width);
+    const x0=12,y0=window.__hudBottom?window.__hudBottom()+((gate0())?54:0):172,W=Math.max(118,Math.ceil(28+nmW+10+tW+8)),H=28;L.forEach((b,i)=>{const x=x0,y=y0+i*(H+5),k=Math.max(0,Math.min(1,b.left/b.max)),warn=b.left<2&&Math.floor(time*6)%2===0;
       ctx.fillStyle='rgba(22,18,36,.82)';ctx.strokeStyle=warn?'#ff6a5a':'rgba(255,214,120,.55)';ctx.lineWidth=1.5;ctx.beginPath();ctx.roundRect(x,y,W,H,9);ctx.fill();ctx.stroke();
       ctx.fillStyle=b.col;ctx.globalAlpha=.85;ctx.beginPath();ctx.roundRect(x+3,y+H-6,(W-6)*k,3,2);ctx.fill();ctx.globalAlpha=1;
       ctx.font='15px sans-serif';ctx.textAlign='left';ctx.fillText(b.ic,x+6,y+19);ctx.font='bold 12px sans-serif';ctx.fillStyle='#f4ead0';ctx.fillText(b.nm,x+28,y+17);
-      ctx.textAlign='right';ctx.fillStyle=warn?'#ff8a7a':'#ffd25a';ctx.font='bold 13px sans-serif';ctx.fillText(Math.ceil(b.left)+'s',x+W-7,y+17);});
+      ctx.textAlign='right';ctx.fillStyle=warn?'#ff8a7a':'#ffd25a';ctx.font='bold 13px sans-serif';ctx.fillText(fmt(b.left),x+W-7,y+17);});
     ctx.restore();};
   // 頭上也顯示小圖示
   const _do=drawOrbs;drawOrbs=function(){_do.apply(this,arguments);if(!P)return;const L=list();if(!L.length)return;ctx.save();ctx.font='13px sans-serif';ctx.textAlign='center';
@@ -11976,7 +11971,7 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
 
 // ================= 📜 更新紀錄：整理成精簡版（依版本由新到舊） =================
 CHANGELOG.length=0;CHANGELOG.push(
-  ['v3.6.15','2026.11.23',['🤝 一起打的隊友會被怪物打、會離場休息；每人一招專屬技，普攻有節奏','🧪 回復藥、復活藥不能再賣給商店']],
+  ['v3.6.15','2026.11.23',['🤝 一起打的隊友會被怪物打、會離場休息；每人一招專屬技，普攻有節奏','🧪 回復藥、復活藥不能再賣給商店；🔥 迪洛的腳刀改成由下往上踢、昇龍拳改成手直接往上打','⏳ 增益倒數超過 1 分鐘改成「4:56」，名字和秒數不再疊在一起']],
   ['v3.6.14','2026.11.22',['🧪 回復藥固定瓶數；🪶 復活藥不賣；🏦 旅館存錢、睡覺可延長日夜；🌙 晚上商店打烊、民宅關門，夜裡有獨特的獎勵','🪖 未來兵團軍營支線，攻城戰、最終戰也有兵團士兵','🗿 各地巨人；沙蟲變好打；雙傘怪會傘崩；怪物進不了城；🌧️ 下雨改成看屬性（火 -25%、雷 +25%）','💣 手榴彈加強、軍軍改用 C4；時雨下修、軍軍加強；❤️ 血量改成職業倍率','🎸 莉拉的樂譜支線（解鎖莉拉、第四首歌）；🎨 7 位角色重畫、身高重排','📱 手機弧形九宮格、藥瓶按鈕、舉盾點一下切換；🌅 首頁重新設計；🔓 一開始 9 人可選']],
   ['v3.6.13','2026.11.21',['✨ 技能升級更快、更有感：Lv.3、Lv.5 解鎖新效果（寫在技能說明裡）','⛏️ 礦脈挖光就沒了；挖礦、釣魚會在畫面下方提示「按 E」','🐟 魚可以料理（旅館、酒館「借廚房」或冒險手帳）；道具店賣十字鎬、釣竿','💚 治療光環、聖光、吸血斬加強；🐻 熊掌變順手、被打下坐騎要等 5 秒','🏹 江家拉弓瞄準、屬性箭、連弩；🔭 開槍不再縮放抖動','🌙 晚上路人回家睡覺；🐛 修正讀檔後技能冷卻變很長、池塘沒有水']],
   ['v3.6.11','2026.11.21',['🎯 軍軍：絕招改成「呼叫轟炸」、迷彩 7 秒（冷卻 10 秒）、趴姿重畫、狙擊槍要拉槍栓、拿長槍走得慢','💣 手榴彈、閃光彈改成用丟的，撞牆會反彈','🔪 軍用小刀只給時雨、軍軍當副武器']],
@@ -12896,6 +12891,17 @@ CHANGELOG.length=0;CHANGELOG.push(
   // 受傷時閃一下
   const _df=drawFollower;drawFollower=function(f){if(f.hurtT>0&&Math.floor(time*30)%2)return;const r=_df.apply(this,arguments);
     if(f.coop&&story&&story.on){const m=maxOf(f.id),h=hpOf(f.id);if(h<m){ctx.fillStyle='#222';ctx.fillRect(f.x-14,f.y+20,28,4);ctx.fillStyle=h<m*.35?'#ff5a5a':'#6fe07a';ctx.fillRect(f.x-14,f.y+20,28*Math.max(0,h/m),4);}}return r;};
+})();
+
+// ===== 🔥 昇龍拳：手直接往上打（取代原本的拳頭貼圖） =====
+(function(){
+  const _ds=drawStick;
+  drawStick=function(x,y,o){
+    if(P&&P._upT>0&&o&&o.dilo&&Math.abs(x-P.x)<2&&Math.abs(y-P.y)<40){
+      const k=1-P._upT/.38,e2=Math.min(1,k*2.4),lift=Math.sin(Math.min(1,k*1.5)*Math.PI)*8;P._upLift=lift;
+      o=Object.assign({},o,{pose:null,h1:[14-6*e2,-18-36*e2],h2:[-7,-22],rot:(o.rot||0)-.12*e2*(P._upF||1)});
+      return _ds.call(this,x,y-lift,o);}
+    return _ds.apply(this,arguments);};
 })();
 
 requestAnimationFrame(loop);
