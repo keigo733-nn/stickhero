@@ -6903,7 +6903,7 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
    #setup h3{margin:2px 0 4px;text-align:center}.sRow{display:flex;align-items:center;gap:10px;border-bottom:1px dashed #ccc;padding:8px 0}.sRow .lab{flex:1;font-size:14px;line-height:1.5}.sRow .lab small{display:block;color:#666;font-size:12px}
    .seg{display:flex;border:2px solid #222;border-radius:10px;overflow:hidden;flex-shrink:0}.seg button{font:inherit;font-size:13px;font-weight:700;border:0;padding:6px 10px;background:#eee;cursor:pointer;color:#222}.seg button.on{background:#b8f0c0}</style>`);
   const SET=[
-    {k:'easy',t:'🙋 你是新手還是老手？',d:'新手：開局多給 🧪 回復藥 15 瓶、🪙 100；倒下原地復活不掉錢、瞄準自動輔助、受傷 ×0.6、精力消耗 ×0.7<br>老手：原本的難度，🧪 回復藥 3 瓶',opts:[['on','🌱 新手'],['off','🎮 老手']],get:()=>EASY?'on':'off',set:v=>easySet(v==='on')},
+    {k:'easy',t:'🙋 你是新手還是老手？',d:'新手：🧪 回復藥 8 瓶、血少自動喝、開局 🪙 100；倒下原地復活不掉錢、瞄準自動輔助、受傷 ×0.6、精力消耗 ×0.7<br>老手：原本的難度，🧪 回復藥 4 瓶（兩種都能靠藥瓶碎片加到 15 瓶）',opts:[['on','🌱 新手'],['off','🎮 老手']],get:()=>EASY?'on':'off',set:v=>easySet(v==='on')},
     {k:'hold',t:'👆 按住攻擊鍵',d:'蓄力：按住再放開，打出每個角色的「重擊」<br>連續：按住一直打，每 1.2 秒自動放一次重擊（比較簡單）',opts:[['charge','蓄力'],['rep','連續']],
       get:()=>HOLDREP?'rep':'charge',set:v=>{HOLDREP=v==='rep';window.__holdRep=HOLDREP;try{localStorage.setItem('stickhero_holdrep',HOLDREP?'1':'0');}catch(e){}}},
     
@@ -7934,7 +7934,7 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
   // ================= 🌱 新手／老手：開局的禮物 =================
   const _sgEasy=startGame;
   startGame=function(){const r=_sgEasy.apply(this,arguments);let ez=false;try{ez=localStorage.getItem('stickhero_easy')==='1';}catch(e){}if(ez&&P){P.items=P.items||{};P.coins=(P.coins||0)+100;
-      setTimeout(()=>{if(P&&state==='play')floatText(P.x,P.y-90,'🌱 新手禮物：🧪 回復藥 15 瓶、🪙 100','#9fe3b0',true);},2500);}return r;};
+      setTimeout(()=>{if(P&&state==='play')floatText(P.x,P.y-90,'🌱 新手禮物：🪙 100；回復藥 8 瓶、血少會自動喝','#9fe3b0',true);},2500);}return r;};
 
   // ================= 🛏️ 旅館：睡飽加成、選起床時間、古夢碎村的夢 =================
   const REST_LEN=300;
@@ -7952,8 +7952,8 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
     ['（夢見魔王的障壁像一面鏡子，鏡子裡的你，在笑。）'],
     ['（什麼都沒夢到，睡得超級熟！）']];
   function innSleep(n,cost,night){
-    if(P.coins<cost){floatText(P.x,P.y-60,'錢不夠……','#ff6b6b');return;}
-    P.coins-=cost;
+    const bk=(life&&life.bank)||0;if(P.coins+bk<cost){floatText(P.x,P.y-60,'錢不夠……（身上加存款都不夠）','#ff6b6b');return;}
+    if(P.coins>=cost)P.coins-=cost;else{const need=cost-P.coins;P.coins=0;life.bank=bk-need;setTimeout(()=>{try{floatText(P.x,P.y-90,'🏦 從存款扣了 🪙'+need+'（存款剩 🪙'+life.bank+'）','#ffe08a',true);}catch(_){}},700);}
     fadeTo(()=>{if(story.on)healTeam();P.hp=P.maxHp;P.sta=P.maxSta;P.burnT=P.poisonT=P.slowT=0;
       const base=Math.floor(worldT/DAY_LEN)+1;worldT=base*DAY_LEN+(night?245:8);
       P.restT=time+REST_LEN;sfx('lvl');floatText(P.x,P.y-60,night?'🌙 一覺睡到晚上！全隊恢復':'🌞 早安！全隊恢復','#ff6b8a',true);saveGame();},
@@ -7968,7 +7968,7 @@ function loop(now){let dt=Math.min(.05,(now-last)/1000);last=now;if(slowT>0){slo
   const _facTalk2=facTalk;
   facTalk=function(n){if(n&&n.fac==='inn'){const cost=5+P.lv*2;
       say(n.name,[`住一晚 🪙${cost}：全隊恢復、精力回滿，還會幫你存檔。`,'睡飽的人，出門特別有精神喔！'],()=>
-        pickMenu('🛏️ 要睡到什麼時候？',`<div style="text-align:center">住一晚 🪙${cost}<br><small>睡飽之後 5 分鐘：經驗值 +30%、攻擊 +15%<br>睡到早上，當天白天特別長；睡到晚上，當晚的夜特別長<br>運氣好的話，還會做夢……</small></div>`,[
+        pickMenu('🛏️ 要睡到什麼時候？',`<div style="text-align:center">住一晚 🪙${cost}<br>${P.coins<cost&&(life.bank||0)>0?'<small style="color:#a06a00">身上不夠的 🪙'+(cost-P.coins)+' 會從存款扣</small><br>':''}<small>睡飽之後 5 分鐘：經驗值 +30%、攻擊 +15%<br>睡到早上，當天白天特別長；睡到晚上，當晚的夜特別長<br>運氣好的話，還會做夢……</small></div>`,[
           {t:'🌞 睡到早上',bg:'#fff3c4',fn:()=>innSleep(n,cost,false)},
           {t:'🌙 睡到晚上<br><small>晚上比較暗，殭屍會出來</small>',bg:'#d9dcf5',fn:()=>innSleep(n,cost,true)},
           {t:'取消',bg:'#eee',fn:null}]));return;}
@@ -11773,7 +11773,7 @@ CHANGELOG.unshift(['v3.6.9','2026.11.21',[
   for(const k of ['ice','thunder','lava'])if(SHOPS[k]&&SHOPS[k].weapons&&!SHOPS[k].weapons.includes('hxbow'))SHOPS[k].weapons.push('hxbow');
   const isBow=()=>P&&P.cls==='archer'&&W().cls==='archer'&&W().ranged&&!W().xbow&&!W().bolt&&!W().sonic&&!W().ball;
   const isXb=()=>P&&P.cls==='archer'&&W().xbow;
-  const DRAW_MIN=.22,DRAW_FULL=.75;let B=null,mul=null;
+  const DRAW_MIN=.18,DRAW_FULL=.6;let B=null,mul=null;
   const ammo=()=>{P.xbAmmo=P.xbAmmo||{};const id=P.weapon;if(P.xbAmmo[id]==null)P.xbAmmo[id]=W().mag||10;return P.xbAmmo;};
   // 射箭時套用拉弓倍率；弩箭扣彈匣
   const _fa=fireArrow;fireArrow=function(a,w,extra){const n0=projs.length;const r=_fa.apply(this,arguments);
@@ -11790,11 +11790,12 @@ CHANGELOG.unshift(['v3.6.9','2026.11.21',[
       if((A[P.weapon]||0)<=0||P.xbRel>0)P.atkCD=Math.max(P.atkCD,.05);}
     else if(isBow()&&!P.mount&&!P.aiming&&P.ultT<=0){
       const press=pressed.j||pressed.z||tAtk||!!mouseAtk,held=atkHeld();
-      if(!B&&(press||held)&&P.atkCD<=0&&P.shockT<=0&&P.dizzyT<=0){B={t:0,a:mouseAtk?Math.atan2(mouseAtk.y-VH/2,mouseAtk.x-VW/2):null,ma:mouseAtk};sfx('swing');}
+      if(!B&&held&&P.atkCD>0)P.atkCD=Math.max(P.atkCD,.07);
+      if(!B&&(press||held)&&P.atkCD<=.07&&P.shockT<=0&&P.dizzyT<=0){P.atkCD=.07;B={t:0,a:mouseAtk?Math.atan2(mouseAtk.y-VH/2,mouseAtk.x-VW/2):null,ma:mouseAtk};sfx('swing');}
       if(B){pressed.j=pressed.z=false;tAtk=false;const ma=mouseAtk;mouseAtk=null;B.t+=dt;P.atkCD=Math.max(P.atkCD,.05);P.cur={ranged:true,pose:'bowdraw'};P.atkT=Math.max(P.atkT||0,.06);P.atkDur=.16;
         if(B.t>=DRAW_FULL&&!B.full){B.full=true;floatText(P.x,P.y-66,'🏹 拉滿！','#ffcf3a');sfx('coin');}
-        if((B.t>=DRAW_MIN&&!held)||B.t>=1.6){const k=Math.min(1,(B.t-DRAW_MIN)/(DRAW_FULL-DRAW_MIN));mul={d:B.full?1.8:1+.35*k,v:B.full?1.3:1+.1*k,full:B.full};
-          P.atkCD=0;pressed.j=true;if(B.ma)mouseAtk=B.ma;B=null;const r=_u.apply(this,arguments);mul=null;P.atkCD=Math.max(P.atkCD,(W().cd||.3)+.08);if(P.cur)P.cur.pose='bowdraw';return r;}}}
+        if(B.t>=DRAW_MIN&&!held){const k=Math.min(1,(B.t-DRAW_MIN)/(DRAW_FULL-DRAW_MIN));mul={d:B.full?3:1+.8*k,v:B.full?1.35:1+.12*k,full:B.full};
+          P.atkCD=0;pressed.j=true;if(B.ma)mouseAtk=B.ma;B=null;const r=_u.apply(this,arguments);mul=null;P.atkCD=Math.max(P.atkCD,(W().cd||.3)*.8);if(P.cur)P.cur.pose='bowdraw';return r;}}}
     return _u.apply(this,arguments);};
   // 箭的樣子：有箭羽、會飛成一點弧線；弩箭粗短筆直；子彈不變
   window.__drawArrow=p=>{if(p.bullet||p.snipe&&!p.bowArrow)return false;const a=Math.atan2(p.vy,p.vx);
@@ -11841,7 +11842,7 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
   '🏹 新武器「連弩」（綠洲鎮、空の都、雷の都）：不用拉弓、按住就能連射，一匣 10 支，射完裝填 1.8 秒；「重弩」（冰の都、雷の都、熔岩村）：一匣 4 支、威力大會貫穿，裝填 2.2 秒；頭上會顯示剩幾支',
   '🏹 箭和子彈看起來不一樣了：弓箭有箭羽、會飛成一點弧線、地上有影子；弩箭粗短、筆直；子彈維持原樣'
 ]]);
-{const t=document.getElementById('verTag');if(t&&t.firstChild&&t.firstChild.nodeType===3)t.firstChild.nodeValue='v3.6.16　2026.11.23　';}
+{const t=document.getElementById('verTag');if(t&&t.firstChild&&t.firstChild.nodeType===3)t.firstChild.nodeValue='v3.6.19　2026.11.24　';}
 
 
 // ================= 🎯 狙擊槍：拉槍栓、不亂抖、拿長槍走得慢 =================
@@ -11970,15 +11971,18 @@ CHANGELOG.unshift(['v3.6.10','2026.11.21',[
     return r;};
   // 瞄準時：鏡頭慢慢拉遠、看向準星（借用狙擊鏡的鏡頭）
   const _rn=render;render=function(){if(A&&A.on&&P&&!P.aiming){const s1=P.aiming,s2=P.aimT,s3=P.aimX,s4=P.aimY;P.aiming=true;P.aimT=A.t;P.aimX=A.x;P.aimY=A.y;try{_rn.apply(this,arguments);}finally{P.aiming=s1;P.aimT=s2;P.aimX=s3;P.aimY=s4;}
-      try{const dpr=ctx.canvas.width/VW,z=RZ||1,sx=(A.x-cam.x)*z,sy=(A.y-cam.y)*z,full=A.t>=.75;ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.strokeStyle=full?'#ffcf3a':'rgba(255,255,255,.85)';ctx.lineWidth=2;
+      try{const dpr=ctx.canvas.width/VW,z=RZ||1,sx=(A.x-cam.x)*z,sy=(A.y-cam.y)*z,full=A.t>=.6;ctx.save();ctx.setTransform(dpr,0,0,dpr,0,0);ctx.strokeStyle=full?'#ffcf3a':'rgba(255,255,255,.85)';ctx.lineWidth=2;
         ctx.beginPath();ctx.arc(sx,sy,14,0,6.283);ctx.moveTo(sx-22,sy);ctx.lineTo(sx-8,sy);ctx.moveTo(sx+8,sy);ctx.lineTo(sx+22,sy);ctx.moveTo(sx,sy-22);ctx.lineTo(sx,sy-8);ctx.moveTo(sx,sy+8);ctx.lineTo(sx,sy+22);ctx.stroke();ctx.restore();}catch(_){}
       return;}return _rn.apply(this,arguments);};
-  try{TUT.cls_archer&&(TUT.cls_archer[1]='按住攻擊拉弓，放開射出；按住 0.3 秒以上會開瞄準鏡（方向鍵／滑鼠移動準星），拉滿 0.75 秒威力 ×1.8。按 L 換箭：普通箭、火焰箭、冰霜箭、雷電箭。');}catch(_){}
+  try{TUT.cls_archer&&(TUT.cls_archer[1]='按住攻擊拉弓，放開射出；按住 0.3 秒以上會開瞄準鏡（方向鍵／滑鼠移動準星），拉滿 0.6 秒威力 ×3 並穿透。按 L 換箭：普通箭、火焰箭、冰霜箭、雷電箭。');}catch(_){}
 })();
 
 
 // ================= 📜 更新紀錄：整理成精簡版（依版本由新到舊） =================
 CHANGELOG.length=0;CHANGELOG.push(
+  ['v3.6.19','2026.11.24',['🎵 換曲不再那麼頻繁：被 3 隻以上包圍才換戰鬥曲、打完 10 秒才換回；白天／夜晚曲等一首播完一段才換']],
+  ['v3.6.18','2026.11.23',['🏦 身上的錢不夠住宿時，會直接從旅館存款扣']],
+  ['v3.6.17','2026.11.23',['🏹 江家：按住只拉弓瞄準、放開才射，不再自己連射，準星也不會跳','🏹 拉滿弓縮短到 0.6 秒、威力 ×3 並穿透；射完冷卻變短','🧪 回復藥不會超過上限；新手 8 瓶、老手 4 瓶（說明文字修正）']],
   ['v3.6.16','2026.11.23',['🌱 新手模式：血剩 3 成自動喝水','🎵 新曲：封面、戰鬥（被包圍時）、四天王、夜晚、雷電高原','🗿 故事開場的巨漢改成巨人；🔒 lock 真的會鎖（新手模式也算），密碼改成 2026','📱 加入主畫面有自己的圖示；封面障壁改成傳說裡的灰色光牆；選角改成「16 位勇者」','修正：關掉遊戲時人在民宅裡，下次出門會跑錯地方']],
   ['v3.6.15','2026.11.23',['🤝 一起打的隊友會被怪物打、會離場休息；每人一招專屬技，普攻有節奏','🧪 回復藥、復活藥不能再賣給商店；🔥 迪洛的腳刀改成由下往上踢、昇龍拳改成手直接往上打','⏳ 增益倒數超過 1 分鐘改成「4:56」，名字和秒數不再疊在一起']],
   ['v3.6.14','2026.11.22',['🧪 回復藥固定瓶數；🪶 復活藥不賣；🏦 旅館存錢、睡覺可延長日夜；🌙 晚上商店打烊、民宅關門，夜裡有獨特的獎勵','🪖 未來兵團軍營支線，攻城戰、最終戰也有兵團士兵','🗿 各地巨人；沙蟲變好打；雙傘怪會傘崩；怪物進不了城；🌧️ 下雨改成看屬性（火 -25%、雷 +25%）','💣 手榴彈加強、軍軍改用 C4；時雨下修、軍軍加強；❤️ 血量改成職業倍率','🎸 莉拉的樂譜支線（解鎖莉拉、第四首歌）；🎨 7 位角色重畫、身高重排','📱 手機弧形九宮格、藥瓶按鈕、舉盾點一下切換；🌅 首頁重新設計；🔓 一開始 9 人可選']],
@@ -12072,7 +12076,7 @@ CHANGELOG.length=0;CHANGELOG.push(
     if(lastLife!==life){lastLife=life;lastMax=m;if(!life.flask){FL();P.items.potion=m;}else if((P.items.potion||0)>m)P.items.potion=m;return;}
     if(m>lastMax){P.items.potion=Math.min(m,(P.items.potion||0)+(m-lastMax));floatText(P.x,P.y-120,'🧪 得到藥瓶碎片！回復藥上限 '+m+' 瓶','#ff9ec4',true);sfx('lvl');}
     else if(m<lastMax&&(P.items.potion||0)>m)P.items.potion=m;
-    lastMax=m;};
+    lastMax=m;if((P.items.potion||0)>m){P.items.potion=m;if(!(P._potFull>time)){P._potFull=time+3;floatText(P.x,P.y-100,'🧪 回復藥已經滿了（上限 '+m+' 瓶）','#ffc8d8');}}};
   window.__flaskMenu=function(n){const F=FL(),lv=F.lv||0,pct=Math.round(PCT[lv]*100);
     if(lv>=5){window.__pickMenu('🧪 強化回復藥','<div style="text-align:center">已經強化到最高了！<br>每瓶回復 <b>50%</b> 血</div>',[{t:'好',bg:'#eee',fn:()=>{}}]);return;}
     const [c,o]=COST[lv],have=(P.items&&P.items.ore)||0,ok=P.coins>=c&&have>=o;
@@ -12947,8 +12951,8 @@ CHANGELOG.length=0;CHANGELOG.push(
     const near=(e,R)=>Math.abs(e.x-P.x)<R&&Math.abs(e.y-P.y)<R;
     if(enemies.some(e=>e.king&&!e.dead&&e.awake&&near(e,900)))return 'king';
     const base=_pick.apply(this,arguments);if(base==='boss'||base==='town')return base;
-    let n=0,big=false;for(const e of enemies){if(!foe(e)||!near(e,330))continue;n++;if(e.giant||e.fut||e.jun||e.elite)big=true;}
-    if(n>=2||big)fightT=4;
+    let n=0,big=false;for(const e of enemies){if(!foe(e)||!near(e,280))continue;n++;if(e.giant||e.fut||e.jun||e.elite)big=true;}
+    if(n>=3||big)fightT=10;
     if(fightT>0)return 'battle';
     const tx=Math.floor(P.x/T),ty=Math.floor(P.y/T);let r='';try{r=regAt(tx,ty);}catch(_){}
     if(base==='volcano'&&r==='thunder')return 'storm';
@@ -12958,6 +12962,20 @@ CHANGELOG.length=0;CHANGELOG.push(
   // 封面也有音樂：在封面點一下就開始播
   const wake=()=>{try{if(state!=='play'){makeAC();bgmWant='title';}}catch(_){}};
   for(const ev of ['pointerdown','keydown','touchstart'])addEventListener(ev,wake,{passive:true});
+})();
+
+// ===== 🎵 換曲不要太頻繁：新曲要穩定一下才換；夜晚／白天的曲子等一段時間才換 =====
+(function(){
+  const PRI={title:1,boss:1,king:1};let pend=null,pendT=0,curT=0,lastCur=null;
+  const _p=bgmPick;bgmPick=function(){const raw=_p.apply(this,arguments);
+    if(bgmCur!==lastCur){lastCur=bgmCur;curT=0;}
+    if(!bgmCur||PRI[raw]||PRI[bgmCur]||raw===bgmCur){pend=null;return raw;}
+    if(pend!==raw){pend=raw;pendT=0;}
+    pendT+=1;
+    const dayNight=(a,b)=>(a==='field'&&b==='night')||(a==='night'&&b==='field');
+    const need=raw==='battle'?1:bgmCur==='battle'?2:(raw==='town'||bgmCur==='town')?2:dayNight(bgmCur,raw)?(curT>=45?3:1e9):(curT>=12?4:1e9);
+    return pendT>=need?raw:bgmCur;};
+  const _u=update;update=function(dt){_u.apply(this,arguments);curT+=dt;};
 })();
 
 requestAnimationFrame(loop);
